@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { processImage, processImageUrl } from "../util/processImage";
+import { processImage} from "../util/processImage";
+import "../styles/UploadButton.css";
 
 const UploadButton = ({ socket, boardId }) => {
   const [imageUrl, setImageUrl] = useState("");
@@ -28,16 +29,11 @@ const UploadButton = ({ socket, boardId }) => {
 
   const uploadImageUrl = async () => {
     if (!imageUrl.trim()) return alert("Please enter a valid image URL!");
-    console.log(imageUrl)
-    // const { width, height } = await processImageUrl(imageUrl);
-    // console.log({ width, height })
     const newImage = {
       boardId: boardId,
       url: imageUrl,
       x: Math.random() * window.innerWidth * 0.7,
       y: Math.random() * window.innerHeight * 0.7,
-      // width: width,
-      // height: height,
     };
     
     socket.emit("newImage", newImage);
@@ -45,27 +41,28 @@ const UploadButton = ({ socket, boardId }) => {
   };
 
   return (
-    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-      <input
-        type="text"
-        value={imageUrl}
-        onChange={(e) => setImageUrl(e.target.value)}
-        placeholder="Enter image URL"
-        style={{ flex: 1, padding: "8px" }}
-      />
-      <button
-        onClick={imageUrl.trim() ? uploadImageUrl : () => document.getElementById("fileInput").click()}
-        style={{ flex: 1, padding: "8px", background: "blue", color: "white", border: "none", cursor: "pointer" }}
-      >
-        {imageUrl.trim() ? "Add Image" : "Upload File"}
-      </button>
-      <input
-        id="fileInput"
-        type="file"
-        style={{ display: "none" }}
-        onChange={(e) => uploadImage(e.target.files[0]) }
-      />
-    </div>
+<div className="upload-container">
+  <input
+    type="text"
+    value={imageUrl}
+    onChange={(e) => setImageUrl(e.target.value)}
+    placeholder="Enter image URL"
+    className="upload-input"
+  />
+  <button
+    onClick={imageUrl.trim() ? uploadImageUrl : () => document.getElementById("fileInput").click()}
+    className="upload-button"
+  >
+    {imageUrl.trim() ? "Add Image" : "Upload File"}
+  </button>
+  <input
+    id="fileInput"
+    type="file"
+    className="file-input"
+    onChange={(e) => uploadImage(e.target.files[0])}
+  />
+</div>
+
   );
 };
 

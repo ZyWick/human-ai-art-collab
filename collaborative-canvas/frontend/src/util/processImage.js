@@ -36,27 +36,29 @@ export async function processImage(file) {
     });
 }
 
-export async function processImageUrl(imageUrl) {
-    return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.src = imageUrl;
-        img.crossOrigin = "anonymous"; // Prevents CORS issues for external images
 
-        img.onload = () => {
-            let { width, height } = img;
+//  CORS ISSUE
+// export async function processImageUrl(imageUrl) {
+//     return new Promise((resolve, reject) => {
+//         const img = new Image();
+//         img.src = imageUrl;
+//         img.crossOrigin = "anonymous"; // Prevents CORS issues for external images
 
-            // Scale down if necessary
-            if (width > MAX_WIDTH || height > MAX_HEIGHT) {
-                const scale = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
-                width = Math.round(width * scale);
-                height = Math.round(height * scale);
-            }
+//         img.onload = () => {
+//             let { width, height } = img;
 
-            resolve({ width, height });
-        };
+//             // Scale down if necessary
+//             if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+//                 const scale = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
+//                 width = Math.round(width * scale);
+//                 height = Math.round(height * scale);
+//             }
 
-        img.onerror = () => {
-            reject(new Error("Failed to load image"));
-        };
-    });
-}
+//             resolve({ width, height });
+//         };
+
+//         img.onerror = () => {
+//             reject(new Error("Failed to load image"));
+//         };
+//     });
+// }

@@ -53,7 +53,7 @@ async function deleteS3Image(imageUrl) {
         const s3 = await getTemporaryCredentials();
         const params = { Bucket: BUCKET_NAME, Key: key };
         await s3.send(new DeleteObjectCommand(params));
-        return { message: "Image deleted successfully" };
+        return { message: "Image deleted successfully"  };
     } catch (error) {
         console.error("Delete error:", error);
         return { message: "Image deletion attempted, but it may not have existed" };

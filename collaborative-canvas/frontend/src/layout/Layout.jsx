@@ -16,6 +16,10 @@ const Layout = ({ username, roomData }) => {
 
   useBoardSocket(socket, username, roomData._id, setUsers, setImages);
 
+  const handleDelete = (id) => {
+    setImages((prevImages) => prevImages.filter((img) => img.id !== id));
+  };
+
   return (
     <div className="layout-container">
         <div className="sidebar-overlay">
@@ -27,7 +31,7 @@ const Layout = ({ username, roomData }) => {
             username={username}
           />
         </div>
-      <Moodboard images={images} socket={socket} />
+      <Moodboard images={images} setImages={setImages} socket={socket} />
     </div>
   );
 };

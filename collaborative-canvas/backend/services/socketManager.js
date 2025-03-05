@@ -39,6 +39,19 @@ module.exports = (io, users) => {
         }
         });
 
+        socket.on("deleteImage", async (_id) => {
+          try {
+            const user = users[socket.id];
+            if (user) {
+              let result = await imageService.deleteImage(_id)
+              console.log(result)
+              io.to(user.roomID).emit("deleteImage", _id);
+            }
+        } catch (error) {
+            console.log({ error: "Error adding image", details: error.message });
+        }
+        });
+
         socket.on("imageMoving", (updatedImage) => {
             const user = users[socket.id];
             if (user) {

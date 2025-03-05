@@ -5,7 +5,7 @@ import colorMapping from "../config/keywordTypes";
 import useLabelSelection from "../hook/useLabelSelection";
 import { calculateNewKeywordPosition } from "../util/calculateNewKeywordPosition";
 
-const KeywordItem = ({ data, imageBounds, updateKeywordPosition, socket}) => {
+const KeywordItem = ({ data, imageBounds, updateKeywordPosition, socket }) => {
   // const { updateItem } = useItem();
   // const { attrs, keyword } = data;
   const labelEntity = {
@@ -14,28 +14,37 @@ const KeywordItem = ({ data, imageBounds, updateKeywordPosition, socket}) => {
     fileid: "custom",
     keyword: data.keyword,
   };
-  
+
   const handleDrag = (e, action) => {
     e.cancelBubble = true;
-    let newOffset = {newX: e.target.x(), newY: e.target.y()}
+    let newOffset = { newX: e.target.x(), newY: e.target.y() };
     let targetWidth = e.target.width();
     let targetHeight = e.target.height();
-    
+
     if (action === "updateKeywordPosition")
       newOffset = calculateNewKeywordPosition(
-        newOffset.newX, newOffset.newY, targetWidth, targetHeight, imageBounds?.width, imageBounds?.height
-    );
-    
-    updateKeywordPosition({ _id: data._id, offsetX: newOffset.newX, offsetY: newOffset.newY });
-    socket.emit(action, { 
-      ...data, 
-      offsetX: newOffset.newX, 
-      offsetY: newOffset.newY 
+        newOffset.newX,
+        newOffset.newY,
+        targetWidth,
+        targetHeight,
+        imageBounds?.width,
+        imageBounds?.height
+      );
+
+    updateKeywordPosition({
+      _id: data._id,
+      offsetX: newOffset.newX,
+      offsetY: newOffset.newY,
+    });
+    socket.emit(action, {
+      ...data,
+      offsetX: newOffset.newX,
+      offsetY: newOffset.newY,
     });
   };
-  
 
-  const { addSelectedLabel, removeSelectedLabel, selectedLabelList } = useLabelSelection();
+  const { addSelectedLabel, removeSelectedLabel, selectedLabelList } =
+    useLabelSelection();
   const isSelected = useMemo(() => {
     return selectedLabelList.some((label) => label.id === labelEntity.id);
   }, [selectedLabelList, labelEntity.id]);
@@ -64,7 +73,7 @@ const KeywordItem = ({ data, imageBounds, updateKeywordPosition, socket}) => {
       //     updatedAt: Date.now(),
       //   }));
       // }}
-      onDragMove={(e) => handleDrag(e, "keywordMoving")} 
+      onDragMove={(e) => handleDrag(e, "keywordMoving")}
       onDragEnd={(e) => handleDrag(e, "updateKeywordPosition")}
     />
   );

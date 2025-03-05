@@ -1,19 +1,39 @@
 import React, { useMemo } from "react";
 import { Label, Tag, Text } from "react-konva";
-import useItem from "../../../hook/useItem";
+// import useItem from "../../../hook/useItem";
 import colorMapping from "../config/keywordTypes";
-import useLabelSelection from "../../../hook/useLabelSelection";
+import useLabelSelection from "../hook/useLabelSelection";
+import { calculateNewKeywordPosition } from "../util/calculateNewKeywordPosition";
 
-const KeywordItem = ({ data, e }) => {
-  const { updateItem } = useItem();
-  const { attrs, keyword } = data;
-
+const KeywordItem = ({ data, imageBounds, updateKeywordPosition, socket}) => {
+  // const { updateItem } = useItem();
+  // const { attrs, keyword } = data;
   const labelEntity = {
-    id: "custom-" + keyword.type + ": " + keyword.keyword,
-    type: keyword.type,
+    id: "custom-" + data.type + ": " + data.name,
+    type: data.type,
     fileid: "custom",
-    keyword: keyword.keyword,
+    keyword: data.keyword,
   };
+  
+  const handleDrag = (e, action) => {
+    e.cancelBubble = true;
+    let newOffset = {newX: e.target.x(), newY: e.target.y()}
+    let targetWidth = e.target.width();
+    let targetHeight = e.target.height();
+    
+    if (action === "updateKeywordPosition")
+      newOffset = calculateNewKeywordPosition(
+        newOffset.newX, newOffset.newY, targetWidth, targetHeight, imageBounds?.width, imageBounds?.height
+    );
+    
+    updateKeywordPosition({ _id: data._id, offsetX: newOffset.newX, offsetY: newOffset.newY });
+    socket.emit(action, { 
+      ...data, 
+      offsetX: newOffset.newX, 
+      offsetY: newOffset.newY 
+    });
+  };
+  
 
   const { addSelectedLabel, removeSelectedLabel, selectedLabelList } = useLabelSelection();
   const isSelected = useMemo(() => {
@@ -22,10 +42,10 @@ const KeywordItem = ({ data, e }) => {
 
   return (
     <KeywordLabel
-      id={data.id}
+      id={data._id}
       labelkey={labelEntity.id}
-      xpos={attrs.x}
-      ypos={attrs.y}
+      xpos={data.offsetX}
+      ypos={data.offsetY}
       onClick={() => {
         if (isSelected) removeSelectedLabel(labelEntity.id);
         else addSelectedLabel(labelEntity);
@@ -38,12 +58,14 @@ const KeywordItem = ({ data, e }) => {
           : labelEntity.type + ": " + labelEntity.keyword
       }
       draggable={true}
-      onDragEnd={(e) => {
-        updateItem(e.currentTarget.id(), () => ({
-          ...e.currentTarget.attrs,
-          updatedAt: Date.now(),
-        }));
-      }}
+      // onDragEnd={(e) => {
+      //   updateItem(e.currentTarget.id(), () => ({
+      //     ...e.currentTarget.attrs,
+      //     updatedAt: Date.now(),
+      //   }));
+      // }}
+      onDragMove={(e) => handleDrag(e, "keywordMoving")} 
+      onDragEnd={(e) => handleDrag(e, "updateKeywordPosition")}
     />
   );
 };
@@ -58,6 +80,7 @@ export const KeywordLabel = ({
   type,
   text,
   draggable,
+  onDragMove,
   onDragEnd,
 }) => {
   return (
@@ -68,6 +91,7 @@ export const KeywordLabel = ({
       key={labelkey}
       onClick={onClick}
       draggable={draggable}
+      onDragMove={onDragMove}
       onDragEnd={onDragEnd}
     >
       <Tag

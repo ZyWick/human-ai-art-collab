@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Moodboard from "./components/Moodboard";
+import Layout from "./layout/Layout";
 import {joinRoom} from "./components/api"
 
 const BACKEND_URL =
@@ -26,7 +26,7 @@ function App() {
   }; 
 
   return (
-    <div>
+    <div style={{ backgroundColor: "lightgray" }}>
       {!joined ? (
         <div>
           <h1>Join a Moodboard Session</h1>
@@ -45,7 +45,7 @@ function App() {
           <button onClick={joinTheRoom}>Join</button>
         </div>
       ) : (
-        <Moodboard username={username} roomData={roomData} backendUrl={BACKEND_URL} />
+        <Layout username={username} roomData={roomData} backendUrl={BACKEND_URL} />
       )}
     </div>
   );

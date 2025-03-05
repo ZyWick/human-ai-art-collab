@@ -19,6 +19,14 @@ const imageSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    width: {
+      type: Number,
+      required: true,
+    },
+    height: {
+      type: Number,
+      required: true,
+    },
     keywords: [
         {
             type: mongoose.Schema.Types.ObjectId,

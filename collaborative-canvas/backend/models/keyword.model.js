@@ -12,11 +12,11 @@ const keywordSchema = new mongoose.Schema(
       ref: 'Image',
       required: true,
     },
-    x: {
+    offsetX: {
       type: Number,
       required: true,
     },
-    y: {
+    offsetY: {
       type: Number,
       required: true,
     },

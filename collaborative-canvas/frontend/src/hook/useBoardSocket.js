@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const useBoardSocket = (socket, username, roomID, board, setUsers, setImages) => {
+const useBoardSocket = (socket, username, roomID, setUsers, setImages) => {
   useEffect(() => {
     // Join the specified room
     socket.emit('joinRoom', { username, roomID });
@@ -26,7 +26,7 @@ const useBoardSocket = (socket, username, roomID, board, setUsers, setImages) =>
     socket.on('updateRoomUsers', handleUpdateRoomUsers);
     socket.on('loadImages', handleLoadImages);
     socket.on('newImage', handleNewImage);
-    socket.on('updateImage', handleUpdateImage);
+    socket.on('updateImagePosition', handleUpdateImage);
 
     // Cleanup function to leave room and remove event listeners
     return () => {
@@ -34,9 +34,9 @@ const useBoardSocket = (socket, username, roomID, board, setUsers, setImages) =>
       socket.off('updateRoomUsers', handleUpdateRoomUsers);
       socket.off('loadImages', handleLoadImages);
       socket.off('newImage', handleNewImage);
-      socket.off('updateImage', handleUpdateImage);
+      socket.off('updateImagePosition', handleUpdateImage);
     };
-  }, [socket, username, roomID, board, setUsers, setImages]);
+  }, [socket, username, roomID, setUsers, setImages]);
 };
 
 export default useBoardSocket;

@@ -12,13 +12,10 @@ const Layout = ({ username, roomData }) => {
   const [board, setBoard] = useState(boards[boards.length - 1]);
   const [images, setImages] = useState(board.images);
   const [users, setUsers] = useState([]);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedImageId, setSelectedImageId] = useState(null);
 
   useBoardSocket(socket, username, roomData._id, setUsers, setImages);
-
-  const handleDelete = (id) => {
-    setImages((prevImages) => prevImages.filter((img) => img.id !== id));
-  };
+  console.log(images[0].x)
 
   return (
     <div className="layout-container">
@@ -31,7 +28,7 @@ const Layout = ({ username, roomData }) => {
             username={username}
           />
         </div>
-      <Moodboard images={images} setImages={setImages} socket={socket} />
+      <Moodboard images={images} setImages={setImages} selectedImageId={selectedImageId} setSelectedImageId={setSelectedImageId} socket={socket} />
     </div>
   );
 };

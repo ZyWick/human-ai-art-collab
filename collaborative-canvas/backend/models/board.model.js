@@ -7,6 +7,11 @@ const boardSchema = new mongoose.Schema(
       required: true,
       index: true
     },
+    roomId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Room',
+          required: true,
+    },
     images: [
         {
           type: mongoose.Schema.Types.ObjectId,
@@ -16,6 +21,8 @@ const boardSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+boardSchema.index({ roomId: 1 });
 
 const Board = mongoose.model('Board', boardSchema);
 

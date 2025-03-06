@@ -3,15 +3,9 @@ import { Stage, Layer } from "react-konva";
 import ImageComponent from "./ImageComponent";
 import useWindowSize from "../hook/useWindowSize";
 
-const Moodboard = ({ images, setImages, socket }) => {
+const Moodboard = ({ images, setImages, selectedImageId, setSelectedImageId, socket }) => {
   const stageRef = useRef(null);
   const windowSize = useWindowSize();
-  const [selectedImageId, setSelectedImageId] = useState(null);
-
-  const handleDelete = (_id) => {
-    socket.emit("deleteImage", _id);
-    setSelectedImageId(null);
-  };
 
   return (
     <Stage width={windowSize.width} height={windowSize.height} ref={stageRef}>
@@ -19,8 +13,8 @@ const Moodboard = ({ images, setImages, socket }) => {
         {images.map((img) => (
           <ImageComponent
             key={img._id}
-            onDelete={handleDelete}
             imgData={img}
+            setImages={setImages}
             socket={socket}
             stageRef={stageRef}
             selectedImageId={selectedImageId}

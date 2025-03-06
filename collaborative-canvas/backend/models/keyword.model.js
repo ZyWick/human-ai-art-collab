@@ -38,6 +38,9 @@ const keywordSchema = new mongoose.Schema(
   }
 );
 
+keywordSchema.index({ imageId: 1 });
+keywordSchema.index({ boardId: 1, isSelected: 1 });
+
 const Keyword = mongoose.model('Keyword', keywordSchema);
 
 module.exports = Keyword;

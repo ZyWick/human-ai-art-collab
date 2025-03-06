@@ -1,13 +1,15 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 
 const useBoardSocket = (socket, username, roomID, setUsers, setImages) => {
   useEffect(() => {
     // Join the specified room
-    socket.emit('joinRoom', { username, roomID });
+    socket.emit("joinRoom", { username, roomID });
 
     // Handle updates to room users
     const handleUpdateRoomUsers = (usersInRoom) => {
-      const uniqueUsers = Array.from(new Map(usersInRoom.map(user => [user.id, user])).values());
+      const uniqueUsers = Array.from(
+        new Map(usersInRoom.map((user) => [user.id, user])).values()
+      );
       setUsers(uniqueUsers);
     };
 
@@ -17,27 +19,35 @@ const useBoardSocket = (socket, username, roomID, setUsers, setImages) => {
     // Handle addition of a new image
     const handleNewImage = (img) => setImages((prev) => [...prev, img]);
 
-    const handleRemoveImage = (_id) =>  setImages((prev) => prev.filter((img) => img._id !== _id));
+    const handleRemoveImage = (_id) =>
+      setImages((prev) => prev.filter((img) => img._id !== _id));
 
     // Handle updates to existing images
-    const handleUpdateImage = (updatedImage) => setImages((prev) =>
-      prev.map((img) => (img.id === updatedImage.id ? updatedImage : img))
-    );
+    const handleUpdateImage = (updatedImage) => 
+      setImages((prev) =>
+        prev.map((img) => (img._id === updatedImage._id ? updatedImage : img))
+      );
+
+      const handleError = (message) => {
+        console.error("Socket Error:", message); // Log the error
+        alert(message); // Show an alert to the user (optional)
+      };
 
     // Register event listeners
-    socket.on('updateRoomUsers', handleUpdateRoomUsers);
-    socket.on('loadImages', handleLoadImages);
-    socket.on('newImage', handleNewImage);
-    socket.on('deleteImage', handleRemoveImage);
-    socket.on('updateImagePosition', handleUpdateImage);
+    socket.on("updateRoomUsers", handleUpdateRoomUsers);
+    socket.on("loadImages", handleLoadImages);
+    socket.on("newImage", handleNewImage);
+    socket.on("deleteImage", handleRemoveImage);
+    socket.on("updateImage", handleUpdateImage);
+    socket.on("error", (error) => handleError(error.message));
 
     // Cleanup function to leave room and remove event listeners
     return () => {
-      socket.emit('leave room', { username, roomID });
-      socket.off('updateRoomUsers', handleUpdateRoomUsers);
-      socket.off('loadImages', handleLoadImages);
-      socket.off('newImage', handleNewImage);
-      socket.off('updateImagePosition', handleUpdateImage);
+      socket.emit("leave room", { username, roomID });
+      socket.off("updateRoomUsers", handleUpdateRoomUsers);
+      socket.off("loadImages", handleLoadImages);
+      socket.off("newImage", handleNewImage);
+      socket.off("updateImagePosition", handleUpdateImage);
     };
   }, [socket, username, roomID, setUsers, setImages]);
 };

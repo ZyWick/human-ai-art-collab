@@ -1,27 +1,27 @@
+const crypto = require('crypto');
+const mongoose = require('mongoose');
 const Room = require('../models/room.model');
-const Board = require('../models/board.model');
 const boardService = require('./boardService');
 
 /**
- * Generate a join code.
+ * Generate a secure join code.
  */
-const generateJoinCode = () => {
-  return Math.random().toString(36).substr(2, 6).toUpperCase();
-};
+const generateJoinCode = () => crypto.randomUUID().replace(/-/g, '').slice(0, 6).toUpperCase();
 
 /**
  * Create a new room with a blank board.
  */
 const createRoom = async (name) => {
   const joinCode = generateJoinCode();
-  const blankBoard = await Board.create({ name: 'draft 1' });
 
-  const room = await Room.create({
-    name,
-    joinCode,
-    boards: [blankBoard._id],
+  const room = await Room.create({ name, joinCode, boards: [] });
+  const blankBoard = await boardService.createBoard({ 
+    name: 'draft 1', 
+    roomId: room._id, 
+    images: [] 
   });
 
+  await Room.findByIdAndUpdate(room._id, { $push: { boards: blankBoard._id } });
   return room;
 };
 
@@ -29,17 +29,18 @@ const createRoom = async (name) => {
  * Update a room's name.
  */
 const updateRoomName = async (roomId, newName) => {
-  return await Room.findByIdAndUpdate(roomId, { name: newName }, { new: true });
+  if (!mongoose.Types.ObjectId.isValid(roomId)) throw new Error('Invalid room ID');
+  return Room.findByIdAndUpdate(roomId, { name: newName }, { new: true }).lean();
 };
 
 /**
- * Delete a room and its boards.
+ * Delete a room and its associated boards.
  */
 const deleteRoom = async (roomId) => {
-  const room = await Room.findById(roomId);
-  if (!room) {
-    throw new Error('Room not found');
-  }
+  if (!mongoose.Types.ObjectId.isValid(roomId)) throw new Error('Invalid room ID');
+
+  const room = await Room.findById(roomId).lean();
+  if (!room) throw new Error('Room not found');
 
   await Promise.all(room.boards.map(boardService.deleteBoard));
   await Room.findByIdAndDelete(roomId);
@@ -51,18 +52,16 @@ const deleteRoom = async (roomId) => {
  * Join a room using a join code.
  */
 const joinRoom = async (joinCode) => {
-    const room = await Room.findOne({ joinCode })
+  const room = await Room.findOne({ joinCode })
     .populate({
       path: 'boards',
       populate: {
         path: 'images',
-        populate: { path: 'keywords' }, // Populate keywords inside images
+        populate: { path: 'keywords' },
       },
     });
 
-  if (!room) {
-    throw new Error('Room not found');
-  }
+  if (!room) throw new Error('Room not found');
   return room;
 };
 

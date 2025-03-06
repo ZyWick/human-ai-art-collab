@@ -1,76 +1,26 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Image, Group, Transformer, Circle } from "react-konva";
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import { Image, Transformer } from "react-konva";
 import KeywordItem from "./KeywordItem";
+import useImageSelection from "../hook/useImageSelection";
 
 const ImageComponent = ({
   socket,
-  onDelete,
   imgData,
+  setImages,
   stageRef,
   selectedImageId,
   setSelectedImageId,
-}) => {
+}) => {;
   const [image, setImage] = useState(null);
+  // const [imageBounds, setImageBounds] = useState({width: imgData.width, height: imgData.height, x: imgData.x, y: imgData.y});
   const [keywords, setKeywords] = useState(imgData.keywords || []);
-  const imageRef = useRef();
-  const [imageBounds, setImageBounds] = useState(null);
+  const imageRef = useRef(null);
   const transformerRef = useRef();
-  // const [isSelected, setIsSelected] = useState(false);
-  
-  const handleTransform = () => {
-    const node = imageRef.current;
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
+  const imageBounds = {width: imgData.width, height: imgData.height, x: imgData.x, y: imgData.y};
 
-    // Update image size and reset scale
-    const newWidth = imgData.width * scaleX;
-    const newHeight = imgData.height * scaleY;
+  useImageSelection(stageRef, selectedImageId, setSelectedImageId, imgData._id, socket);
 
-    socket.emit("updateImageSize", {
-      ...imgData,
-      width: newWidth,
-      height: newHeight,
-    });
-
-    node.scaleX(1);
-    node.scaleY(1);
-  };
-
-  const isSelected = selectedImageId === imgData._id; // Check if this image is selected
-
-  // Handle keypress for deletion
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (isSelected && e.key === "Delete") {
-        onDelete(imgData._id); // Call delete function
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isSelected, imgData._id, onDelete]);
-
-  // Deselect when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (stageRef.current && e.target === stageRef.current) {
-        setSelectedImageId(null); // Deselect all images
-      }
-    };
-
-    const stage = stageRef.current?.getStage();
-    if (stage) {
-      stage.on("click", handleClickOutside);
-      stage.on("tap", handleClickOutside);
-    }
-
-    return () => {
-      if (stage) {
-        stage.off("click", handleClickOutside);
-        stage.off("tap", handleClickOutside);
-      }
-    };
-  }, [stageRef, setSelectedImageId]);
+  const isSelected = selectedImageId === imgData._id;
 
   useEffect(() => {
     const img = new window.Image();
@@ -79,42 +29,72 @@ const ImageComponent = ({
     img.onerror = () => console.error("Failed to load image:", imgData.url);
   }, [imgData.url]);
 
-  useEffect(() => {
-    if (imageRef.current) {
-      setImageBounds(imageRef.current.getClientRect()); // Update bounds when image moves
-    }
-  }, [imgData.x, imgData.y, image]); // Ensure it runs after image loads
-
-  const updateKeywordPosition = ({ _id, offsetX, offsetY }) => {
-    // console.log({_id, offsetX, offsetY})
-    setKeywords((prev) =>
-      prev.map((kw) => (kw._id === _id ? { ...kw, offsetX, offsetY } : kw))
-    );
-  };
-
-  useEffect(() => {
-    socket.on("updateKeywordPosition", updateKeywordPosition);
-    return () => socket.off("updateKeywordPosition", updateKeywordPosition);
-  }, [updateKeywordPosition]);
 
   const handleDrag = (e, action) => {
     const newX = e.target.x();
     const newY = e.target.y();
-
+  
     socket.emit(action, {
       ...imgData,
       x: newX,
       y: newY,
     });
+
+    setImages((prev) =>
+      prev.map((img) => (img._id === imgData._id ? { ...imgData, x: newX, y: newY, } : img))
+    );
+  
   };
 
-  return image ? (
-    <Group
+  const handleTransform = (action, event) => {
+    const node = imageRef.current;
+    if (!node) return;
+
+    const scaleX = node.scaleX();
+    const scaleY = node.scaleY();
+    const newWidth = imgData.width * scaleX;
+    const newHeight = imgData.height * scaleY;
+    const newX = node.x();
+    const newY = node.y();
+    node.scaleX(1);
+    node.scaleY(1);
+
+    socket.emit(action, {
+      ...imgData,
+      width: newWidth,
+      height: newHeight, 
+      x: newX, y: newY 
+    });
+
+    setImages((prev) =>
+      prev.map((img) =>
+        img._id === imgData._id
+          ? { ...img, width: newWidth, height: newHeight,     
+            x: newX, y: newY, 
+          } : img
+      )
+    );
+
+  };
+
+  const updateKeywordPosition = useCallback(({ _id, offsetX, offsetY }) => {
+    setKeywords((prev) =>
+      prev.map((kw) => (kw._id === _id ? { ...kw, offsetX, offsetY } : kw))
+    );
+  }, [setKeywords]);
+
+  useEffect(() => {
+    socket.on("updateKeywordPosition", updateKeywordPosition);
+    return () => socket.off("updateKeywordPosition", updateKeywordPosition);
+  }, [updateKeywordPosition, socket]);
+
+  return image ? (<>
+       <Image ref={imageRef} image={image} width={imgData.width} height={imgData.height}
       draggable
       x={imgData.x}
       y={imgData.y}
       onClick={(e) => {
-        e.cancelBubble = true; // Prevent event from reaching the stage
+        e.cancelBubble = true;
         setSelectedImageId(imgData._id);
       }}
       onTap={(e) => {
@@ -123,11 +103,15 @@ const ImageComponent = ({
       }}
       onDragMove={(e) => handleDrag(e, "imageMoving")}
       onDragEnd={(e) => handleDrag(e, "updateImagePosition")}
-    >
-      <Image ref={imageRef} image={image} onTransformEnd={handleTransform} />
-      {isSelected && (
-        <Transformer ref={transformerRef} nodes={[imageRef.current]} />
-      )}
+      onTransform={(e) => handleTransform("imageTransforming", e)}
+      onTransformEnd={(e) => handleTransform("updateImageTransformation", e)} />
+      {isSelected && imageRef.current && <Transformer keepRatio={true} ref={transformerRef} nodes={[imageRef.current]} rotateEnabled={false}
+          enabledAnchors={[
+            "top-left",
+            "top-right",
+            "bottom-left",
+            "bottom-right",
+          ]}/>}
       {keywords.map((keyword) => (
         <KeywordItem
           key={keyword._id}
@@ -137,7 +121,7 @@ const ImageComponent = ({
           socket={socket}
         ></KeywordItem>
       ))}
-    </Group>
+     </>
   ) : null;
 };
 

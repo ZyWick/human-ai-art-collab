@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import Layout from "./layout/Layout";
 import {joinRoom} from "./components/api"
+import { io } from "socket.io-client";
 
-const BACKEND_URL =
+const REACT_APP_BACKEND_URL =
 process.env.NODE_ENV === 'production'
   ? process.env.API_URL // production URL set on the server/environment
   : process.env.API_URL || 'http://localhost:5000'; // fallback for dev
+  
+const socket = io(REACT_APP_BACKEND_URL);
+
+console.log(REACT_APP_BACKEND_URL)
 
 function App() {
   const [username, setUsername] = useState("");
@@ -45,7 +50,7 @@ function App() {
           <button onClick={joinTheRoom}>Join</button>
         </div>
       ) : (
-        <Layout username={username} roomData={roomData} backendUrl={BACKEND_URL} />
+        <Layout username={username} roomData={roomData} socket={socket} />
       )}
     </div>
   );

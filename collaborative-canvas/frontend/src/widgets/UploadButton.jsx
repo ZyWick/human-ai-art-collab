@@ -17,8 +17,7 @@ const UploadButton = ({ socket, boardId }) => {
     formData.append("x", Math.random() * window.innerWidth * 0.55);
     formData.append("y", Math.random() * window.innerHeight * 0.6);
 
-    const result = await uploadImageApi(formData, socket.id, boardId);
-
+    await uploadImageApi(formData, socket.id, boardId);
   };
 
   const uploadImageUrl = async () => {

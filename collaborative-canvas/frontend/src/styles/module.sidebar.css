@@ -1,0 +1,16 @@
+.module h3 {
+    font-size: 1em;
+    container-name: sidebar;
+    container-type: inline-size; /* Enables container queries */
+  }
+  
+  @container sidebar (min-width: 700px) {
+    .module h3 {
+      font-size: 2em;
+    }
+  }
+  
+  .module p {
+    color: grey;
+  }
+  

@@ -1,31 +1,29 @@
-import React, { useMemo, useEffect, useRef } from "react";
+import React, { useMemo, useRef } from "react";
 import { Label, Tag, Text } from "react-konva";
 // import useItem from "../../../hook/useItem";
 import colorMapping from "../config/keywordTypes";
 import useLabelSelection from "../hook/useLabelSelection";
 import { handleKeywordPositionUpdate } from "../util/keywordMovement";
 
-const KeywordItem = ({ data, imageBounds, updateKeywordPosition, socket }) => {
-
+const KeywordComponent = ({ data, imageBounds, updateKeywordPosition, socket }) => {
   const keywordRef = useRef(null);
   const { width: imageWidth, height: imageHeight, x: imageX, y: imageY } = imageBounds;
 
-  useEffect(() => {
-    if (keywordRef.current) {
-      const bbox = keywordRef.current.getClientRect();
-      handleKeywordPositionUpdate(
-        data._id,
-        data.offsetX,
-        data.offsetY,
-        bbox.width,
-        bbox.height,
-        imageWidth,
-        imageHeight,
-        updateKeywordPosition,
-        socket
-      );
-    }
-  }, [imageWidth, imageHeight, socket, updateKeywordPosition]);
+  // useEffect(() => {
+  //   if (keywordRef.current) {
+  //     const bbox = keywordRef.current.getClientRect();
+  //     handleKeywordPositionUpdate(
+  //       data._id,
+  //       data.offsetX,
+  //       data.offsetY,
+  //       bbox.width,
+  //       bbox.height,
+  //       imageWidth,
+  //       imageHeight,
+  //       updateKeywordPosition
+  //     );
+  //   }
+  // }, [imageWidth, imageHeight, socket, updateKeywordPosition]);
 
   const labelEntity = {
     id: "custom-" + data.type + ": " + data.name,
@@ -49,8 +47,7 @@ const KeywordItem = ({ data, imageBounds, updateKeywordPosition, socket }) => {
         targetHeight,
         imageWidth,
         imageHeight,
-        updateKeywordPosition,
-        socket
+        updateKeywordPosition
       );
   
     socket.emit(action, {
@@ -144,4 +141,4 @@ export const KeywordLabel = ({
   );
 };
 
-export default KeywordItem;
+export default KeywordComponent;

@@ -1,22 +1,22 @@
 import { useEffect } from "react";
 
-const useImageSelection = (stageRef, selectedImageId, setSelectedImageId, imageId, socket) => {
+const useImageSelection = (stageRef, selectedImageId, setSelectedImage, imgDataId, socket) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (selectedImageId === imageId && e.key === "Delete") {
-        socket.emit("deleteImage", imageId);
-        setSelectedImageId(null);
+      if (selectedImageId === imgDataId && e.key === "Delete") {
+        socket.emit("deleteImage", imgDataId);
+        setSelectedImage(null);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedImageId, imageId, setSelectedImageId, socket]);
+  }, [selectedImageId, imgDataId, setSelectedImage, socket]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (stageRef.current && e.target === stageRef.current) {
-        setSelectedImageId(null);
+        setSelectedImage(null);
       }
     };
 
@@ -32,7 +32,7 @@ const useImageSelection = (stageRef, selectedImageId, setSelectedImageId, imageI
         stage.off("tap", handleClickOutside);
       }
     };
-  }, [stageRef, setSelectedImageId]);
+  }, [stageRef, setSelectedImage]);
 };
 
 export default useImageSelection;

@@ -1,10 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Layout from "./layout/Layout";
-import {joinRoom} from "./util/api"
-import { io } from "socket.io-client";
-
-const REACT_APP_BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'; // fallback for dev
-const socket = io(REACT_APP_BACKEND_URL);
+import { joinRoom } from "./util/api";
+import { SocketProvider } from "./SocketContext"; // Import provider
 
 function App() {
   const [username, setUsername] = useState("Jeff");
@@ -16,33 +13,35 @@ function App() {
     if (!username || !roomCode) return;
     const newRoomData = await joinRoom(roomCode);
     setRoomData(newRoomData);
-    console.log('Joined Room:', newRoomData);
+    console.log("Joined Room:", newRoomData);
     setJoined(true);
-  }; 
+  };
 
   return (
-    <div style={{ backgroundColor: "lightgray" }}>
-      {!joined ? (
-        <div>
-          <h1>Join a Moodboard Session</h1>
-          <input
-            type="text"
-            placeholder="Enter your username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <input
-            type="text"
-            placeholder="Enter moodboard room name"
-            value={roomCode}
-            onChange={(e) => setRoomCode(e.target.value)}
-          />
-          <button onClick={joinTheRoom}>Join</button>
-        </div>
-      ) : (
-        <Layout username={username} roomData={roomData} socket={socket} />
-      )}
-    </div>
+    <SocketProvider>
+      <div style={{ backgroundColor: "lightgray" }}>
+        {!joined ? (
+          <div>
+            <h1>Join a Moodboard Session</h1>
+            <input
+              type="text"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Enter moodboard room name"
+              value={roomCode}
+              onChange={(e) => setRoomCode(e.target.value)}
+            />
+            <button onClick={joinTheRoom}>Join</button>
+          </div>
+        ) : (
+          <Layout username={username} roomData={roomData} />
+        )}
+      </div>
+    </SocketProvider>
   );
 }
 

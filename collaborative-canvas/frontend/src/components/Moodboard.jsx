@@ -1,9 +1,9 @@
-import React, { useState, useRef } from "react";
+import React, {  useRef } from "react";
 import { Stage, Layer } from "react-konva";
 import ImageComponent from "./ImageComponent";
 import useWindowSize from "../hook/useWindowSize";
 
-const Moodboard = ({ images, setImages, selectedImageId, setSelectedImageId, socket }) => {
+const Moodboard = ({ images, setImages, selectedImage, setSelectedImage, socket }) => {
   const stageRef = useRef(null);
   const windowSize = useWindowSize();
 
@@ -17,8 +17,8 @@ const Moodboard = ({ images, setImages, selectedImageId, setSelectedImageId, soc
             setImages={setImages}
             socket={socket}
             stageRef={stageRef}
-            selectedImageId={selectedImageId}
-            setSelectedImageId={setSelectedImageId}
+            selectedImage={selectedImage}
+            setSelectedImage={setSelectedImage}
           />
         ))}
       </Layer>

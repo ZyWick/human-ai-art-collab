@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import UploadButton from "./UploadButton";
+import React from "react";
+import UploadButton from "../widgets/UploadButton";
+import KeywordSelection from "../widgets/keywordSelection";
+// import "../styles/Sidebar.css"
 
-const Sidebar = ({ socket, boardId, users, roomName, username }) => {
+const Sidebar = ({ socket, selectedImage, boardId, users }) => {
   return (
     <div
       style={{
@@ -14,6 +16,7 @@ const Sidebar = ({ socket, boardId, users, roomName, username }) => {
       }}
     >
       <UploadButton socket={socket} boardId={boardId} />
+      {selectedImage && <KeywordSelection selectedImage={selectedImage} />}
       <div>
         <h3>Users in Room:</h3>
         <ul>

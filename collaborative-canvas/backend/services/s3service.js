@@ -43,7 +43,8 @@ async function uploadImage(file) {
         };
     } catch (error) {
         console.error("Upload error:", error);
-        throw new Error("Failed to upload image");
+        // throw new Error("Failed to upload image");
+        return error;
     }
 }
 

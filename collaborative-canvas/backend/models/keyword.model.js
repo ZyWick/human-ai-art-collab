@@ -10,15 +10,12 @@ const keywordSchema = new mongoose.Schema(
     imageId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Image',
-      required: true,
     },
     offsetX: {
-      type: Number,
-      required: true,
+      type: Number
     },
     offsetY: {
-      type: Number,
-      required: true,
+      type: Number
     },
     isSelected: {
       type: Boolean,

@@ -95,7 +95,7 @@ module.exports = (io, users) => {
           offsetY: updatedKeyword.offsetY,
         });
 
-        io.to(user.roomID).emit("updateKeywordPosition", newKeyword);
+        socket.to(user.roomID).emit("updateKeywordPosition", newKeyword);
       } catch (error) {
         console.error("Error updating keyword position:", error);
         socket.emit("error", { message: "Failed to update keyword position" });
@@ -106,7 +106,6 @@ module.exports = (io, users) => {
       const user = users[socket.id];
       if (user) {
         socket.to(user.roomID).emit("updateImage", updatedImage);
-        console.log(updatedImage)
       }
     });
 

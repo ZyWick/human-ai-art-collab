@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Image, Transformer } from "react-konva";
-import KeywordItem from "./KeywordItem";
+import KeywordComponent from "./KeywordComponent";
 import useImageSelection from "../hook/useImageSelection";
 
 const ImageComponent = ({
@@ -8,8 +8,8 @@ const ImageComponent = ({
   imgData,
   setImages,
   stageRef,
-  selectedImageId,
-  setSelectedImageId,
+  selectedImage,
+  setSelectedImage,
 }) => {;
   const [image, setImage] = useState(null);
   // const [imageBounds, setImageBounds] = useState({width: imgData.width, height: imgData.height, x: imgData.x, y: imgData.y});
@@ -18,9 +18,9 @@ const ImageComponent = ({
   const transformerRef = useRef();
   const imageBounds = {width: imgData.width, height: imgData.height, x: imgData.x, y: imgData.y};
 
-  useImageSelection(stageRef, selectedImageId, setSelectedImageId, imgData._id, socket);
+  useImageSelection(stageRef, selectedImage?._id, setSelectedImage, imgData._id, socket);
 
-  const isSelected = selectedImageId === imgData._id;
+  const isSelected = selectedImage?._id === imgData._id;
 
   useEffect(() => {
     const img = new window.Image();
@@ -95,11 +95,11 @@ const ImageComponent = ({
       y={imgData.y}
       onClick={(e) => {
         e.cancelBubble = true;
-        setSelectedImageId(imgData._id);
+        setSelectedImage(imgData);
       }}
       onTap={(e) => {
         e.cancelBubble = true;
-        setSelectedImageId(imgData._id);
+        setSelectedImage(imgData);
       }}
       onDragMove={(e) => handleDrag(e, "imageMoving")}
       onDragEnd={(e) => handleDrag(e, "updateImagePosition")}
@@ -112,14 +112,16 @@ const ImageComponent = ({
             "bottom-left",
             "bottom-right",
           ]}/>}
-      {keywords.map((keyword) => (
-        <KeywordItem
+      {keywords
+      .filter(keyword => keyword.offsetX !== undefined && keyword.offsetY !== undefined)
+      .map(keyword => (
+        <KeywordComponent
           key={keyword._id}
           data={keyword}
           imageBounds={imageBounds}
           updateKeywordPosition={updateKeywordPosition}
           socket={socket}
-        ></KeywordItem>
+        />
       ))}
      </>
   ) : null;

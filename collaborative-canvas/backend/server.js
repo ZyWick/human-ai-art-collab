@@ -5,7 +5,7 @@ const { Server } = require("socket.io");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const multer = require("multer");
-const { uploadImage, deleteS3Image } = require("./services/s3service");
+const { uploadS3Image, deleteS3Image } = require("./services/s3service");
 const imageService = require("./services/imageService")
 const socketManager = require('./services/socketManager');
 
@@ -62,7 +62,7 @@ app.use('/rooms', roomRoutes);
 
 app.post("/upload", upload.single("image"), async (req, res) => {
   try {
-      const result = await uploadImage(req.file);
+      const result = await uploadS3Image(req.file);
       const user = users[req.headers["socket-id"]];
       const { width, height, x, y } = req.body; 
       const newImage = {

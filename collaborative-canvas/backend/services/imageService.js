@@ -12,12 +12,45 @@ const generateKeywordsForImage = async (image) => [
   {
     boardId: image.boardId,
     imageId: image._id,
-    offsetX: 20,
-    offsetY: 0,
     isSelected: false,
-    type: 'Subject matter',
-    keyword: 'sample-keyword'
-  }
+    type: "Subject matter",
+    keyword: "sample-keyword-1",
+  },
+  {
+    boardId: image.boardId,
+    imageId: image._id,
+    isSelected: false,
+    type: "Subject matter",
+    keyword: "samp",
+  },
+  {
+    boardId: image.boardId,
+    imageId: image._id,
+    isSelected: false,
+    type: "Subject matter",
+    keyword: "sampl323213232rd-1",
+  },
+  {
+    boardId: image.boardId,
+    imageId: image._id,
+    isSelected: false,
+    type: "Theme & mood",
+    keyword: "sample-keyword-2",
+  },
+  {
+    boardId: image.boardId,
+    imageId: image._id,
+    isSelected: false,
+    type: "Action & pose",
+    keyword: "sample-keyword-3",
+  },
+  {
+    boardId: image.boardId,
+    imageId: image._id,
+    isSelected: false,
+    type: "Arrangement",
+    keyword: "Arrangement",
+  },
 ];
 
 /**

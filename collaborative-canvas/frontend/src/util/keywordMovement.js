@@ -50,8 +50,7 @@ export const handleKeywordPositionUpdate = (
   targetHeight,
   target2Width,
   target2Height,
-  updateKeywordPosition,
-  socket
+  updateKeywordPosition
 ) => {
   const adjustedOffset = calculateNewKeywordPosition(
     newOffsetX,

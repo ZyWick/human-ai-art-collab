@@ -3,10 +3,7 @@ import Layout from "./layout/Layout";
 import {joinRoom} from "./components/api"
 import { io } from "socket.io-client";
 
-const REACT_APP_BACKEND_URL =
-process.env.NODE_ENV === 'production'
-  ? process.env.REACT_APP_BACKEND_URL // production URL set on the server/environment
-  : process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'; // fallback for dev
+const REACT_APP_BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'; // fallback for dev
   
 const socket = io(REACT_APP_BACKEND_URL);
 
@@ -27,6 +24,7 @@ function App() {
       setJoined(true);
     } catch (error) {
       console.error("hello");
+      console.error(process.env);
       console.error(REACT_APP_BACKEND_URL);
       console.error('Error joining room:', error, REACT_APP_BACKEND_URL);
     }

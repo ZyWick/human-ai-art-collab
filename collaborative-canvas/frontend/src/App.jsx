@@ -4,10 +4,7 @@ import {joinRoom} from "./components/api"
 import { io } from "socket.io-client";
 
 const REACT_APP_BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'; // fallback for dev
-  
 const socket = io(REACT_APP_BACKEND_URL);
-
-console.log(REACT_APP_BACKEND_URL)
 
 function App() {
   const [username, setUsername] = useState("");
@@ -23,9 +20,6 @@ function App() {
       console.log('Joined Room:', newRoomData);
       setJoined(true);
     } catch (error) {
-      console.error("hello");
-      console.error(process.env);
-      console.error(REACT_APP_BACKEND_URL);
       console.error('Error joining room:', error, REACT_APP_BACKEND_URL);
     }
   }; 

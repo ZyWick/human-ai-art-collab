@@ -1,7 +1,4 @@
-const baseURL =
-  process.env.NODE_ENV === 'production'
-    ? process.env.API_URL // production URL set on the server/environment
-    : process.env.API_URL || 'http://localhost:5000'; // fallback for dev
+const baseURL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000';
 
 // Helper function to simplify fetch calls and error handling
 const apiFetch = async (endpoint, options = {}) => {

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { processImage } from "../util/processImage";
+import { uploadImageApi } from "../util/api";
 import "../styles/UploadButton.css";
 
 const UploadButton = ({ socket, boardId }) => {
@@ -13,18 +14,11 @@ const UploadButton = ({ socket, boardId }) => {
     formData.append("image", processedFile);
     formData.append("width", width);
     formData.append("height", height);
-    formData.append("x", Math.random() * window.innerWidth * 0.7);
-    formData.append("y", Math.random() * window.innerHeight * 0.7);
+    formData.append("x", Math.random() * window.innerWidth * 0.55);
+    formData.append("y", Math.random() * window.innerHeight * 0.6);
 
-    const res = await fetch("http://localhost:5000/upload", {
-      method: "POST",
-      body: formData,
-      headers: {
-        "socket-id": socket.id,
-        "board-id": boardId,
-      },
-    });
-    await res.json();
+    const result = await uploadImageApi(formData, socket.id, boardId);
+
   };
 
   const uploadImageUrl = async () => {

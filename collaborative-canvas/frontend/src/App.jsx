@@ -1,27 +1,23 @@
 import React, { useEffect, useState } from "react";
 import Layout from "./layout/Layout";
-import {joinRoom} from "./components/api"
+import {joinRoom} from "./util/api"
 import { io } from "socket.io-client";
 
 const REACT_APP_BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:5000'; // fallback for dev
 const socket = io(REACT_APP_BACKEND_URL);
 
 function App() {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState("Jeff");
   const [roomCode, setRoomCode] = useState("UJONZK");
   const [roomData, setRoomData] = useState(null);
   const [joined, setJoined] = useState(false);
 
   const joinTheRoom = async () => {
-    try {
-      if (!username || !roomCode) return;
-      let newRoomData = await joinRoom(roomCode);
-      setRoomData(newRoomData);
-      console.log('Joined Room:', newRoomData);
-      setJoined(true);
-    } catch (error) {
-      console.error('Error joining room:', error, REACT_APP_BACKEND_URL);
-    }
+    if (!username || !roomCode) return;
+    const newRoomData = await joinRoom(roomCode);
+    setRoomData(newRoomData);
+    console.log('Joined Room:', newRoomData);
+    setJoined(true);
   }; 
 
   return (

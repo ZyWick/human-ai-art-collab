@@ -26,7 +26,7 @@ function App() {
       console.log('Joined Room:', newRoomData);
       setJoined(true);
     } catch (error) {
-      console.error('Error joining room:', error);
+      console.error('Error joining room:', error, REACT_APP_BACKEND_URL);
     }
   }; 
 

@@ -9,12 +9,13 @@ import {
   updateKeywords,
 } from "../redux/imagesSlice";
 import { useSocket } from "../components/SocketContext";
+import { updateBoardNoteKeywords, addBoardNoteKeyword } from "../redux/roomSlice";
 
 const useBoardSocket = () => {
   const dispatch = useDispatch();
   const socket = useSocket();
   const username = useSelector((state) => state.room.username);
-  const roomID = useSelector((state) => state.room.roomData._id);
+  const roomID = useSelector((state) => state.room.roomId);
 
   useEffect(() => {
     if (!socket) return;
@@ -25,10 +26,13 @@ const useBoardSocket = () => {
     socket.on("loadImages", (images) => dispatch(setImages(images)));
     socket.on("newImage", (image) => dispatch(addImage(image)));
     socket.on("deleteImage", (id) => dispatch(removeImage(id)));
-    socket.on("updateImage", (image) => dispatch(updateImage(image)));
-    socket.on("updateKeywords", ({ imageId, newKeywords }) => {
-      dispatch(updateKeywords({ imageId, newKeywords }));
-    });
+    socket.on("updateImage", (image) => 
+      dispatch(updateImage(image)));
+    // socket.on("updateKeywords", ({ imageId, newKeywords }) => {
+    //   dispatch(updateKeywords({ imageId, newKeywords }));
+    // });
+    socket.on("newNoteKeyword", (newKw) => dispatch(addBoardNoteKeyword(newKw)));
+    socket.on("updateKeywordNote", (newKw) => dispatch(updateBoardNoteKeywords(newKw)));
 
     return () => {
       socket.emit("leave room", { username, roomID });
@@ -38,6 +42,8 @@ const useBoardSocket = () => {
       socket.off("deleteImage");
       socket.off("updateImage");
       socket.off("updateKeywords");
+      socket.off("newNoteKeyword");
+
     };
   }, [socket, username, roomID, dispatch]);
 };

@@ -5,17 +5,17 @@ import useBoardSocket from "../hook/useBoardSocket";
 import "./Layout.css";
 import { setImages } from "../redux/imagesSlice";
 import { useDispatch, useSelector } from "react-redux";
+import { setCurrentBoardId } from "../redux/roomSlice";
+import { selectAllBoards } from "../redux/boardSlice";
 
 const Layout = () => {
   const dispatch = useDispatch(); 
-  console.log(useSelector((state) => state.room))
-  const roomData = useSelector((state) => state.room.roomData);
-  const boards = roomData.boards;
+  // console.log(useSelector((state) => state.room))
+  const boards = useSelector(selectAllBoards);
   const selectedBoard = boards[boards.length - 1]
   const images = selectedBoard.images;
 
   useBoardSocket()
-  dispatch(setImages(images))
 
   return (
     <div className="layout-container">

@@ -122,16 +122,14 @@ export const deleteImage = async (id) =>
 export const createKeywordManual = async (
   boardId,
   imageId,
-  x,
-  y,
-  isSelected,
   type,
   keyword
-) =>
-  apiFetch("/keywords", {
+) => {
+  return  apiFetch("/keywords", {
     method: "POST",
-    data: { boardId, imageId, x, y, isSelected, type, keyword },
-  });
+    data: { boardId, imageId, isSelected: false, 
+      type, keyword },
+  });}
 
 export const toggleKeywordSelection = async (id) =>
   apiFetch(`/keywords/${id}/toggle`, { method: "PATCH" });

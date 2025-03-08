@@ -40,6 +40,37 @@ module.exports = (io, users) => {
       }
     });
 
+    socket.on("newKeyword", async ({newKeyword, selectedImage}) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+
+        const keyword = await keywordService.createKeyword(newKeyword);
+        const updatedImage = {...selectedImage,
+          keywords: [
+            ...selectedImage.keywords,
+            keyword
+          ]
+        }
+        io.to(user.roomID).emit("updateImage", updatedImage);
+      } catch (error) {
+          console.error("Error adding keyword:", error);
+          socket.emit("error", { message: "Failed to add image" });
+      }
+    })
+
+    socket.on("newNoteKeyword", async (newKeyword) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        const keyword = await keywordService.createKeyword(newKeyword);
+        io.to(user.roomID).emit("newNoteKeyword", keyword);
+      } catch (error) {
+          console.error("Error adding keyword:", error);
+          socket.emit("error", { message: "Failed to add image" });
+      }
+    })
+
     socket.on("deleteImage", async (_id) => {
       try {
         const user = users[socket.id];
@@ -73,6 +104,13 @@ module.exports = (io, users) => {
         socket.to(user.roomID).emit("updateKeyword", updatedKeyword);
       }
     });
+
+    socket.on("keywordMovingNote", (updatedKeyword) => {
+      const user = users[socket.id];
+      if (user) {
+        socket.to(user.roomID).emit("updateKeywordNote", updatedKeyword);
+      }
+    });
       
     socket.on("updateImage", async (updatedImage) => {
       try {
@@ -81,7 +119,7 @@ module.exports = (io, users) => {
         const newImage = await imageService.updateImage(updatedImage._id, updatedImage);
         const populatedImage = await newImage.populate("keywords");
 
-        socket.to(user.roomID).emit("updateImage", populatedImage);
+        io.to(user.roomID).emit("updateImage", populatedImage);
       } catch (error) {
         console.error("Error updating image:", error);
         socket.emit("error", { message: "Failed to update image position" });
@@ -92,9 +130,34 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-
         const newKeyword = await keywordService.updateKeyword(updatedKeyword._id, updatedKeyword);
         io.to(user.roomID).emit("updateKeyword", newKeyword);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    });
+
+    socket.on("removeKeywordOffset", async (updatedKeywordId) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        await keywordService.removeKeywordOffset(updatedKeywordId);
+        const newKeyword = await keywordService.getKeyword(updatedKeywordId);
+        io.to(user.roomID).emit("updateKeyword", newKeyword);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    });
+
+    socket.on("updateKeywordNote", async (updatedKeyword) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+
+        const newKeyword = await keywordService.updateKeyword(updatedKeyword._id, updatedKeyword);
+        socket.to(user.roomID).emit("updateKeywordNote", newKeyword);
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });

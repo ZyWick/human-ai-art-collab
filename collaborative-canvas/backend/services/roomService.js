@@ -55,10 +55,10 @@ const joinRoom = async (joinCode) => {
   const room = await Room.findOne({ joinCode })
     .populate({
       path: 'boards',
-      populate: {
-        path: 'images',
-        populate: { path: 'keywords' },
-      },
+      populate: [
+        { path: 'images', populate: { path: 'keywords' } },
+        { path: 'keywords' },
+      ],
     });
 
   if (!room) throw new Error('Room not found');

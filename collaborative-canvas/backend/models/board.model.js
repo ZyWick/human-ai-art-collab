@@ -17,6 +17,12 @@ const boardSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: 'Image',
         },
+      ],
+    keywords: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: 'Keyword',
+        },
       ]
   },
   { timestamps: true }

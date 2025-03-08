@@ -1,13 +1,18 @@
 const Board = require('../models/board.model');
 const Image = require('../models/image.model');
 const Keyword = require('../models/keyword.model');
+const Room = require('../models/room.model')
 
 /**
  * Create a new board.
  * @param {Object} boardData - The board details.
  * @returns {Promise<Object>} The created board document.
  */
-const createBoard = async (boardData) => Board.create(boardData);
+const createBoard = async (boardData) => {
+  const board = await Board.create(boardData);
+  await Room.findByIdAndUpdate(board.roomId, { $push: { boards: board._id } });
+  return board;
+}
 
 /**
  * Update the board's name.
@@ -23,11 +28,12 @@ const updateBoardName = async (boardId, newName) =>
  * @param {String} boardId - The board's ObjectId.
  * @returns {Promise<Object|null>} The deleted board document.
  */
-const deleteBoard = async (boardId) => {
+const deleteBoard = async (boardId, roomId) => {
   await Promise.all([
     Keyword.deleteMany({ boardId }),
     Image.deleteMany({ boardId }),
   ]);
+  await Room.findByIdAndUpdate(roomId, { $pull: { boards: boardId } });
   return Board.findByIdAndDelete(boardId);
 };
 

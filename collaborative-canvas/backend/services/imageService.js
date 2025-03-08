@@ -68,7 +68,7 @@ const createImage = async (data) => {
     await image.save();
   }
   
-  await Board.findByIdAndUpdate(data.boardId, { $push: { images: image._id } });
+  await Board.findByIdAndUpdate(image.boardId, { $push: { images: image._id } });
   return image.populate('keywords');
 };
 
@@ -92,6 +92,8 @@ const deleteImage = async (imageId) => {
   if (!image) return null;
 
   await Keyword.deleteMany({ imageId });
+  await Board.findByIdAndUpdate(image.boardId, { $pull: { images: imageId } });
+
   if (image.url) await deleteS3Image(image.url);
   return Image.findByIdAndDelete(imageId);
 };

@@ -6,6 +6,9 @@ import useImageSelection from "../hook/useImageSelection";
 import { updateImage, updateKeywords } from "../redux/imagesSlice";
 import { setSelectedImage } from "../redux/selectionSlice";
 import { useSocket } from "./SocketContext";
+import { calculateNewKeywordPosition } from "../util/keywordMovement";
+import { toggleSelectedKeyword } from "../redux/selectionSlice";
+
 
 const ImageComponent = ({ imgData, stageRef }) => {
   const [image, setImage] = useState(null);
@@ -58,6 +61,7 @@ const ImageComponent = ({ imgData, stageRef }) => {
 
     socket.emit(action, newImage);
     dispatch(updateImage(newImage));
+
   };
 
   const updateKeyword = useCallback(
@@ -74,6 +78,39 @@ const ImageComponent = ({ imgData, stageRef }) => {
     return () => socket.off("updateKeyword", updateKeyword);
   }, [updateKeyword, socket]);
 
+  const handleKeywordDrag = (e, action, keyword) => {
+    e.cancelBubble = true;
+    let newOffset = {
+      newX: e.target.x() - imgData.x,
+      newY: e.target.y() - imgData.y,
+    };
+
+    if (action === "updateKeyword")
+      newOffset = calculateNewKeywordPosition(
+        newOffset.newX,
+        newOffset.newY,
+        e.target.width(),
+        e.target.height(),
+        imgData.width,
+        imgData.height
+      );
+
+    const newKeyword = {
+      ...keyword,
+      offsetX: newOffset.newX,
+      offsetY: newOffset.newY,
+    };
+    socket.emit(action, newKeyword);
+    updateKeyword(newKeyword);
+  };
+
+  const toggleSelected = (data) => {
+    console.log(data.isSelected)
+    dispatch(toggleSelectedKeyword(data._id))
+    updateKeyword({...data, isSelected: !data.isSelected});
+    socket.emit("updateKeyword", {...data, isSelected: !data.isSelected})
+  }
+
   return image ? (
     <>
       <Image
@@ -87,10 +124,12 @@ const ImageComponent = ({ imgData, stageRef }) => {
         onClick={(e) => {
           e.cancelBubble = true;
           dispatch(setSelectedImage(imgData._id));
+          console.log(imgData._id)
         }}
         onTap={(e) => {
           e.cancelBubble = true;
           dispatch(setSelectedImage(imgData._id));
+          console.log(imgData._id)
         }}
         onDragMove={(e) => handleDrag(e, "imageMoving")}
         onDragEnd={(e) => handleDrag(e, "updateImage")}
@@ -121,7 +160,8 @@ const ImageComponent = ({ imgData, stageRef }) => {
             key={keyword._id}
             data={keyword}
             imageBounds={imageBounds}
-            updateKeyword={updateKeyword}
+            handleKeywordDrag ={handleKeywordDrag}
+            toggleSelected = {toggleSelected}
           />
         ))}
     </>

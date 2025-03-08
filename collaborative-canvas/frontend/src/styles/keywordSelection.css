@@ -1,0 +1,19 @@
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Adjusts dynamically */
+    gap: 8px;
+  }
+
+#container1{
+    max-height: 82%;
+    width: 100%;
+    overflow: hidden;
+}
+
+#container2{
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    padding-right: 15px;
+}

@@ -1,22 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { createSelector } from '@reduxjs/toolkit';
 
-const updateSingleKeyword = (existingKeywords, newKeyword) => {
-  const keywordIndex = existingKeywords.findIndex(
-    (kw) => kw.word === newKeyword.word
-  );
-
-  if (keywordIndex !== -1) {
-    // ✅ Create a new array instead of mutating
-    return existingKeywords.map((kw, idx) =>
-      idx === keywordIndex ? { ...kw, ...newKeyword } : kw
-    );
-  } else {
-    // ✅ Return a new array with the new keyword added
-    return [...existingKeywords, newKeyword];
-  }
-};
-
 const imagesSlice = createSlice({
   name: "images",
   initialState: [],
@@ -27,19 +11,7 @@ const imagesSlice = createSlice({
       state.filter((img) => img._id !== action.payload),
     updateImage: (state, action) => {
       return state.map((img) =>
-        img._id === action.payload._id ? action.payload : img
-      );
-    },
-    updateKeywords: (state, action) => {
-      const { imageId, keyword } = action.payload;
-
-      return state.map((img) =>
-        img._id === imageId
-          ? {
-              ...img,
-              keywords: updateSingleKeyword([...img.keywords], keyword), // Ensure a new array is passed
-            }
-          : img
+        img._id === action.payload._id ? { ...img, ...action.payload } : img
       );
     },
   },
@@ -52,6 +24,6 @@ export const selectImageById = createSelector(
   (images, imageId) => images.find((image) => image._id === imageId)
 );
 
-export const { setImages, addImage, removeImage, updateImage, updateKeywords } =
+export const { setImages, addImage, removeImage, updateImage } =
 imagesSlice.actions;
 export default imagesSlice.reducer;

@@ -1,11 +1,21 @@
 const Keyword = require('../models/keyword.model');
+const Image = require('../models/image.model')
+const Board = require('../models/board.model')
 
 /**
  * Manually create a new keyword.
  * @param {Object} data - Contains boardId, imageId, x, y, isSelected, type, keyword.
  * @returns {Promise<Object>} The created keyword document.
  */
-const createKeyword = (data) => new Keyword(data).save();
+const createKeyword = async (data) => {
+  const keyword = await Keyword.create(data);
+  if (keyword.imageId)
+   await Image.findByIdAndUpdate(keyword.imageId, { $push: { keywords: keyword._id } });
+  else {
+    let res = await Board.findByIdAndUpdate(keyword.boardId, { $push: { keywords: keyword._id } });
+  }
+  return keyword;
+  };
 
 /**
  * Update a keyword's x, y, or isSelected fields.
@@ -13,8 +23,18 @@ const createKeyword = (data) => new Keyword(data).save();
  * @param {Object} updateData - Fields to update.
  * @returns {Promise<Object|null>} The updated keyword document or null if not found.
  */
-const updateKeyword = (keywordId, updateData) => 
-  Keyword.findByIdAndUpdate(keywordId, updateData, { new: true, runValidators: true });
+const updateKeyword = async (keywordId, updateData) => 
+  await Keyword.findByIdAndUpdate(keywordId, updateData, { new: true, runValidators: true });
+
+const getKeyword = async (keywordId) =>
+   await Keyword.findById(keywordId);
+
+const removeKeywordOffset = async (keywordId) =>
+  await Keyword.updateOne(
+    { _id: keywordId },
+    { $unset: { offsetX: "", offsetY: "" } }
+  );
+  
 
 /**
  * Toggle the isSelected field of a keyword.
@@ -32,11 +52,21 @@ const toggleKeywordSelection = async (keywordId) => {
  * @param {String} keywordId - The keyword's ObjectId.
  * @returns {Promise<Object|null>} The deleted keyword document or null if not found.
  */
-const deleteKeyword = (keywordId) => Keyword.findByIdAndDelete(keywordId);
+const deleteKeyword = async (keyword) => {
+  const keywordId = keyword._id;
+  const boardId = keyword.boardId;
+  const imageId = keyword.imageId;
+
+  if (imageId) await Image.findByIdAndUpdate(imageId, { $pull: { keywords: keywordId } });
+  if (boardId) await Board.findByIdAndUpdate(boardId, { $pull: { keywords: keywordId } });
+  Keyword.findByIdAndDelete(keywordId);
+}
 
 module.exports = {
+  getKeyword,
   createKeyword,
   updateKeyword,
+  removeKeywordOffset,
   toggleKeywordSelection,
   deleteKeyword,
 };

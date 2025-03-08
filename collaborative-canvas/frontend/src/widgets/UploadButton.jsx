@@ -8,8 +8,8 @@ import { useSocket } from "../components/SocketContext";
 const UploadButton = () => {
   const [imageUrl, setImageUrl] = useState("");
   const socket = useSocket();
-  const image = useSelector((state) => state.images);
-  const boardId = image.boardId;
+  const boardId = useSelector((state) => state.room.currentBoardId);
+  console.log()
 
   const uploadImage = async (newImage) => {
     if (!newImage) return alert("Please select a file!");
@@ -19,8 +19,8 @@ const UploadButton = () => {
     formData.append("image", processedFile);
     formData.append("width", width);
     formData.append("height", height);
-    formData.append("x", Math.random() * window.innerWidth * 0.55);
-    formData.append("y", Math.random() * window.innerHeight * 0.6);
+    formData.append("x", window.innerWidth * (0.5 + Math.random() * 0.5));
+    formData.append("y", window.innerHeight * (0.5 + Math.random() * 0.5));
 
     await uploadImageApi(formData, socket.id, boardId);
   };
@@ -30,8 +30,8 @@ const UploadButton = () => {
     const newImage = {
       boardId: boardId,
       url: imageUrl,
-      x: Math.random() * window.innerWidth * 0.7,
-      y: Math.random() * window.innerHeight * 0.7,
+      x: window.innerWidth * (0.5 + Math.random() * 0.5),
+      y: window.innerHeight * (0.5 + Math.random() * 0.5),      
     };
 
     socket.emit("newImage", newImage);

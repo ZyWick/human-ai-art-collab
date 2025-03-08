@@ -1,35 +1,42 @@
-import React, { useMemo, useRef } from "react";
+import React, { useMemo, useEffect, useRef } from "react";
 import { Label, Tag, Text } from "react-konva";
-// import useItem from "../../../hook/useItem";
 import colorMapping from "../config/keywordTypes";
-import { calculateNewKeywordPosition } from "../util/keywordMovement";
 import { useSocket } from "./SocketContext";
+import { useDispatch, useSelector } from "react-redux";
 
-const KeywordComponent = ({ data, imageBounds, updateKeyword }) => {
+const KeywordComponent = ({ data, imageBounds, handleKeywordDrag, toggleSelected }) => {
   const keywordRef = useRef(null);
-  const {
-    width: imageWidth,
-    height: imageHeight,
-    x: imageX,
-    y: imageY,
-  } = imageBounds;
+  const {x: imageX, y: imageY, } = imageBounds;
+  const dispatch = useDispatch();
   const socket = useSocket();
-
+  const selecteds = useSelector((state) => state.selection.selectedKeywordIds);
+  
+  // TODO: Move to imageComponent. Similar to ImageSelection
   // useEffect(() => {
   //   if (keywordRef.current) {
   //     const bbox = keywordRef.current.getClientRect();
-  //     handleKeywordPositionUpdate(
-  //       data._id,
+  //     const newOffset = calculateNewKeywordPosition(
   //       data.offsetX,
   //       data.offsetY,
   //       bbox.width,
   //       bbox.height,
   //       imageWidth,
   //       imageHeight,
-  //       updateKeywordPosition
   //     );
+  //   const newKeyword = {
+  //     ...data,
+  //     offsetX: newOffset.newX,
+  //     offsetY: newOffset.newY,
+  //   };
+
+  //   if (
+  //     newKeyword.offsetX !== data.offsetX ||
+  //     newKeyword.offsetY !== data.offsetY
+  //   ) {
+  //     updateKeyword(newKeyword);
   //   }
-  // }, [imageWidth, imageHeight, socket, updateKeywordPosition]);
+  // }
+  // }, [imageWidth, imageHeight]);
 
   const labelEntity = {
     id: "custom-" + data.type + ": " + data.name,
@@ -38,31 +45,6 @@ const KeywordComponent = ({ data, imageBounds, updateKeyword }) => {
     keyword: data.keyword,
   };
 
-  const handleDrag = (e, action) => {
-    e.cancelBubble = true;
-    let newOffset = {
-      newX: e.target.x() - imageX,
-      newY: e.target.y() - imageY,
-    };
-
-    if (action === "updateKeyword")
-      newOffset = calculateNewKeywordPosition(
-        newOffset.newX,
-        newOffset.newY,
-        e.target.width(),
-        e.target.height(),
-        imageWidth,
-        imageHeight
-      );
-
-    const newKeyword = {
-      ...data,
-      offsetX: newOffset.newX,
-      offsetY: newOffset.newY,
-    };
-    socket.emit(action, newKeyword);
-    updateKeyword(newKeyword);
-  };
 
   // const { addSelectedLabel, removeSelectedLabel, selectedLabelList } =
   //   useLabelSelection();
@@ -70,17 +52,14 @@ const KeywordComponent = ({ data, imageBounds, updateKeyword }) => {
   //   return selectedLabelList.some((label) => label.id === labelEntity.id);
   // }, [selectedLabelList, labelEntity.id]);
 
-  return (
+  return data.offsetX !== undefined && data.offsetY !== undefined ? (
     <KeywordLabel
       id={data._id}
       labelkey={labelEntity.id}
       xpos={data.offsetX + imageX}
       ypos={data.offsetY + imageY}
-      // onClick={() => {
-      //   if (isSelected) removeSelectedLabel(labelEntity.id);
-      //   else addSelectedLabel(labelEntity);
-      // }}
-      // isSelected={isSelected}
+      onClick={() => toggleSelected(data)}
+      isSelected={data.isSelected}
       type={labelEntity.type}
       text={
         labelEntity.type === "Arrangement"
@@ -88,17 +67,11 @@ const KeywordComponent = ({ data, imageBounds, updateKeyword }) => {
           : labelEntity.type + ": " + labelEntity.keyword
       }
       draggable={true}
-      // onDragEnd={(e) => {
-      //   updateItem(e.currentTarget.id(), () => ({
-      //     ...e.currentTarget.attrs,
-      //     updatedAt: Date.now(),
-      //   }));
-      // }}
-      onDragMove={(e) => handleDrag(e, "keywordMoving")}
-      onDragEnd={(e) => handleDrag(e, "updateKeyword")}
+      onDragMove={(e) => handleKeywordDrag(e, "keywordMoving", data)}
+      onDragEnd={(e) => handleKeywordDrag(e, "updateKeyword", data)}
       keywordRef={keywordRef}
     />
-  );
+  ) : null;  
 };
 
 export const KeywordLabel = ({

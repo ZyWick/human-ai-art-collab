@@ -25,7 +25,7 @@ async function getTemporaryCredentials() {
     });
 }
 
-async function uploadImage(file) {
+async function uploadS3Image(file) {
     try {
         const s3 = await getTemporaryCredentials();
         const uniqueFilename = `${Date.now()}-${Math.floor(Math.random() * 10000)}-${file.originalname.replace(/[+\s]+/g, "-")}`;
@@ -61,4 +61,4 @@ async function deleteS3Image(imageUrl) {
     }
 }
 
-module.exports = { uploadImage, deleteS3Image };
+module.exports = { uploadS3Image, deleteS3Image };

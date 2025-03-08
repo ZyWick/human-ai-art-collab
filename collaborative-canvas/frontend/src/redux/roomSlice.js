@@ -10,23 +10,43 @@ const roomReducer = createSlice({
   name: "socket",
   initialState: {
     username: "Jeff",
+    roomId: null,
     roomCode: "UJONZK",
-    roomData: null,
-    joined: false,
+    roomName: null,
+    updatedAt: null,
+    currentBoardId: null,
+    boardNoteKeywords: [],
     users: [],
   },
   reducers: {
     setUsername: (state, action) => {
       state.username = action.payload;
     },
+    setRoomId: (state, action) => {
+      state.roomId = action.payload;
+    },
     setRoomCode: (state, action) => {
       state.roomCode = action.payload;
     },
-    setRoomData: (state, action) => {
-      state.roomData = action.payload;
+    setRoomName: (state, action) => {
+      state.roomName = action.payload;
     },
-    setJoined: (state, action) => {
-      state.joined = action.payload;
+    setUpdatedAt: (state, action) => {
+      state.updatedAt = action.payload;
+    },
+    setCurrentBoardId: (state, action) => {
+      state.currentBoardId = action.payload;
+    },
+    setBoardNoteKeywords: (state, action) => {
+      state.boardNoteKeywords = action.payload;
+    },
+    updateBoardNoteKeywords: (state, action) => {
+      state.boardNoteKeywords = state.boardNoteKeywords.map((kw) =>
+        kw._id === action.payload._id ? action.payload : kw
+      );
+    },
+    addBoardNoteKeyword: (state, action) => {
+      state.boardNoteKeywords.push(action.payload);
     },
     setUsers: (state, action) => {
       state.users = action.payload;
@@ -34,6 +54,16 @@ const roomReducer = createSlice({
   },
 });
 
-export const { setUsername, setRoomCode, setRoomData, setJoined, setUsers } =
-roomReducer.actions;
+export const {
+  setUsername,
+  setRoomId,
+  setRoomCode,
+  setRoomName,
+  setUpdatedAt,
+  setCurrentBoardId,
+  setBoardNoteKeywords,
+  updateBoardNoteKeywords,
+  addBoardNoteKeyword,
+  setUsers,
+} = roomReducer.actions;
 export default roomReducer.reducer;

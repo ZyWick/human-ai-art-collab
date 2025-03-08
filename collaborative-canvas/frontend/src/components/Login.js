@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import axios from "axios";
 
-const Login = () => {
+const Login = ({ setToken, setError }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -10,17 +10,19 @@ const Login = () => {
     e.preventDefault();
     try {
       const response = await axios.post("/api/login", { email, password });
-      localStorage.setItem("token", response.data.token);
-      window.location.href = "/dashboard";
+      setToken(response.data.token); // Update token in App.js
+      localStorage.setItem("token", response.data.token); // Store token in localStorage
+      setError(""); // Clear any previous errors
     } catch (err) {
-      console.error("Login error:", err.response.data.error);
+      setError(err.response?.data?.error || "Login failed. Please check your credentials.");
+      console.error("Login error:", err.response?.data?.error);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <FaEnvelope />
+    <form onSubmit={handleSubmit} className="inline-form">
+      <div className="input-group">
+        <FaEnvelope className="icon" />
         <input
           type="email"
           placeholder="Email"
@@ -28,8 +30,8 @@ const Login = () => {
           onChange={(e) => setEmail(e.target.value)}
         />
       </div>
-      <div>
-        <FaLock />
+      <div className="input-group">
+        <FaLock className="icon" />
         <input
           type="password"
           placeholder="Password"

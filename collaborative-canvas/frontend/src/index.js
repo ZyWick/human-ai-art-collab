@@ -1,21 +1,26 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import React from "react";
+import ReactDOM from "react-dom/client";
+// import { Provider } from "react-redux";
+// import { PersistGate } from "redux-persist/integration/react";
+// import configureMoodboardStore from "./redux/store"; // Import your store setup
+import "./index.css";
+import App from "./App";
+import reportWebVitals from "./reportWebVitals";
 import { Provider } from "react-redux";
-import { PersistGate } from "redux-persist/integration/react";
-import configureMoodboardStore from "./redux/store"; // Import your store setup
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import { store } from "./redux/store";
+import { SocketProvider } from "./components/SocketContext";
 
-const { store, persistor } = configureMoodboardStore();
+// const { store, persistor } = configureMoodboardStore();
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
-      <PersistGate loading={null} persistor={persistor}>
+      <SocketProvider>
+        {/* <PersistGate loading={null} persistor={persistor}> */}
         <App />
-      </PersistGate>
+        {/* </PersistGate> */}
+      </SocketProvider>
     </Provider>
   </React.StrictMode>
 );

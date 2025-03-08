@@ -59,49 +59,7 @@ module.exports = (io, users) => {
         socket.to(user.roomID).emit("updateImage", updatedImage);
       }
     });
-      
-    socket.on("updateImagePosition", async (updatedImage) => {
-      try {
-        const user = users[socket.id];
-        if (!user) return;
-        const newImage = await imageService.updateImage(updatedImage._id, {
-          x: updatedImage.x,
-          y: updatedImage.y,
-        });
-        const populatedImage = await newImage.populate("keywords");
-
-        socket.to(user.roomID).emit("updateImage", populatedImage);
-      } catch (error) {
-        console.error("Error updating image position:", error);
-        socket.emit("error", { message: "Failed to update image position" });
-      }
-    });
-
     
-    socket.on("keywordMoving", (updatedKeyword) => {
-      const user = users[socket.id];
-      if (user) {
-        socket.to(user.roomID).emit("updateKeywordPosition", updatedKeyword);
-      }
-    });
-
-    socket.on("updateKeywordPosition", async (updatedKeyword) => {
-      try {
-        const user = users[socket.id];
-        if (!user) return;
-
-        const newKeyword = await keywordService.updateKeyword(updatedKeyword._id, {
-          offsetX: updatedKeyword.offsetX,
-          offsetY: updatedKeyword.offsetY,
-        });
-
-        socket.to(user.roomID).emit("updateKeywordPosition", newKeyword);
-      } catch (error) {
-        console.error("Error updating keyword position:", error);
-        socket.emit("error", { message: "Failed to update keyword position" });
-      }
-    });
-
     socket.on("imageTransforming", (updatedImage) => {
       const user = users[socket.id];
       if (user) {
@@ -109,26 +67,40 @@ module.exports = (io, users) => {
       }
     });
 
-    socket.on("updateImageTransformation", async (updatedImage) => {
+    socket.on("keywordMoving", (updatedKeyword) => {
+      const user = users[socket.id];
+      if (user) {
+        socket.to(user.roomID).emit("updateKeyword", updatedKeyword);
+      }
+    });
+      
+    socket.on("updateImage", async (updatedImage) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-
-        const newImage = await imageService.updateImage(updatedImage._id, {
-          x: updatedImage.x,
-          y: updatedImage.y,
-          width: updatedImage.width,
-          height: updatedImage.height,
-        });
+        const newImage = await imageService.updateImage(updatedImage._id, updatedImage);
         const populatedImage = await newImage.populate("keywords");
 
         socket.to(user.roomID).emit("updateImage", populatedImage);
       } catch (error) {
-        console.error("Error updating image position:", error);
+        console.error("Error updating image:", error);
         socket.emit("error", { message: "Failed to update image position" });
       }
     });
-      
+
+    socket.on("updateKeyword", async (updatedKeyword) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+
+        const newKeyword = await keywordService.updateKeyword(updatedKeyword._id, updatedKeyword);
+        io.to(user.roomID).emit("updateKeyword", newKeyword);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    });
+
 
     socket.on("leave room", async ({ username, roomID }) => {
       try {

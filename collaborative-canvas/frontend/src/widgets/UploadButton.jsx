@@ -2,14 +2,19 @@ import { useState } from "react";
 import { processImage } from "../util/processImage";
 import { uploadImageApi } from "../util/api";
 import "../styles/UploadButton.css";
+import { useSelector } from "react-redux";
+import { useSocket } from "../components/SocketContext";
 
-const UploadButton = ({ socket, boardId }) => {
+const UploadButton = () => {
   const [imageUrl, setImageUrl] = useState("");
+  const socket = useSocket();
+  const image = useSelector((state) => state.images);
+  const boardId = image.boardId;
 
-  const uploadImage = async (image) => {
-    if (!image) return alert("Please select a file!");
+  const uploadImage = async (newImage) => {
+    if (!newImage) return alert("Please select a file!");
 
-    const { file: processedFile, width, height } = await processImage(image);
+    const { file: processedFile, width, height } = await processImage(newImage);
     const formData = new FormData();
     formData.append("image", processedFile);
     formData.append("width", width);

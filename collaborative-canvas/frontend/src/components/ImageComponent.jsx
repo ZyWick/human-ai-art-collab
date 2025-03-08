@@ -1,129 +1,131 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Image, Transformer } from "react-konva";
+import { useDispatch, useSelector } from "react-redux";
 import KeywordComponent from "./KeywordComponent";
 import useImageSelection from "../hook/useImageSelection";
+import { updateImage, updateKeywords } from "../redux/imageSlice";
+import { setSelectedImage } from "../redux/selectedImageSlice";
+import { useSocket } from "./SocketContext";
 
-const ImageComponent = ({
-  socket,
-  imgData,
-  setImages,
-  stageRef,
-  selectedImage,
-  setSelectedImage,
-}) => {;
+const ImageComponent = ({ imgData, stageRef }) => {
   const [image, setImage] = useState(null);
-  // const [imageBounds, setImageBounds] = useState({width: imgData.width, height: imgData.height, x: imgData.x, y: imgData.y});
   const [keywords, setKeywords] = useState(imgData.keywords || []);
   const imageRef = useRef(null);
   const transformerRef = useRef();
-  const imageBounds = {width: imgData.width, height: imgData.height, x: imgData.x, y: imgData.y};
+  const dispatch = useDispatch();
+  const socket = useSocket();
+  const selectedImage = useSelector((state) => state.selectedImage);
 
-  useImageSelection(stageRef, selectedImage?._id, setSelectedImage, imgData._id, socket);
+  useImageSelection(stageRef, imgData._id);
+  const imageBounds = {
+    width: imgData.width,
+    height: imgData.height,
+    x: imgData.x,
+    y: imgData.y,
+  };
+  useEffect(() => {
+    if (!imgData || !imgData.url) return;
+    const img = new window.Image();
+    img.src = imgData.url;
+    console.log(imgData);
+    img.onload = () => setImage(img);
+    img.onerror = () => console.error("Failed to load image:", imgData.url);
+    console.log("done");
+  }, [imgData.url]);
 
   const isSelected = selectedImage?._id === imgData._id;
 
-  useEffect(() => {
-    const img = new window.Image();
-    img.src = imgData.url;
-    img.onload = () => setImage(img);
-    img.onerror = () => console.error("Failed to load image:", imgData.url);
-  }, [imgData.url]);
-
-
   const handleDrag = (e, action) => {
-    const newX = e.target.x();
-    const newY = e.target.y();
-  
-    socket.emit(action, {
-      ...imgData,
-      x: newX,
-      y: newY,
-    });
-
-    setImages((prev) =>
-      prev.map((img) => (img._id === imgData._id ? { ...imgData, x: newX, y: newY, } : img))
-    );
-  
+    const newImage = { ...imgData, x: e.target.x(), y: e.target.y() };
+    socket.emit(action, newImage);
+    dispatch(updateImage(newImage));
   };
 
   const handleTransform = (action, event) => {
     const node = imageRef.current;
     if (!node) return;
 
-    const scaleX = node.scaleX();
-    const scaleY = node.scaleY();
-    const newWidth = imgData.width * scaleX;
-    const newHeight = imgData.height * scaleY;
-    const newX = node.x();
-    const newY = node.y();
+    const newWidth = imgData.width * node.scaleX();
+    const newHeight = imgData.height * node.scaleY();
+    const newImage = {
+      ...imgData,
+      width: newWidth,
+      height: newHeight,
+      x: node.x(),
+      y: node.y(),
+    };
     node.scaleX(1);
     node.scaleY(1);
 
-    socket.emit(action, {
-      ...imgData,
-      width: newWidth,
-      height: newHeight, 
-      x: newX, y: newY 
-    });
-
-    setImages((prev) =>
-      prev.map((img) =>
-        img._id === imgData._id
-          ? { ...img, width: newWidth, height: newHeight,     
-            x: newX, y: newY, 
-          } : img
-      )
-    );
-
+    socket.emit(action, newImage);
+    dispatch(updateImage(newImage));
   };
 
-  const updateKeywordPosition = useCallback(({ _id, offsetX, offsetY }) => {
-    setKeywords((prev) =>
-      prev.map((kw) => (kw._id === _id ? { ...kw, offsetX, offsetY } : kw))
-    );
-  }, [setKeywords]);
+  const updateKeyword = useCallback(
+    (newKeyword) => {
+      setKeywords((prev) =>
+        prev.map((kw) => (kw._id === newKeyword._id ? newKeyword : kw))
+      );
+    },
+    [setKeywords]
+  );
 
   useEffect(() => {
-    socket.on("updateKeywordPosition", updateKeywordPosition);
-    return () => socket.off("updateKeywordPosition", updateKeywordPosition);
-  }, [updateKeywordPosition, socket]);
+    socket.on("updateKeyword", updateKeyword);
+    return () => socket.off("updateKeyword", updateKeyword);
+  }, [updateKeyword, socket]);
 
-  return image ? (<>
-       <Image ref={imageRef} image={image} width={imgData.width} height={imgData.height}
-      draggable
-      x={imgData.x}
-      y={imgData.y}
-      onClick={(e) => {
-        e.cancelBubble = true;
-        setSelectedImage(imgData);
-      }}
-      onTap={(e) => {
-        e.cancelBubble = true;
-        setSelectedImage(imgData);
-      }}
-      onDragMove={(e) => handleDrag(e, "imageMoving")}
-      onDragEnd={(e) => handleDrag(e, "updateImagePosition")}
-      onTransform={(e) => handleTransform("imageTransforming", e)}
-      onTransformEnd={(e) => handleTransform("updateImageTransformation", e)} />
-      {isSelected && imageRef.current && <Transformer keepRatio={true} ref={transformerRef} nodes={[imageRef.current]} rotateEnabled={false}
+  return image ? (
+    <>
+      <Image
+        ref={imageRef}
+        image={image}
+        width={imgData.width}
+        height={imgData.height}
+        draggable
+        x={imgData.x}
+        y={imgData.y}
+        onClick={(e) => {
+          e.cancelBubble = true;
+          dispatch(setSelectedImage(imgData));
+        }}
+        onTap={(e) => {
+          e.cancelBubble = true;
+          dispatch(setSelectedImage(imgData));
+        }}
+        onDragMove={(e) => handleDrag(e, "imageMoving")}
+        onDragEnd={(e) => handleDrag(e, "updateImage")}
+        onTransform={(e) => handleTransform("imageTransforming", e)}
+        onTransformEnd={(e) => handleTransform("updateImage", e)}
+      />
+      {isSelected && imageRef.current && (
+        <Transformer
+          keepRatio={true}
+          ref={transformerRef}
+          nodes={[imageRef.current]}
+          rotateEnabled={false}
           enabledAnchors={[
             "top-left",
             "top-right",
             "bottom-left",
             "bottom-right",
-          ]}/>}
-      {keywords
-      .filter(keyword => keyword.offsetX !== undefined && keyword.offsetY !== undefined)
-      .map(keyword => (
-        <KeywordComponent
-          key={keyword._id}
-          data={keyword}
-          imageBounds={imageBounds}
-          updateKeywordPosition={updateKeywordPosition}
-          socket={socket}
+          ]}
         />
-      ))}
-     </>
+      )}
+      {keywords
+        .filter(
+          (keyword) =>
+            keyword.offsetX !== undefined && keyword.offsetY !== undefined
+        )
+        .map((keyword) => (
+          <KeywordComponent
+            key={keyword._id}
+            data={keyword}
+            imageBounds={imageBounds}
+            updateKeyword={updateKeyword}
+          />
+        ))}
+    </>
   ) : null;
 };
 

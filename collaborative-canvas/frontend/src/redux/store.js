@@ -1,40 +1,51 @@
-import { combineReducers, configureStore } from "@reduxjs/toolkit";
-import { createEpicMiddleware } from "redux-observable";
-import { persistReducer } from "redux-persist";
-import { createLogger } from "redux-logger";
-import storage from "redux-persist/lib/storage";
-import persistStore from "redux-persist/es/persistStore";
-import selectedLabelListReducer from "./selectedLabelList";
+import { configureStore } from "@reduxjs/toolkit";
+import socketReducer from "./socketSlice";
+import imageReducer from "./imageSlice";
+import selectedImageReducer from "./selectedImageSlice";
 
-const epicMiddleware = createEpicMiddleware();
-
-const rootReducer = combineReducers({
-  selectedLabelList: selectedLabelListReducer,
+export const store = configureStore({
+  reducer: {
+    socket: socketReducer,
+    images: imageReducer,
+    selectedImage: selectedImageReducer,
+  },
 });
 
-const persistConfig = {
-  key: "root",
-  storage,
-};
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+// import { combineReducers, configureStore } from "@reduxjs/toolkit";
+// import { createEpicMiddleware } from "redux-observable";
+// import { persistReducer } from "redux-persist";
+// import { createLogger } from "redux-logger";
+// import storage from "redux-persist/lib/storage";
+// import persistStore from "redux-persist/es/persistStore";
+// import selectedLabelListReducer from "./selectedLabelList";
 
-const configureMoodboardStore = (preloadedState) => {
-  const loggerMiddleware = createLogger();
-  const store = configureStore({
-    reducer: persistedReducer,
-    middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware({ serializableCheck: false }).concat(
-        epicMiddleware,
-        loggerMiddleware
-      ),
-    preloadedState,
-  });
-    
-  
-  
-  const persistor = persistStore(store);
+// const epicMiddleware = createEpicMiddleware();
 
-  return { store, persistor };
-};
+// const rootReducer = combineReducers({
+//   selectedLabelList: selectedLabelListReducer,
+// });
 
-export default configureMoodboardStore;
+// const persistConfig = {
+//   key: "root",
+//   storage,
+// };
+// const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+// const configureMoodboardStore = (preloadedState) => {
+//   const loggerMiddleware = createLogger();
+//   const store = configureStore({
+//     reducer: persistedReducer,
+//     middleware: (getDefaultMiddleware) =>
+//       getDefaultMiddleware({ serializableCheck: false }).concat(
+//         epicMiddleware,
+//         loggerMiddleware
+//       ),
+//     preloadedState,
+//   });
+
+//   const persistor = persistStore(store);
+
+//   return { store, persistor };
+// };
+
+// export default configureMoodboardStore;

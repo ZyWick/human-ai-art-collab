@@ -2,8 +2,12 @@ import React from "react";
 import UploadButton from "../widgets/UploadButton";
 import KeywordSelection from "../widgets/keywordSelection";
 // import "../styles/Sidebar.css"
+import { useSelector } from "react-redux";
 
-const Sidebar = ({ socket, selectedImage, boardId, users }) => {
+const Sidebar = () => {
+  const users = useSelector((state) => state.socket.users);
+  const selectedImage = useSelector((state) => state.selectedImage);
+
   return (
     <div
       style={{
@@ -15,8 +19,8 @@ const Sidebar = ({ socket, selectedImage, boardId, users }) => {
         alignItems: "center",
       }}
     >
-      <UploadButton socket={socket} boardId={boardId} />
-      {selectedImage && <KeywordSelection selectedImage={selectedImage} />}
+      <UploadButton />
+      {selectedImage && <KeywordSelection />}
       <div>
         <h3>Users in Room:</h3>
         <ul>

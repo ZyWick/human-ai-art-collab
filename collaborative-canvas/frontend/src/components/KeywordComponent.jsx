@@ -2,12 +2,18 @@ import React, { useMemo, useRef } from "react";
 import { Label, Tag, Text } from "react-konva";
 // import useItem from "../../../hook/useItem";
 import colorMapping from "../config/keywordTypes";
-import useLabelSelection from "../hook/useLabelSelection";
-import { handleKeywordPositionUpdate } from "../util/keywordMovement";
+import { calculateNewKeywordPosition } from "../util/keywordMovement";
+import { useSocket } from "./SocketContext";
 
-const KeywordComponent = ({ data, imageBounds, updateKeywordPosition, socket }) => {
+const KeywordComponent = ({ data, imageBounds, updateKeyword }) => {
   const keywordRef = useRef(null);
-  const { width: imageWidth, height: imageHeight, x: imageX, y: imageY } = imageBounds;
+  const {
+    width: imageWidth,
+    height: imageHeight,
+    x: imageX,
+    y: imageY,
+  } = imageBounds;
+  const socket = useSocket();
 
   // useEffect(() => {
   //   if (keywordRef.current) {
@@ -34,34 +40,35 @@ const KeywordComponent = ({ data, imageBounds, updateKeywordPosition, socket }) 
 
   const handleDrag = (e, action) => {
     e.cancelBubble = true;
-    let newOffset = { newX: e.target.x() - imageX, newY: e.target.y() - imageY};
-    let targetWidth = e.target.width();
-    let targetHeight = e.target.height();
+    let newOffset = {
+      newX: e.target.x() - imageX,
+      newY: e.target.y() - imageY,
+    };
 
-    if (action === "updateKeywordPosition")
-      newOffset = handleKeywordPositionUpdate(
-        data,
+    if (action === "updateKeyword")
+      newOffset = calculateNewKeywordPosition(
         newOffset.newX,
         newOffset.newY,
-        targetWidth,
-        targetHeight,
+        e.target.width(),
+        e.target.height(),
         imageWidth,
-        imageHeight,
-        updateKeywordPosition
+        imageHeight
       );
-  
-    socket.emit(action, {
+
+    const newKeyword = {
       ...data,
       offsetX: newOffset.newX,
       offsetY: newOffset.newY,
-    });
+    };
+    socket.emit(action, newKeyword);
+    updateKeyword(newKeyword);
   };
 
-  const { addSelectedLabel, removeSelectedLabel, selectedLabelList } =
-    useLabelSelection();
-  const isSelected = useMemo(() => {
-    return selectedLabelList.some((label) => label.id === labelEntity.id);
-  }, [selectedLabelList, labelEntity.id]);
+  // const { addSelectedLabel, removeSelectedLabel, selectedLabelList } =
+  //   useLabelSelection();
+  // const isSelected = useMemo(() => {
+  //   return selectedLabelList.some((label) => label.id === labelEntity.id);
+  // }, [selectedLabelList, labelEntity.id]);
 
   return (
     <KeywordLabel
@@ -69,11 +76,11 @@ const KeywordComponent = ({ data, imageBounds, updateKeywordPosition, socket }) 
       labelkey={labelEntity.id}
       xpos={data.offsetX + imageX}
       ypos={data.offsetY + imageY}
-      onClick={() => {
-        if (isSelected) removeSelectedLabel(labelEntity.id);
-        else addSelectedLabel(labelEntity);
-      }}
-      isSelected={isSelected}
+      // onClick={() => {
+      //   if (isSelected) removeSelectedLabel(labelEntity.id);
+      //   else addSelectedLabel(labelEntity);
+      // }}
+      // isSelected={isSelected}
       type={labelEntity.type}
       text={
         labelEntity.type === "Arrangement"
@@ -88,7 +95,7 @@ const KeywordComponent = ({ data, imageBounds, updateKeywordPosition, socket }) 
       //   }));
       // }}
       onDragMove={(e) => handleDrag(e, "keywordMoving")}
-      onDragEnd={(e) => handleDrag(e, "updateKeywordPosition")}
+      onDragEnd={(e) => handleDrag(e, "updateKeyword")}
       keywordRef={keywordRef}
     />
   );
@@ -106,7 +113,7 @@ export const KeywordLabel = ({
   draggable,
   onDragMove,
   onDragEnd,
-  keywordRef
+  keywordRef,
 }) => {
   return (
     <Label

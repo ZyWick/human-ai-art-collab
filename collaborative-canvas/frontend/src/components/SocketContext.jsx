@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const REACT_APP_BACKEND_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+const REACT_APP_BACKEND_URL =
+  process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
 
 // Create context
 const SocketContext = createContext(null);
@@ -19,7 +20,9 @@ export const SocketProvider = ({ children }) => {
     };
   }, []);
 
-  return <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>;
+  return (
+    <SocketContext.Provider value={socket}>{children}</SocketContext.Provider>
+  );
 };
 
 // Hook to use socket

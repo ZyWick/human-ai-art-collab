@@ -1,22 +1,33 @@
 import { useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { setSelectedImage } from "../redux/selectedImageSlice";
+import { useSocket } from "../components/SocketContext";
 
-const useImageSelection = (stageRef, selectedImageId, setSelectedImage, imgDataId, socket) => {
+const useImageSelection = (stageRef, imgDataId) => {
+  const dispatch = useDispatch();
+  const socket = useSocket();
+  const selectedImage = useSelector((state) => state.selectedImage);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (selectedImageId === imgDataId && e.key === "Delete") {
+      if (
+        selectedImage &&
+        selectedImage._id === imgDataId &&
+        e.key === "Delete"
+      ) {
         socket.emit("deleteImage", imgDataId);
-        setSelectedImage(null);
+        dispatch(setSelectedImage(null));
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedImageId, imgDataId, setSelectedImage, socket]);
+  }, [selectedImage, imgDataId]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (stageRef.current && e.target === stageRef.current) {
-        setSelectedImage(null);
+        dispatch(setSelectedImage(null));
       }
     };
 
@@ -32,7 +43,7 @@ const useImageSelection = (stageRef, selectedImageId, setSelectedImage, imgDataI
         stage.off("tap", handleClickOutside);
       }
     };
-  }, [stageRef, setSelectedImage]);
+  }, [stageRef]);
 };
 
 export default useImageSelection;

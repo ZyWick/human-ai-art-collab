@@ -9,7 +9,10 @@ const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
  * @param {object} options - Options including method, data, and headers.
  * @returns {Promise<any>} - Parsed JSON response.
  */
-const apiFetch = async (endpoint, { method = "GET", data = null, headers = {} } = {}) => {
+const apiFetch = async (
+  endpoint,
+  { method = "GET", data = null, headers = {} } = {}
+) => {
   const url = `${baseURL}${endpoint}`;
   const fetchOptions = { method, headers: { ...headers } };
 
@@ -30,12 +33,18 @@ const apiFetch = async (endpoint, { method = "GET", data = null, headers = {} } 
     const response = await fetch(url, fetchOptions);
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`API error on ${method.toUpperCase()} ${endpoint}:`, errorText);
+      console.error(
+        `API error on ${method.toUpperCase()} ${endpoint}:`,
+        errorText
+      );
       throw new Error(`Error ${response.status}: ${errorText}`);
     }
     return await response.json();
   } catch (error) {
-    console.error(`API error on ${method.toUpperCase()} ${endpoint}:`, error.message);
+    console.error(
+      `API error on ${method.toUpperCase()} ${endpoint}:`,
+      error.message
+    );
     throw error;
   }
 };

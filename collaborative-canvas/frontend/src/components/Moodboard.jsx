@@ -1,26 +1,21 @@
-import React, {  useRef } from "react";
+import React, { useRef } from "react";
 import { Stage, Layer } from "react-konva";
 import ImageComponent from "./ImageComponent";
 import useWindowSize from "../hook/useWindowSize";
+import { useSelector } from "react-redux";
 
-const Moodboard = ({ images, setImages, selectedImage, setSelectedImage, socket }) => {
+const Moodboard = () => {
   const stageRef = useRef(null);
   const windowSize = useWindowSize();
+  const images = useSelector((state) => state.images);
 
   return (
     <Stage width={windowSize.width} height={windowSize.height} ref={stageRef}>
       <Layer>
-        {images.map((img) => (
-          <ImageComponent
-            key={img._id}
-            imgData={img}
-            setImages={setImages}
-            socket={socket}
-            stageRef={stageRef}
-            selectedImage={selectedImage}
-            setSelectedImage={setSelectedImage}
-          />
-        ))}
+        {images &&
+          images.map((img) => (
+            <ImageComponent key={img._id} imgData={img} stageRef={stageRef} />
+          ))}
       </Layer>
     </Stage>
   );

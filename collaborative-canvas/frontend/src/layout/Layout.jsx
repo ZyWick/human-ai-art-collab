@@ -2,35 +2,26 @@ import React, { useEffect, useState } from "react";
 import Moodboard from "../components/Moodboard";
 import Sidebar from "../components/Sidebar";
 import useBoardSocket from "../hook/useBoardSocket";
-import { useSocket } from "../SocketContext";
 import "./Layout.css";
+import { setImages } from "../redux/imageSlice";
+import { useDispatch, useSelector } from "react-redux";
 
-const Layout = ({ username, roomData}) => {
+const Layout = () => {
+  const dispatch = useDispatch(); 
+  const roomData = useSelector((state) => state.socket.roomData);
   const boards = roomData.boards;
-  const [board, setBoard] = useState(boards[boards.length - 1]);
-  const [images, setImages] = useState(boards[boards.length - 1].images);
-  const [users, setUsers] = useState([]);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const socket = useSocket();
-  useBoardSocket(socket, username, roomData._id, setUsers, setImages);
+  const selectedBoard = boards[boards.length - 1]
+  const images = selectedBoard.images;
 
-  useEffect(() => {
-    setBoard (boards[boards.length - 1])
-  }, [boards]);
+  useBoardSocket()
+  dispatch(setImages(images))
 
   return (
     <div className="layout-container">
         <div className="sidebar-overlay">
-          <Sidebar
-            socket={socket}
-            boardId={board._id}
-            users={users}
-            roomName={roomData.name}
-            username={username}
-            selectedImage={selectedImage}
-          />
+          <Sidebar/>
         </div>
-      <Moodboard images={images} setImages={setImages} selectedImage={selectedImage} setSelectedImage={setSelectedImage} socket={socket} />
+      <Moodboard />
     </div>
   );
 };

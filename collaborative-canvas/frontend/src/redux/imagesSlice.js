@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { createSelector } from '@reduxjs/toolkit';
 
 const updateSingleKeyword = (existingKeywords, newKeyword) => {
   const keywordIndex = existingKeywords.findIndex(
@@ -16,7 +17,7 @@ const updateSingleKeyword = (existingKeywords, newKeyword) => {
   }
 };
 
-const imageSlice = createSlice({
+const imagesSlice = createSlice({
   name: "images",
   initialState: [],
   reducers: {
@@ -44,6 +45,13 @@ const imageSlice = createSlice({
   },
 });
 
+const selectImages = (state) => state.images;
+
+export const selectImageById = createSelector(
+  [selectImages, (state, imageId) => imageId],
+  (images, imageId) => images.find((image) => image._id === imageId)
+);
+
 export const { setImages, addImage, removeImage, updateImage, updateKeywords } =
-  imageSlice.actions;
-export default imageSlice.reducer;
+imagesSlice.actions;
+export default imagesSlice.reducer;

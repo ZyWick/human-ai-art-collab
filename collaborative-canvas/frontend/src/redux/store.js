@@ -1,15 +1,23 @@
 import { configureStore } from "@reduxjs/toolkit";
-import socketReducer from "./socketSlice";
-import imageReducer from "./imageSlice";
+import roomReducer from "./roomSlice";
+import imagesReducer from "./imagesSlice";
 import selectedImageReducer from "./selectedImageSlice";
+// store.js
+import boardsReducer from './boardSlice'
+import selectionReducer from './selectionSlice'
 
-export const store = configureStore({
+const store = configureStore({
   reducer: {
-    socket: socketReducer,
-    images: imageReducer,
+    selection: selectionReducer,
+    room: roomReducer,
+    boards: boardsReducer,
+    images: imagesReducer,
     selectedImage: selectedImageReducer,
   },
 });
+
+export default store;
+
 
 // import { combineReducers, configureStore } from "@reduxjs/toolkit";
 // import { createEpicMiddleware } from "redux-observable";

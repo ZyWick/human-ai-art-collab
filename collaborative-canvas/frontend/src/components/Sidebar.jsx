@@ -5,9 +5,9 @@ import KeywordSelection from "../widgets/keywordSelection";
 import { useSelector } from "react-redux";
 
 const Sidebar = () => {
-  const users = useSelector((state) => state.socket.users);
-  const selectedImage = useSelector((state) => state.selectedImage);
-
+  const users = useSelector((state) => state.room.users);
+  const selectedImageId = useSelector((state) => state.selection.selectedImageId);
+  
   return (
     <div
       style={{
@@ -20,7 +20,7 @@ const Sidebar = () => {
       }}
     >
       <UploadButton />
-      {selectedImage && <KeywordSelection />}
+      {selectedImageId && <KeywordSelection selectedImageId={selectedImageId} />}
       <div>
         <h3>Users in Room:</h3>
         <ul>

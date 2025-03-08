@@ -1,20 +1,20 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setUsers } from "../redux/socketSlice";
+import { setUsers } from "../redux/roomSlice";
 import {
   setImages,
   addImage,
   removeImage,
   updateImage,
   updateKeywords,
-} from "../redux/imageSlice";
+} from "../redux/imagesSlice";
 import { useSocket } from "../components/SocketContext";
 
 const useBoardSocket = () => {
   const dispatch = useDispatch();
   const socket = useSocket();
-  const username = useSelector((state) => state.socket.username);
-  const roomID = useSelector((state) => state.socket.roomData._id);
+  const username = useSelector((state) => state.room.username);
+  const roomID = useSelector((state) => state.room.roomData._id);
 
   useEffect(() => {
     if (!socket) return;

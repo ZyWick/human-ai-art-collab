@@ -3,9 +3,10 @@ import KeywordButton from "./KeywordButton";
 import { calculateNewKeywordPosition } from "../util/keywordMovement";
 import { useSelector, useDispatch } from "react-redux";
 import { useSocket } from "../components/SocketContext";
-import { updateKeywords } from "../redux/imageSlice";
+import { updateKeywords } from "../redux/imagesSlice";
+import { selectImageById  } from '../redux/imagesSlice'
 
-const KeywordSelection = () => {
+const KeywordSelection = ({selectedImageId}) => {
   const keywordRefs = useRef({});
   const socket = useSocket();
   const dispatch = useDispatch();
@@ -16,7 +17,7 @@ const KeywordSelection = () => {
     Arrangement: false,
   });
 
-  const selectedImage = useSelector((state) => state.selectedImage);
+  const selectedImage = useSelector(state => selectImageById(state, selectedImageId));;
   // if (!selectedImage) return;
 
   const toggleLikedElementType = (type) => {

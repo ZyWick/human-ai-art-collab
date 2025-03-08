@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Layout from "./layout/Layout";
 import { joinRoom } from "./util/api";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,23 +7,18 @@ import {
   setJoined,
   setUsername,
   setRoomCode,
-} from "./redux/socketSlice";
-import {
-  setImages,
-  addImage,
-  removeImage,
-  updateImage,
-  updateKeywords,
-} from "./redux/imageSlice";
+} from "./redux/roomSlice";
+
 function App() {
   const dispatch = useDispatch();
   const { username, roomCode, roomData, joined } = useSelector(
-    (state) => state.socket
+    (state) => state.room
   );
 
   const joinTheRoom = async () => {
     if (!username || !roomCode) return;
     const newRoomData = await joinRoom(roomCode);
+    console.log(newRoomData)
     dispatch(setRoomData(newRoomData));
     dispatch(setJoined(true));
   };

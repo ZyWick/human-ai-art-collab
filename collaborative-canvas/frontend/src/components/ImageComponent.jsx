@@ -3,8 +3,8 @@ import { Image, Transformer } from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
 import KeywordComponent from "./KeywordComponent";
 import useImageSelection from "../hook/useImageSelection";
-import { updateImage, updateKeywords } from "../redux/imageSlice";
-import { setSelectedImage } from "../redux/selectedImageSlice";
+import { updateImage, updateKeywords } from "../redux/imagesSlice";
+import { setSelectedImage } from "../redux/selectionSlice";
 import { useSocket } from "./SocketContext";
 
 const ImageComponent = ({ imgData, stageRef }) => {
@@ -14,7 +14,7 @@ const ImageComponent = ({ imgData, stageRef }) => {
   const transformerRef = useRef();
   const dispatch = useDispatch();
   const socket = useSocket();
-  const selectedImage = useSelector((state) => state.selectedImage);
+  const selectedImageId = useSelector((state) => state.selection.selectedImageId);
 
   useImageSelection(stageRef, imgData._id);
   const imageBounds = {
@@ -27,13 +27,12 @@ const ImageComponent = ({ imgData, stageRef }) => {
     if (!imgData || !imgData.url) return;
     const img = new window.Image();
     img.src = imgData.url;
-    console.log(imgData);
     img.onload = () => setImage(img);
     img.onerror = () => console.error("Failed to load image:", imgData.url);
-    console.log("done");
   }, [imgData.url]);
 
-  const isSelected = selectedImage?._id === imgData._id;
+  const isSelected = selectedImageId ? 
+    selectedImageId === imgData._id : false;
 
   const handleDrag = (e, action) => {
     const newImage = { ...imgData, x: e.target.x(), y: e.target.y() };
@@ -87,11 +86,11 @@ const ImageComponent = ({ imgData, stageRef }) => {
         y={imgData.y}
         onClick={(e) => {
           e.cancelBubble = true;
-          dispatch(setSelectedImage(imgData));
+          dispatch(setSelectedImage(imgData._id));
         }}
         onTap={(e) => {
           e.cancelBubble = true;
-          dispatch(setSelectedImage(imgData));
+          dispatch(setSelectedImage(imgData._id));
         }}
         onDragMove={(e) => handleDrag(e, "imageMoving")}
         onDragEnd={(e) => handleDrag(e, "updateImage")}

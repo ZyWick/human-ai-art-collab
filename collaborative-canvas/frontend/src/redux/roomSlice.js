@@ -6,7 +6,7 @@ const REACT_APP_BACKEND_URL =
 
 const socket = io(REACT_APP_BACKEND_URL);
 
-const socketSlice = createSlice({
+const roomReducer = createSlice({
   name: "socket",
   initialState: {
     username: "Jeff",
@@ -35,5 +35,5 @@ const socketSlice = createSlice({
 });
 
 export const { setUsername, setRoomCode, setRoomData, setJoined, setUsers } =
-  socketSlice.actions;
-export default socketSlice.reducer;
+roomReducer.actions;
+export default roomReducer.reducer;

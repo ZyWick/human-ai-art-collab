@@ -7,7 +7,7 @@ import "./index.css";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { Provider } from "react-redux";
-import { store } from "./redux/store";
+import store from "./redux/store";
 import { SocketProvider } from "./components/SocketContext";
 
 // const { store, persistor } = configureMoodboardStore();

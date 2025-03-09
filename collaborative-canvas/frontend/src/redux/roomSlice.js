@@ -6,18 +6,21 @@ const REACT_APP_BACKEND_URL =
 
 const socket = io(REACT_APP_BACKEND_URL);
 
+// Define the initial state
+const initialState = {
+  username: "Jeff",
+  roomId: null,
+  roomCode: "UJONZK",
+  roomName: null,
+  updatedAt: null,
+  currentBoardId: null,
+  boardNoteKeywords: [],
+  users: [],
+};
+
 const roomReducer = createSlice({
   name: "socket",
-  initialState: {
-    username: "Jeff",
-    roomId: null,
-    roomCode: "UJONZK",
-    roomName: null,
-    updatedAt: null,
-    currentBoardId: null,
-    boardNoteKeywords: [],
-    users: [],
-  },
+  initialState,
   reducers: {
     setUsername: (state, action) => {
       state.username = action.payload;
@@ -51,6 +54,10 @@ const roomReducer = createSlice({
     setUsers: (state, action) => {
       state.users = action.payload;
     },
+    // Add a resetRoomState reducer
+    resetRoomState: (state) => {
+      return initialState; // Reset to the initial state
+    },
   },
 });
 
@@ -65,5 +72,7 @@ export const {
   updateBoardNoteKeywords,
   addBoardNoteKeyword,
   setUsers,
+  resetRoomState, // Export the new resetRoomState action
 } = roomReducer.actions;
+
 export default roomReducer.reducer;

@@ -12,8 +12,8 @@ import {
   setBoardNoteKeywords,
   resetRoomState,
 } from "./redux/roomSlice";
-import { setBoards, resetBoardState } from "./redux/boardSlice";
-import { setImages, resetImagesState } from "./redux/imagesSlice";
+import { setBoards } from "./redux/boardSlice";
+import { setImages } from "./redux/imagesSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -39,8 +39,8 @@ function App() {
   const handleBack = () => {
     // Reset all relevant states
     dispatch(resetRoomState());
-    dispatch(resetBoardState());
-    dispatch(resetImagesState());
+    // dispatch(resetBoardState());
+    //dispatch(resetImagesState());
     setJoined(false);
   };
 

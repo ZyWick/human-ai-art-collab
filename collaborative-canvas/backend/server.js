@@ -38,7 +38,8 @@ const upload = multer({
 });
 
 const app = express();
-app.use(cors({
+app.use(cors())
+/*app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin) || isVercelPreview(origin)) {
       callback(null, true);
@@ -47,7 +48,7 @@ app.use(cors({
     }
   },
   credentials: true,
-}));
+}));*/
 app.use(express.json());
 
 // 🔹 Connect to MongoDB Atlas

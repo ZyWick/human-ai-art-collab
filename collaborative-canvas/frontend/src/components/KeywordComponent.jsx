@@ -1,16 +1,31 @@
-import React, { useMemo, useEffect, useRef } from "react";
+import React, { useMemo, useEffect, useRef, useState } from "react";
 import { Label, Tag, Text } from "react-konva";
 import colorMapping from "../config/keywordTypes";
 import { useSocket } from "./SocketContext";
 import { useDispatch, useSelector } from "react-redux";
 
-const KeywordComponent = ({ data, imageBounds, handleKeywordDrag, toggleSelected }) => {
+const KeywordComponent = ({ data, imageBounds, handleKeywordDrag, toggleSelected, deleteKeyword }) => {
   const keywordRef = useRef(null);
   const {x: imageX, y: imageY, } = imageBounds;
   const dispatch = useDispatch();
   const socket = useSocket();
   const selecteds = useSelector((state) => state.selection.selectedKeywordIds);
-  
+  const [isClicked, setIsCLicked] = useState(false)
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if ((event.key === "Delete" || event.key === "Backspace") && isClicked) {
+        console.log("hello")
+        deleteKeyword(data)
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isClicked, dispatch, data._id]);
+
   // TODO: Move to imageComponent. Similar to ImageSelection
   // useEffect(() => {
   //   if (keywordRef.current) {
@@ -58,7 +73,10 @@ const KeywordComponent = ({ data, imageBounds, handleKeywordDrag, toggleSelected
       labelkey={labelEntity.id}
       xpos={data.offsetX + imageX}
       ypos={data.offsetY + imageY}
-      onClick={() => toggleSelected(data)}
+      onClick={() => {
+        toggleSelected(data)
+        setIsCLicked(!isClicked)
+      }}
       isSelected={data.isSelected}
       type={labelEntity.type}
       text={

@@ -1,22 +1,43 @@
-html, body {
-  overflow: hidden;
-  height: 100%;
-  margin: 0;
-}
-
 .layout-container {
   display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  width: 100vw;
+  height: 100vh; /* Full viewport height */
+  overflow: hidden; /* Prevents unwanted scrollbars */
 }
-  .sidebar-overlay {
-    position: absolute;
-    width: 20%;
-    min-width: 294px;
-    max-width: 610px;
-    height: 100%;
-    z-index: 10;
-    background: white;
-    padding-inline: 10px;
-    padding-top: 1%;
-    box-shadow: 2px 2px 2px darkgray;
-  }
-  
+
+.sidebar-overlay {
+  flex: 0 0 auto; /* Keeps fixed width */
+  width: 20%;
+  min-width: 294px;
+  max-width: 610px;
+  height: 100vh; /* Full height */
+  z-index: 10;
+  background: white;
+  padding-inline: 10px;
+  padding-top: 1%;
+  box-shadow: 2px 2px 2px darkgray;
+  overflow: hidden; /* Ensures no internal scrolling */
+}
+
+.right {
+  box-shadow: -2px -2px 2px darkgray;
+}
+
+.moodboard-container {
+  flex: 1; /* Takes up remaining space */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0; /* Prevents layout breaking */
+  height: 100vh; /* Full height */
+  overflow: hidden; /* Prevents unwanted scrollbars */
+}
+
+.moodboard-container {
+  background-color: #F5F5F5;
+  background-size: 35px 35px; /* Adjust grid size */
+  background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+}

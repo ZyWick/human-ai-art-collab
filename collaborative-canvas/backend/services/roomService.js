@@ -30,7 +30,7 @@ const createRoom = async (name) => {
  */
 const updateRoomName = async (roomId, newName) => {
   if (!mongoose.Types.ObjectId.isValid(roomId)) throw new Error('Invalid room ID');
-  return Room.findByIdAndUpdate(roomId, { name: newName }, { new: true }).lean();
+  return await Room.findByIdAndUpdate(roomId, { name: newName }, { new: true }).lean();
 };
 
 /**

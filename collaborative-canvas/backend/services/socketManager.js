@@ -67,7 +67,28 @@ module.exports = (io, users) => {
         io.to(user.roomID).emit("newNoteKeyword", keyword);
       } catch (error) {
           console.error("Error adding keyword:", error);
-          socket.emit("error", { message: "Failed to add image" });
+          socket.emit("error", { message: "Failed to add note keyword" });
+      }
+    })
+    socket.on("deleteNoteKeyword", async (keywordId) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        io.to(user.roomID).emit("deleteNoteKeyword", keywordId);
+      } catch (error) {
+          console.error("Error deleting keyword:", error);
+          socket.emit("error", { message: "Failed to delete note keyword" });
+      }
+    })
+
+    socket.on("toggleSelectedKeyword", async(keywordId) =>{
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        io.to(user.roomID).emit("toggleSelectedKeyword", keywordId);
+      } catch (error) {
+          console.error("Error deleting keyword:", error);
+          socket.emit("error", { message: "Failed to delete note keyword" });
       }
     })
 

@@ -9,7 +9,8 @@ import {
   updateKeywords,
 } from "../redux/imagesSlice";
 import { useSocket } from "../components/SocketContext";
-import { updateBoardNoteKeywords, addBoardNoteKeyword } from "../redux/roomSlice";
+import { toggleSelectedKeyword } from '../redux/selectionSlice'
+import { updateBoardNoteKeywords, addBoardNoteKeyword, deleteBoardNoteKeywords } from "../redux/roomSlice";
 
 const useBoardSocket = () => {
   const dispatch = useDispatch();
@@ -33,7 +34,8 @@ const useBoardSocket = () => {
     // });
     socket.on("newNoteKeyword", (newKw) => dispatch(addBoardNoteKeyword(newKw)));
     socket.on("updateKeywordNote", (newKw) => dispatch(updateBoardNoteKeywords(newKw)));
-
+    socket.on("deleteNoteKeyword", (kwId) => dispatch(deleteBoardNoteKeywords(kwId)));
+    socket.on("toggleSelectedKeyword", (kwId) => dispatch(toggleSelectedKeyword(kwId)))
     return () => {
       socket.emit("leave room", { username, roomID });
       socket.off("updateRoomUsers");
@@ -41,9 +43,10 @@ const useBoardSocket = () => {
       socket.off("newImage");
       socket.off("deleteImage");
       socket.off("updateImage");
-      socket.off("updateKeywords");
+      // socket.off("updateKeywords");
       socket.off("newNoteKeyword");
-
+      socket.off("updateKeywordNote");
+      socket.off("deleteNoteKeyword");
     };
   }, [socket, username, roomID, dispatch]);
 };

@@ -19,6 +19,10 @@ const ImageComponent = ({ imgData, stageRef }) => {
   const socket = useSocket();
   const selectedImageId = useSelector((state) => state.selection.selectedImageId);
 
+  useEffect(()=> {
+    setKeywords(imgData.keywords)
+  },[imgData.keywords])
+
   useImageSelection(stageRef, imgData._id);
   const imageBounds = {
     width: imgData.width,
@@ -105,10 +109,20 @@ const ImageComponent = ({ imgData, stageRef }) => {
   };
 
   const toggleSelected = (data) => {
-    console.log(data.isSelected)
-    dispatch(toggleSelectedKeyword(data._id))
+    socket.emit("toggleSelectedKeyword", data._id)
+    // dispatch(toggleSelectedKeyword(data._id))
     updateKeyword({...data, isSelected: !data.isSelected});
     socket.emit("updateKeyword", {...data, isSelected: !data.isSelected})
+  }
+
+  const deleteKeyword = (keyword) => {
+    let { offsetX, offsetY, ...newKeyword } = keyword;
+    socket.emit("removeKeywordOffset", keyword._id);
+    const updatedImage = {...imgData,
+      keywords: imgData.keywords.map((kw) =>
+        kw._id === newKeyword._id ? newKeyword : kw)
+    }
+    socket.emit("updateImage", updatedImage)
   }
 
   return image ? (
@@ -162,6 +176,7 @@ const ImageComponent = ({ imgData, stageRef }) => {
             imageBounds={imageBounds}
             handleKeywordDrag ={handleKeywordDrag}
             toggleSelected = {toggleSelected}
+            deleteKeyword={deleteKeyword}
           />
         ))}
     </>

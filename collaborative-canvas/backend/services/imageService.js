@@ -78,8 +78,8 @@ const createImage = async (data) => {
  * @param {Object} updateData - Fields to update.
  * @returns {Promise<Object|null>} The updated keyword document or null if not found.
  */
-const updateImage = (imageId, updateData) => 
-  Image.findByIdAndUpdate(imageId, updateData, { new: true, runValidators: true });
+const updateImage = async(imageId, updateData) => 
+  await Image.findByIdAndUpdate(imageId, updateData, { new: true, runValidators: true });
 
 
 /**
@@ -92,10 +92,10 @@ const deleteImage = async (imageId) => {
   if (!image) return null;
 
   await Keyword.deleteMany({ imageId });
-  await Board.findByIdAndUpdate(image.boardId, { $pull: { images: imageId } });
+  if (image.boardId) await Board.findByIdAndUpdate(image.boardId, { $pull: { images: imageId } });
 
   if (image.url) await deleteS3Image(image.url);
-  return Image.findByIdAndDelete(imageId);
+  return await Image.findByIdAndDelete(imageId);
 };
 
 module.exports = { createImage, updateImage, deleteImage };

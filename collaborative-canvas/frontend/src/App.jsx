@@ -1,44 +1,30 @@
-import React, {useState} from "react";
+import React, { useState } from "react";
 import Layout from "./layout/Layout";
 import { joinRoom } from "./util/api";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  setUsername,
-  setRoomId,
-  setRoomName,
-  setRoomCode,
-  setUpdatedAt,
-  setCurrentBoardId,
-  setBoardNoteKeywords
-} from "./redux/roomSlice";
-import { setBoards } from "./redux/boardSlice";
-import { setImages } from "./redux/imagesSlice";
+import { setUsername, setRoomCode } from "./redux/roomSlice";
 
-function App() {
+const App = () => {
   const dispatch = useDispatch();
-  const [joined, setJoined] = useState(false)
-  const { username, roomCode } = useSelector(
-    (state) => state.room
-  );
+  const [joined, setJoined] = useState(false);
+  const [roomData, setRoomData] = useState(null);
+  const { username, roomCode } = useSelector((state) => state.room);
 
   const joinTheRoom = async () => {
     if (!username || !roomCode) return;
-    const newRoomData = await joinRoom(roomCode);
-    console.log(newRoomData)
-    dispatch(setRoomId(newRoomData._id));
-    dispatch(setRoomName(newRoomData.name));
-    dispatch(setUpdatedAt(newRoomData.updatedAt));
-    const boards = newRoomData.boards;
-    dispatch(setBoards(boards))
-    const initialBoard = boards[boards.length - 1];
-    dispatch(setCurrentBoardId(initialBoard._id))
-    dispatch(setBoardNoteKeywords(initialBoard.keywords))
-    dispatch(setImages(initialBoard.images))
-    setJoined(true);
+    try {
+      const newRoomData = await joinRoom(roomCode);
+      if (newRoomData) {
+        setRoomData(newRoomData);
+        setJoined(true);
+      }
+    } catch (error) {
+      console.error("Failed to join room:", error);
+    }
   };
 
   return (
-    <div style={{ backgroundColor: "lightgray" }}>
+    <div style={{ backgroundColor: "#D8E2DC" }}>
       {!joined ? (
         <div>
           <h1>Join a Moodboard Session</h1>
@@ -57,10 +43,10 @@ function App() {
           <button onClick={joinTheRoom}>Join</button>
         </div>
       ) : (
-        <Layout />
+        <Layout roomData={roomData} />
       )}
     </div>
   );
-}
+};
 
 export default App;

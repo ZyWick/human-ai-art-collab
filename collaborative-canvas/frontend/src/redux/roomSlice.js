@@ -48,6 +48,11 @@ const roomReducer = createSlice({
     addBoardNoteKeyword: (state, action) => {
       state.boardNoteKeywords.push(action.payload);
     },
+    deleteBoardNoteKeywords: (state, action) => {
+      state.boardNoteKeywords = state.boardNoteKeywords.filter(
+        (kw) => kw._id !== action.payload
+      );
+    },
     setUsers: (state, action) => {
       state.users = action.payload;
     },
@@ -64,6 +69,7 @@ export const {
   setBoardNoteKeywords,
   updateBoardNoteKeywords,
   addBoardNoteKeyword,
+  deleteBoardNoteKeywords,
   setUsers,
 } = roomReducer.actions;
 export default roomReducer.reducer;

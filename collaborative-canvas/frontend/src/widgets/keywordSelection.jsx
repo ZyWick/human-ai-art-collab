@@ -6,6 +6,7 @@ import { useSocket } from "../components/SocketContext";
 import { updateImage } from "../redux/imagesSlice";
 import { selectImageById  } from '../redux/imagesSlice'
 import '../styles/keywordSelection.css'
+import {deleteKeyword} from "../util/api"
 
 const KeywordSelection = ({selectedImageId}) => {
   const keywordRefs = useRef({});
@@ -15,7 +16,7 @@ const KeywordSelection = ({selectedImageId}) => {
     "Subject matter": false,
     "Theme & mood": false,
     "Action & pose": false,
-    Arrangement: false,
+    "Arrangement": false,
   });
 
   const selectedImage = useSelector(state => selectImageById(state, selectedImageId));
@@ -37,23 +38,29 @@ const KeywordSelection = ({selectedImageId}) => {
     }));
   };
 
+  const getRandomPoint = (w, h) => {
+    const a = Math.random() * 2 * Math.PI, max = Math.max(w, h), r = Math.random() * (max - Math.max(w, h)) + Math.max(w, h);
+    return { x: w / 2 + r * Math.cos(a), y: h / 2 + r * Math.sin(a) };
+  };
+  
+
   const toggleOnBoard = (keyword) => {
     let { offsetX, offsetY, ...newKeyword } = keyword;
-    console.log(offsetX!== undefined)
+
     if (offsetX !== undefined && offsetY !== undefined) {
-      console.log("hello")
       socket.emit("removeKeywordOffset", keyword._id);
     } else {
       const bbox = keywordRefs.current[keyword._id]?.getBoundingClientRect();
+      const {x, y} = getRandomPoint(selectedImage.width, selectedImage.height)
       const newOffset = calculateNewKeywordPosition(
-        Math.random() * bbox.width,
-        Math.random() * bbox.height,
+        x,
+        y,
         bbox.width,
         bbox.height,
         selectedImage.width,
         selectedImage.height
       );
-      console.log("what")
+      
       newKeyword = {
         ...keyword,
         offsetX: newOffset.newX,
@@ -84,9 +91,32 @@ const KeywordSelection = ({selectedImageId}) => {
     socket.emit("updateImage", updatedImage)
   };
 
+  const deleteCustom = async(keyword) => {
+    await deleteKeyword(keyword._id)
+    const updatedImage = {...selectedImage,
+      keywords: selectedImage.keywords.filter(kw =>
+        kw._id !== keyword._id )
+    }
+
+    socket.emit("updateImage", updatedImage)
+  }
+
   const addKeywordSelection = (type, newKeywordText) => {
     const newKeyword = { boardId: selectedImage.boardId, imageId: selectedImage._id, 
-      isSelected: false, type, keyword: newKeywordText }
+      isCustom: true, type, keyword: newKeywordText }
+
+      setGroupedKeywords(prevGroupedKeywords => ({
+        ...prevGroupedKeywords,
+        [newKeyword.type]: prevGroupedKeywords[newKeyword.type].map(kw =>
+          kw._id === newKeyword._id
+            ? {
+                ...kw, // Use kw, not keyword
+                offsetX: newKeyword.offsetX,
+                offsetY: newKeyword.offsetY,
+              }
+            : kw
+        )
+      }));
     socket.emit("newKeyword", {newKeyword, selectedImage})
   }
 
@@ -127,7 +157,7 @@ const KeywordSelection = ({selectedImageId}) => {
       <hr
         style={{
           border: "none",
-          height: "0.05em",
+          minHeight: "0.05em",
           backgroundColor: "darkgrey",
           width: "100%",
           margin: "1.25em",
@@ -172,8 +202,10 @@ const KeywordSelection = ({selectedImageId}) => {
                     }}
                     text={keyword.keyword}
                     type={keyword.type}
+                    isCustom={keyword.isCustom}
                     isSelected={!!(keyword.offsetX || keyword.offsetY)}
                     onClick={() => toggleOnBoard(keyword)}
+                    onDelete={() => deleteCustom(keyword)}
                   />
                 ))}
                 <KeywordInput boardId={selectedImage.boardId} imageId={selectedImage._id} 

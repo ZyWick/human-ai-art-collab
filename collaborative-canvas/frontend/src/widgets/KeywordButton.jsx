@@ -3,43 +3,91 @@ import colorMapping from "../config/keywordTypes";
 import { createKeywordManual } from "../util/api";
 
 const KeywordButton = forwardRef(
-  ({ text, type, isSelected, onClick, style = {} }, ref) => {
-    useEffect(() => {
-        console.log("KeywordButton re-rendered:", text, isSelected);
-      }, [isSelected]);
-      
-    
+  ({ text, type, isSelected, isCustom, onClick, onDelete, style = {} }, ref) => {
     return (
-      <button
+      <div
         ref={ref}
-        onClick={onClick}
         style={{
+          display: "flex",
+          alignItems: "center",
           fontWeight: "normal",
           backgroundColor: isSelected ? colorMapping[type] : "transparent",
           color: isSelected ? "white" : colorMapping[type],
           border: `1px solid ${colorMapping[type]}`,
           borderRadius: "4px",
-          padding: "8px 12px",
+          overflow: "hidden",
           fontSize: "14px",
           fontFamily: "Noto Sans",
           cursor: "pointer",
           transition: "background-color 0.3s, color 0.3s",
           ...style,
         }}
-        onMouseEnter={(e) => {
-          e.target.style.backgroundColor = colorMapping[type];
-          e.target.style.color = "white";
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.backgroundColor = isSelected ? colorMapping[type] : "transparent";
-          e.target.style.color = isSelected ? "white" : colorMapping[type];
-        }}
       >
-        {text}
-      </button>
+        <button
+          onClick={onClick}
+          style={{
+            flex: 1,
+            background: isSelected ? colorMapping[type] : "transparent",
+            color: isSelected ? "white" : colorMapping[type],
+            border: "none",
+            padding: "0.5em 1em",
+            textAlign: "center",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            transition: "background-color 0.3s, color 0.3s",
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.backgroundColor = colorMapping[type];
+            e.target.style.color = "white";
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.backgroundColor = isSelected ? colorMapping[type] : "transparent";
+            e.target.style.color = isSelected ? "white" : colorMapping[type];
+          }}
+        >
+          {text}
+        </button>
+        {isCustom && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            style={{
+              background: isSelected ? colorMapping[type] : "transparent",
+              color: isSelected ? "white" : colorMapping[type],
+              border: "none",
+              borderLeft: `1px solid ${isSelected ? "white" : colorMapping[type]}`,
+              padding: "0.5em 1em",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              transition: "background-color 0.3s, color 0.3s",
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = colorMapping[type];
+              e.target.style.color = "white";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = isSelected ? colorMapping[type] : "transparent";
+              e.target.style.color = isSelected ? "white" : colorMapping[type];
+            }}
+          >
+            ✖
+          </button>
+        )}
+      </div>
     );
   }
 );
+
+
+
 
 const KeywordInput = ({ type, boardId, imageId, addKeywordSelection }) => {
   const [inputValue, setInputValue] = useState("");
@@ -108,7 +156,7 @@ const NoteKeywordInput = ({  addKeywordSelection }) => {
   };
 
   return (
-    <div style={{ marginBottom: "3.5em", display: "inline-flex", alignItems: "center", width: "auto", border: `1px solid black`, borderRadius: "4px", overflow: "hidden" }}>
+    <div style={{ display: "inline-flex", alignItems: "center", width: "auto", border: `1px solid black`, borderRadius: "4px", overflow: "hidden" }}>
       <select
         value={selectedType}
         onChange={(e) => setSelectedType(e.target.value)}

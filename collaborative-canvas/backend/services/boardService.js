@@ -21,7 +21,7 @@ const createBoard = async (boardData) => {
  * @returns {Promise<Object|null>} The updated board document.
  */
 const updateBoardName = async (boardId, newName) => 
-  Board.findByIdAndUpdate(boardId, { name: newName }, { new: true, runValidators: true });
+  await Board.findByIdAndUpdate(boardId, { name: newName }, { new: true, runValidators: true });
 
 /**
  * Delete a board and all its associated images and keywords.
@@ -34,7 +34,7 @@ const deleteBoard = async (boardId, roomId) => {
     Image.deleteMany({ boardId }),
   ]);
   await Room.findByIdAndUpdate(roomId, { $pull: { boards: boardId } });
-  return Board.findByIdAndDelete(boardId);
+  return await Board.findByIdAndDelete(boardId);
 };
 
 module.exports = {

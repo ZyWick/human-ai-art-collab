@@ -44,7 +44,7 @@ const removeKeywordOffset = async (keywordId) =>
 const toggleKeywordSelection = async (keywordId) => {
   const keyword = await Keyword.findById(keywordId);
   if (!keyword) throw new Error("Keyword not found");
-  return keyword.updateOne({ isSelected: !keyword.isSelected }, { new: true });
+  return await keyword.updateOne({ isSelected: !keyword.isSelected }, { new: true });
 };
 
 /**
@@ -52,14 +52,14 @@ const toggleKeywordSelection = async (keywordId) => {
  * @param {String} keywordId - The keyword's ObjectId.
  * @returns {Promise<Object|null>} The deleted keyword document or null if not found.
  */
-const deleteKeyword = async (keyword) => {
-  const keywordId = keyword._id;
+const deleteKeyword = async (keywordId) => {
+  const keyword = await Keyword.findById(keywordId);
   const boardId = keyword.boardId;
   const imageId = keyword.imageId;
 
   if (imageId) await Image.findByIdAndUpdate(imageId, { $pull: { keywords: keywordId } });
   if (boardId) await Board.findByIdAndUpdate(boardId, { $pull: { keywords: keywordId } });
-  Keyword.findByIdAndDelete(keywordId);
+  await Keyword.findByIdAndDelete(keywordId);
 }
 
 module.exports = {

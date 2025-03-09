@@ -60,8 +60,7 @@ const toggleKeywordSelection = async (req, res) => {
 const deleteKeyword = async (req, res) => {
   try {
     const { keywordId } = req.params;
-    const keyword = await keywordService.deleteKeyword(keywordId);
-    if (!keyword) return res.status(404).json({ error: 'Keyword not found' });
+    await keywordService.deleteKeyword(keywordId);
     res.json({ message: 'Keyword deleted.' });
   } catch (error) {
     res.status(500).json({ error: error.message });

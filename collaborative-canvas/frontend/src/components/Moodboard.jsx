@@ -4,10 +4,10 @@ import ImageComponent from "./ImageComponent";
 import useWindowSize from "../hook/useWindowSize";
 import { useSelector, useDispatch } from "react-redux";
 import KeywordComponent from "./KeywordComponent";
-import {updateBoardNoteKeywords} from '../redux/roomSlice'
+import {updateBoardNoteKeywords, deleteBoardNoteKeywords} from '../redux/roomSlice'
 import { useSocket } from "./SocketContext";
 import { toggleSelectedKeyword } from "../redux/selectionSlice";
-
+import { deleteKeyword } from "../util/api";
 
 const Moodboard = () => {
   const stageRef = useRef(null);
@@ -32,12 +32,55 @@ const Moodboard = () => {
   const toggleSelected = (data) => {
     const newKw = {...data, isSelected: !data.isSelected}
     socket.emit("updateKeywordNote", newKw)
-    dispatch(toggleSelectedKeyword(data._id))
+    socket.emit("toggleSelectedKeyword", data._id)
     dispatch(updateBoardNoteKeywords(newKw))
   }
 
+  const deleteNoteKeyword = async(keyword) => {
+    try {
+      socket.emit("deleteNoteKeyword", keyword._id)
+      const result = await deleteKeyword(keyword._id)
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const handleWheel = (e) => {
+    e.evt.preventDefault();
+    
+    const stage = stageRef.current;
+    const scaleBy = 1.05; // Zoom sensitivity
+    const oldScale = stage.scaleX();
+    
+    const pointer = stage.getPointerPosition();
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
+    };
+  
+    // Adjust scale based on wheel direction
+    const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+  
+    stage.scale({ x: newScale, y: newScale });
+  
+    // Keep the zoom centered around the mouse pointer
+    const newPos = {
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
+    };
+  
+    stage.position(newPos);
+    stage.batchDraw(); // Optimize drawing performance
+  };
+  
   return (
-    <Stage width={windowSize.width} height={windowSize.height} ref={stageRef}>
+    <Stage
+      width={windowSize.width}
+      height={windowSize.height}
+      ref={stageRef}
+      onWheel={handleWheel} // Enable zooming with mouse wheel
+      draggable // Optional: Allow panning
+    >
       <Layer>
         {images &&
           images.map((img) => (
@@ -45,11 +88,14 @@ const Moodboard = () => {
           ))}
         {noteKeywords &&
           noteKeywords.map((kw) => (
-            <KeywordComponent key={kw._id}
+            <KeywordComponent
+              key={kw._id}
               data={kw}
-              imageBounds={{ x: 0, y: 0}}
-              handleKeywordDrag={handleKeywordDrag} 
-              toggleSelected={toggleSelected}/>
+              imageBounds={{ x: 0, y: 0 }}
+              handleKeywordDrag={handleKeywordDrag}
+              toggleSelected={toggleSelected}
+              deleteKeyword={deleteNoteKeyword}
+            />
           ))}
       </Layer>
     </Stage>

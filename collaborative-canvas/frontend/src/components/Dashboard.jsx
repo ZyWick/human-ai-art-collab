@@ -33,19 +33,11 @@ const Sidebar = () => {
     >
       <UploadButton />
       {selectedImageId && <KeywordSelection selectedImageId={selectedImageId} />}
-      {/* <div>
-        <h3>Users in Room:</h3>
-        <ul>
-          {users.map((user) => (
-            <li key={user.id}>{user.username}</li>
-          ))}
-        </ul>
-      </div> */}
-      <div style={{width: "100%", marginTop: "auto"}}>
+      <div style={{width: "100%", marginTop: "auto",  marginBottom: "3.5em",}}>
       <hr
         style={{
           border: "none",
-          height: "0.05em",
+          minHeight: "0.05em",
           backgroundColor: "darkgrey",
           width: "100%",
         }}

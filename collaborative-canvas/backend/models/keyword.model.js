@@ -21,6 +21,10 @@ const keywordSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    isCustom: {
+      type: Boolean,
+      default: false,
+    },
     type: {
       type: String,
       required: true,

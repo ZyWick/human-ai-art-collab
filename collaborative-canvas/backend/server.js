@@ -21,6 +21,11 @@ const allowedOrigins = [
   "https://human-ai-art-collab.vercel.app"
 ];
 
+// Function to check if the origin is a Vercel preview URL
+const isVercelPreview = (origin) => {
+  return origin && origin.endsWith(".vercel.app");
+};
+
 const upload = multer({
     limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max file size
     storage: multer.memoryStorage(), // Store file in memory for processing
@@ -35,7 +40,7 @@ const upload = multer({
 const app = express();
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin || allowedOrigins.includes(origin) || isVercelPreview(origin)) {
       callback(null, true);
     } else {
       callback(new Error("Not allowed by CORS"));

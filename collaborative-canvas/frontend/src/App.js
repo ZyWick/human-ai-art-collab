@@ -3,7 +3,6 @@ import axios from "axios";
 import { io } from "socket.io-client";
 import { FaEnvelope, FaLock, FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import Login from "./components/Login"; // Import the Login component
 import JoinRoom from "./JoinRoom";
 import "./JoinRoom.css";
 import "./App.css";
@@ -39,6 +38,23 @@ function App() {
     return true;
   };
 
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!validateInputs()) return;
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await axios.post(`${BACKEND_URL}/api/login`, { email, password });
+      localStorage.setItem("token", response.data.token);
+      setToken(response.data.token);
+    } catch (err) {
+      setError(err.response?.data?.error || "Login failed. Please check your credentials.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!validateInputs()) return;
@@ -46,7 +62,7 @@ function App() {
     setError("");
 
     try {
-      const response = await axios.post(`${BACKEND_URL}`, { email, password });
+      const response = await axios.post(`${BACKEND_URL}/api/register`, { email, password });
       setError("Registration successful. Please login.");
     } catch (err) {
       setError(err.response?.data?.error || "Registration failed.");
@@ -60,7 +76,7 @@ function App() {
     setError("");
 
     try {
-      const response = await axios.post(`${BACKEND_URL}`, { username, room }, {
+      const response = await axios.post(`${BACKEND_URL}/api/join-room`, { username, room }, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUserData({ username, room });
@@ -113,41 +129,37 @@ function App() {
       {!token ? (
         <div>
           <h1>{isLogin ? "Login" : "Register"}</h1>
-          {isLogin ? (
-            <Login setToken={setToken} setError={setError} /> // Use the Login component
-          ) : (
-            <form onSubmit={handleRegister} className="inline-form">
-              <div className="input-group">
-                <FaEnvelope className="icon" />
-                <input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="input-group">
-                <FaLock className="icon" />
-                <input
-                  type="password"
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <button type="submit" disabled={loading}>
-                {loading ? "Registering..." : "Register"}
-              </button>
-            </form>
-          )}
+          <form onSubmit={isLogin ? handleLogin : handleRegister} className="inline-form">
+            <div className="input-group">
+              <FaEnvelope className="icon" />
+              <input
+                type="email"
+                placeholder="Email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div className="input-group">
+              <FaLock className="icon" />
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+            <button type="submit" disabled={loading}>
+              {loading ? (isLogin ? "Logging in..." : "Registering...") : (isLogin ? "Login" : "Register")}
+            </button>
+          </form>
           <button onClick={toggleForm} className="toggle-button">
             {isLogin ? "Need an account? Register" : "Already have an account? Login"}
           </button>
           <div className="third-party-buttons">
-            <a href={`${BACKEND_URL}`}>
+            <a href={`${BACKEND_URL}/api/auth/google`}>
               <FcGoogle className="icon" /> Login with Google
             </a>
-            <a href={`${BACKEND_URL}`}>
+            <a href={`${BACKEND_URL}/api/auth/facebook`}>
               <FaFacebook className="icon" /> Login with Facebook
             </a>
           </div>

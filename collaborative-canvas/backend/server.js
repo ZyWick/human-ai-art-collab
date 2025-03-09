@@ -20,8 +20,6 @@ const isVercelPreview = (origin) => {
   return origin && origin.endsWith(".vercel.app");
 };
 
-// Comment out CORS middleware
-/*
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin) || isVercelPreview(origin)) {
@@ -32,7 +30,6 @@ app.use(cors({
   },
   credentials: true,
 }));
-*/
 
 app.use(express.json());
 app.use(session({ secret: process.env.SESSION_SECRET, resave: false, saveUninitialized: true }));
@@ -41,8 +38,6 @@ app.use(passport.session());
 
 const server = http.createServer(app);
 const io = new Server(server, {
-  // Comment out CORS for Socket.IO
-  /*
   cors: {
     origin: function (origin, callback) {
       if (!origin || allowedOrigins.includes(origin) || isVercelPreview(origin)) {
@@ -54,7 +49,6 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true,
   },
-  */
 });
 
 // Connect to MongoDB

@@ -1,0 +1,42 @@
+.avatars-container {
+  display: flex;
+  height: 80%;
+  align-items: center;
+  white-space: nowrap;
+  justify-content: end;
+  overflow: hidden;
+  width: 30%;
+  flex-shrink: 0;
+}
+
+.avatar {
+  height: 100%;
+  border-radius: 50%;
+  background-color: #F5F5F5;
+  aspect-ratio: 1/1;
+  font-size: 14px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 3%;
+  cursor: pointer;
+  position: relative;
+}
+
+.avatar:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.more {
+  background-color: lightgray;
+}

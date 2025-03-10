@@ -16,8 +16,8 @@ module.exports = (io, users) => {
 
         if (!rooms[roomId]) rooms[roomId] = [];
         rooms[roomId].push({ id: socket.id, username });
-
-        io.to(roomId).emit("updateRoomUsers", rooms[roomId]);
+        const currUsers = rooms[roomId].map(user => user.username)
+        io.to(roomId).emit("updateRoomUsers", currUsers);
       } catch (error) {
         console.error("Error joining room:", error);
         socket.emit("error", { message: "Failed to join room" });
@@ -213,8 +213,8 @@ module.exports = (io, users) => {
         // store to aws
         // pack urls to array
         // store urls to db
-        await boardService.setGeneratedImages(boardId, newImages)
-        io.to(user.roomId).emit("generateNewImage", newImages);
+        const newBoard = await boardService.setGeneratedImages(boardId, newImages)
+        io.to(user.roomId).emit("generateNewImage", newBoard);
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });
@@ -228,6 +228,7 @@ module.exports = (io, users) => {
 
         const newBoard = await boardService.cloneBoard(boardId);
         console.log(newBoard)
+        console.log(newBoard._id)
         io.to(user.roomId).emit("cloneBoard", newBoard._id);
       } catch (error) {
         console.error("Error updating keyword:", error);

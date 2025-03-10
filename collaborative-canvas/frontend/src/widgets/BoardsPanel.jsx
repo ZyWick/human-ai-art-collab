@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectAllBoards } from "../redux/boardsSlice";
 import { useSocket } from "../components/SocketContext";
@@ -11,7 +11,7 @@ const BoardsPanel = () => {
   const dispatch = useDispatch();
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
   const currentRoomId = useSelector((state) => state.room.roomId);
-  const reversedBoards = [...boards].reverse();
+  const sortedBoards = [...boards].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
   const addNewBoard = () => {
     const newBoard = {
@@ -33,6 +33,8 @@ const BoardsPanel = () => {
   };
 
   const deleteBoard = (boardId, roomId) => {
+    if (sortedBoards.length === 1)
+      addNewBoard()
     socket.emit("deleteBoard", boardId, roomId);
   };
 
@@ -53,7 +55,7 @@ const BoardsPanel = () => {
         }}
         className="image-container"
       >
-        {reversedBoards.map((board) => (
+        {sortedBoards.map((board) => (
             <BoardsList
                 key={board._id} 
                 board={board} 
@@ -62,7 +64,7 @@ const BoardsPanel = () => {
             />
             ))}
       </div>
-      <div style={{ width: "100%", marginTop: "auto", marginBottom: "2.5em" }}>
+      <div style={{ width: "100%", marginTop: "auto", marginBottom: "4.5em" }}>
         <hr
           style={{
             border: "none",

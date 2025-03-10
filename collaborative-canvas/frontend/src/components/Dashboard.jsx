@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React  from "react";
 import KeywordSelection from "../widgets/KeywordSelection";
 import UploadButton from "../widgets/UploadButton";
 // import "../styles/Sidebar.css"
@@ -32,7 +32,7 @@ const Sidebar = () => {
     >
       <UploadButton />
       {selectedImageId && <KeywordSelection selectedImageId={selectedImageId} />}
-      <div style={{width: "100%", marginTop: "auto",  marginBottom: "3.5em",}}>
+      <div style={{width: "100%", marginTop: "auto",  marginBottom: "5.5em",}}>
       <hr
         style={{
           border: "none",

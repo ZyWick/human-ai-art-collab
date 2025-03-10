@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import {KeywordButton } from "./KeywordButton";
 import { useSocket } from "../components/SocketContext";
 
@@ -126,7 +126,7 @@ const MergePanel = () => {
   </style>
 
   {/* Bottom Section with Generate Button */}
-  <div style={{ width: "100%", marginTop: "auto", marginBottom: "2.5em" }}>
+  <div style={{ width: "100%", marginTop: "auto", marginBottom: "4.5em" }}>
     <hr
       style={{
         border: "none",

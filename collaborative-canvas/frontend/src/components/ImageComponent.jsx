@@ -3,12 +3,10 @@ import { Image, Transformer } from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
 import KeywordComponent from "./KeywordComponent";
 import useImageSelection from "../hook/useImageSelection";
-import { updateImage, updateKeywords } from "../redux/imagesSlice";
+import { updateImage } from "../redux/imagesSlice";
 import { setSelectedImage } from "../redux/selectionSlice";
 import { useSocket } from "./SocketContext";
 import { calculateNewKeywordPosition } from "../util/keywordMovement";
-import { toggleSelectedKeyword } from "../redux/selectionSlice";
-
 
 const ImageComponent = ({ imgData, stageRef }) => {
   const [image, setImage] = useState(null);
@@ -18,6 +16,7 @@ const ImageComponent = ({ imgData, stageRef }) => {
   const dispatch = useDispatch();
   const socket = useSocket();
   const selectedImageId = useSelector((state) => state.selection.selectedImageId);
+  const keywordRefs = useRef({});
 
   useEffect(()=> {
     setKeywords(imgData.keywords)
@@ -36,7 +35,7 @@ const ImageComponent = ({ imgData, stageRef }) => {
     img.src = imgData.url;
     img.onload = () => setImage(img);
     img.onerror = () => console.error("Failed to load image:", imgData.url);
-  }, [imgData.url]);
+  }, [imgData.url, imgData]);
 
   const isSelected = selectedImageId ? 
     selectedImageId === imgData._id : false;
@@ -177,6 +176,7 @@ const ImageComponent = ({ imgData, stageRef }) => {
             handleKeywordDrag ={handleKeywordDrag}
             toggleSelected = {toggleSelected}
             deleteKeyword={deleteKeyword}
+            ref={el => { if (el) keywordRefs.current[keyword._id] = el; }}
           />
         ))}
     </>

@@ -15,11 +15,12 @@
   height: 100vh; /* Full height */
   z-index: 10;
   background: white;
-  padding-inline: 10px;
+  padding-inline: 0.8em;
   padding-top: 1%;
   box-shadow: 2px 2px 2px darkgray;
   overflow: hidden; /* Ensures no internal scrolling */
 }
+
 
 .right {
   box-shadow: -2px -2px 2px darkgray;

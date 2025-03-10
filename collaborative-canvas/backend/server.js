@@ -73,10 +73,10 @@ app.post("/upload", upload.single("image"), async (req, res) => {
         width: width,
         height: height,
       };
-      
+      console.log(newImage)
       if (user) {
           let image = await imageService.createImage(newImage)
-          io.to(user.roomID).emit("newImage", image);
+          io.to(user.roomId).emit("newImage", image);
       }
       res.json({ message: "Upload successful", ...result });
   } catch (error) {

@@ -36,7 +36,11 @@ const App = () => {
   };
 
   return (
-    <div style={{ backgroundColor: "#D8E2DC" }}>
+    <div style={{width: "100vw", 
+    height:"100vh", 
+    maxWidth: "100vw", 
+    maxHeight:"100vh", 
+    overflow: "hidden",}}>
       {!joined ? (
         <div>
           <h1>Join a Moodboard Session</h1>

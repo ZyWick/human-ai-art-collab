@@ -1,9 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 import roomReducer from "./roomSlice";
 import imagesReducer from "./imagesSlice";
-import selectedImageReducer from "./selectedImageSlice";
 // store.js
-import boardsReducer from './boardSlice'
+import boardsReducer from './boardsSlice'
 import selectionReducer from './selectionSlice'
 
 const store = configureStore({
@@ -12,7 +11,6 @@ const store = configureStore({
     room: roomReducer,
     boards: boardsReducer,
     images: imagesReducer,
-    selectedImage: selectedImageReducer,
   },
 });
 

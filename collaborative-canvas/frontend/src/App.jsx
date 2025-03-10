@@ -1,21 +1,33 @@
 import React, { useState } from "react";
 import Layout from "./layout/Layout";
-import { joinRoom } from "./util/api";
+import { joinRoom,  } from "./util/api";
 import { useDispatch, useSelector } from "react-redux";
 import { setUsername, setRoomCode } from "./redux/roomSlice";
+import {
+  setRoomId,
+  setRoomName,
+  setUpdatedAt,
+  setCurrentBoardId,
+} from "./redux/roomSlice";
+import { setBoards } from "./redux/boardsSlice";
 
 const App = () => {
   const dispatch = useDispatch();
   const [joined, setJoined] = useState(false);
-  const [roomData, setRoomData] = useState(null);
   const { username, roomCode } = useSelector((state) => state.room);
+
 
   const joinTheRoom = async () => {
     if (!username || !roomCode) return;
     try {
       const newRoomData = await joinRoom(roomCode);
       if (newRoomData) {
-        setRoomData(newRoomData);
+        const { _id, name, updatedAt, boards } = newRoomData;
+        dispatch(setRoomId(_id));
+        dispatch(setRoomName(name));
+        dispatch(setUpdatedAt(updatedAt));
+        dispatch(setBoards(boards));
+        dispatch(setCurrentBoardId(boards?.[0]._id));
         setJoined(true);
       }
     } catch (error) {
@@ -43,7 +55,7 @@ const App = () => {
           <button onClick={joinTheRoom}>Join</button>
         </div>
       ) : (
-        <Layout roomData={roomData} />
+        <Layout />
       )}
     </div>
   );

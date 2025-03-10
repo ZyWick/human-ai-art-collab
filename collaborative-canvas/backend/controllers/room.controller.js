@@ -54,9 +54,20 @@ const joinRoom = async (req, res) => {
   }
 };
 
+const getRoom = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const room = await roomService.getRoom(roomId);
+    res.json(room);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+};
+
 module.exports = {
   createRoom,
   updateRoomName,
   deleteRoom,
   joinRoom,
+  getRoom
 };

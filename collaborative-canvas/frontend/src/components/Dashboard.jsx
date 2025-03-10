@@ -1,6 +1,6 @@
 import React, {useState} from "react";
+import KeywordSelection from "../widgets/KeywordSelection";
 import UploadButton from "../widgets/UploadButton";
-import KeywordSelection from "../widgets/keywordSelection";
 // import "../styles/Sidebar.css"
 import { useSelector } from "react-redux";
 import {NoteKeywordInput} from '../widgets/KeywordButton'

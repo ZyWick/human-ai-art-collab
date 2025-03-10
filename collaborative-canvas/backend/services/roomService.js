@@ -54,18 +54,23 @@ const deleteRoom = async (roomId) => {
 const joinRoom = async (joinCode) => {
   const room = await Room.findOne({ joinCode })
     .populate({
-      path: 'boards',
-      populate: [
-        { path: 'images', populate: { path: 'keywords' } },
-        { path: 'keywords' },
-      ],
-    });
+      path: 'boards'});
+
+  if (!room) throw new Error('Room not found');
+  return room;
+};
+
+const getRoom = async (roomId) => {
+  const room = await Room.findById(roomId)
+    .populate({
+      path: 'boards'});
 
   if (!room) throw new Error('Room not found');
   return room;
 };
 
 module.exports = {
+  getRoom,
   createRoom,
   updateRoomName,
   deleteRoom,

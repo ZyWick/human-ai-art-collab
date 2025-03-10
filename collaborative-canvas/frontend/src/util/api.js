@@ -151,3 +151,6 @@ export const deleteRoom = async (roomId) =>
 
 export const joinRoom = async (joinCode) =>
   apiFetch(`/rooms/join/${joinCode}`, { method: "GET" });
+
+export const getRoom = async (roomId) =>
+  apiFetch(`/rooms/${roomId}`, { method: "GET" });

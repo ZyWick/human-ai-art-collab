@@ -8,22 +8,27 @@ const boardSchema = new mongoose.Schema(
       index: true
     },
     roomId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Room',
-          required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Room',
+      required: true,
     },
     images: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Image',
-        },
-      ],
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Image',
+      },
+    ],
     keywords: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: 'Keyword',
-        },
-      ]
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Keyword',
+      },
+    ],
+    generatedImages: [
+      {
+        type: String,
+      },
+    ],
   },
   { timestamps: true }
 );

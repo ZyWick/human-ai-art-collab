@@ -27,7 +27,7 @@ const App = () => {
         dispatch(setRoomName(name));
         dispatch(setUpdatedAt(updatedAt));
         dispatch(setBoards(boards));
-        dispatch(setCurrentBoardId(boards?.[0]._id));
+        dispatch(setCurrentBoardId(boards?.[boards.length - 1]._id));
         setJoined(true);
       }
     } catch (error) {

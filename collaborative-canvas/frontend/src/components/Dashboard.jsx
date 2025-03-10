@@ -7,8 +7,7 @@ import {NoteKeywordInput} from '../widgets/KeywordButton'
 import { useSocket } from './SocketContext'
 
 const Sidebar = () => {
-  const users = useSelector((state) => state.room.users);
-  const selectedImageId = useSelector((state) => state.selection.selectedImageId);
+ const selectedImageId = useSelector((state) => state.selection.selectedImageId);
   const boardId  = useSelector((state) => state.room.currentBoardId);
   const socket = useSocket();
 

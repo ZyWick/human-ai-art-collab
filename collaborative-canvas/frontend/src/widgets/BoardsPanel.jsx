@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState, useEffect, useRef} from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { selectAllBoards } from "../redux/boardsSlice";
 import { useSocket } from "../components/SocketContext";
@@ -6,12 +6,26 @@ import { setCurrentBoardId } from "../redux/roomSlice";
 import BoardsList from "./BoardsList";
 
 const BoardsPanel = () => {
-  const boards = useSelector(selectAllBoards);
   const socket = useSocket();
   const dispatch = useDispatch();
-  const currentBoardId = useSelector((state) => state.room.currentBoardId);
   const currentRoomId = useSelector((state) => state.room.roomId);
-  const sortedBoards = [...boards].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+  const boardData = useSelector(selectAllBoards)
+  const [boards, setBoards] = useState(boardData || []);
+  
+  const generatedImages = useSelector((state) => state.room.generatedImages);
+  const currentBoardId = useSelector((state) => state.room.currentBoardId);
+  
+  const currentBoardIdRef = useRef(currentBoardId);
+  currentBoardIdRef.current = currentBoardId;
+  
+  useEffect(() => {
+    setBoards([...boardData]
+      .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+        .map((board) =>
+          board._id === currentBoardIdRef.current ? { ...board, generatedImages } : board
+        ))
+  }, [boardData, generatedImages])
+
 
   const addNewBoard = () => {
     const newBoard = {
@@ -33,7 +47,7 @@ const BoardsPanel = () => {
   };
 
   const deleteBoard = (boardId, roomId) => {
-    if (sortedBoards.length === 1)
+    if (boards.length === 1)
       addNewBoard()
     socket.emit("deleteBoard", boardId, roomId);
   };
@@ -55,10 +69,11 @@ const BoardsPanel = () => {
         }}
         className="image-container"
       >
-        {sortedBoards.map((board) => (
+        {boards.map((board) => (
             <BoardsList
                 key={board._id} 
                 board={board} 
+                currentBoardId={currentBoardId}
                 loadBoard={loadBoard} 
                 deleteBoard={deleteBoard} 
             />

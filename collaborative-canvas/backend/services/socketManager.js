@@ -1,6 +1,7 @@
 const imageService = require('./imageService');
 const keywordService = require('./keywordService');
 const boardService = require('./boardService')
+const roomService = require('./roomService')
 const { getImageDimensions } = require('../utils/imageProcessor');
 
 const rooms = {};
@@ -21,6 +22,30 @@ module.exports = (io, users) => {
       } catch (error) {
         console.error("Error joining room:", error);
         socket.emit("error", { message: "Failed to join room" });
+      }
+    });
+
+    socket.on("updateBoardName", async ({boardId, boardName}) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        const updatedBoard = await boardService.updateBoardName(boardId, boardName)
+        io.to(user.roomId).emit("updateBoardName", updatedBoard);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    });
+
+    socket.on("updateRoomName", async ({roomId, roomName}) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        const updatedRoom = await roomService.updateRoomName(roomId, roomName)
+        io.to(user.roomId).emit("updateRoomName", updatedRoom.name);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
       }
     });
       
@@ -266,13 +291,16 @@ module.exports = (io, users) => {
     socket.on("leave room", async ({ username, roomId }) => {
       try {
         if (!username || !roomId) return;
-
+        const user = users[socket.id];
+        if (!user) return;
+        
         rooms[roomId] = rooms[roomId]?.filter((user) => user.id !== socket.id) || [];
 
         if (rooms[roomId].length === 0) {
           delete rooms[roomId];
         } else {
-          io.to(roomId).emit("updateRoomUsers", rooms[roomId]);
+          const usernames = rooms[roomId].map(item => item.username);
+          io.to(roomId).emit("updateRoomUsers", ["noneoneo"]);
         }
 
         delete users[socket.id];
@@ -287,10 +315,11 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (user && rooms[user.roomId]) {
+          let usernames;
           rooms[user.roomId] = rooms[user.roomId].filter((u) => u.id !== socket.id);
           if (rooms[user.roomId].length === 0) delete rooms[user.roomId];
-
-          io.to(user.roomId).emit("updateRoomUsers", rooms[user.roomId]);
+          else usernames = rooms[user.roomId].map(item => item.username);
+          io.to(user.roomId).emit("updateRoomUsers", usernames);
         }
 
         console.log(`User disconnected: ${socket.id}`);

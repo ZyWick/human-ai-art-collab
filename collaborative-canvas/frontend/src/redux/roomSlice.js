@@ -1,10 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { io } from "socket.io-client";
-
-const REACT_APP_BACKEND_URL =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
-
-const socket = io(REACT_APP_BACKEND_URL);
 
 const roomReducer = createSlice({
   name: "socket",
@@ -15,6 +9,7 @@ const roomReducer = createSlice({
     roomName: null,
     updatedAt: null,
     currentBoardId: null,
+    boardName: null,
     boardNoteKeywords: [],
     generatedImages: [],
     users: [],
@@ -37,6 +32,9 @@ const roomReducer = createSlice({
     },
     setCurrentBoardId: (state, action) => {
       state.currentBoardId = action.payload;
+    },
+    setBoardName: (state, action) => {
+      state.boardName = action.payload;
     },
     setBoardNoteKeywords: (state, action) => {
       state.boardNoteKeywords = action.payload;
@@ -70,6 +68,7 @@ export const {
   setRoomName,
   setUpdatedAt,
   setCurrentBoardId,
+  setBoardName,
   setBoardNoteKeywords,
   updateBoardNoteKeywords,
   addBoardNoteKeyword,

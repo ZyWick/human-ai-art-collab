@@ -1,22 +1,33 @@
-import React, { useMemo, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Label, Tag, Text } from "react-konva";
 import colorMapping from "../config/keywordTypes";
-import { useSocket } from "./SocketContext";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+// import { calculateNewKeywordPosition } from "../util/keywordMovement";
 
-const KeywordComponent = ({ data, imageBounds, handleKeywordDrag, toggleSelected, deleteKeyword }) => {
+const KeywordComponent = ({
+  data,
+  imageBounds,
+  handleKeywordDrag,
+  toggleSelected,
+  deleteKeyword,
+  updateKeyword,
+}) => {
   const keywordRef = useRef(null);
-  const {x: imageX, y: imageY, } = imageBounds;
+  const {
+    x: imageX,
+    y: imageY,
+    width: imageWidth,
+    height: imageHeight,
+  } = imageBounds;
   const dispatch = useDispatch();
-  const socket = useSocket();
-  const selecteds = useSelector((state) => state.selection.selectedKeywordIds);
-  const [isClicked, setIsCLicked] = useState(false)
+  const [isClicked, setIsCLicked] = useState(false);
+  // const [isHovered, setIsHovered] = useState(false)
 
   useEffect(() => {
     const handleKeyDown = (event) => {
       if ((event.key === "Delete" || event.key === "Backspace") && isClicked) {
-        console.log("hello")
-        deleteKeyword(data)
+        console.log("hello");
+        deleteKeyword(data);
       }
     };
 
@@ -24,9 +35,18 @@ const KeywordComponent = ({ data, imageBounds, handleKeywordDrag, toggleSelected
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isClicked, dispatch, data._id]);
+  }, [isClicked, dispatch, data._id, deleteKeyword, data]);
 
-  // TODO: Move to imageComponent. Similar to ImageSelection
+  // const [kwSize, setKwSize] = useState({ width: 0, height: 0 });
+
+  // useEffect(() => {
+  //   if (keywordRef.current) {
+  //     const { width, height } = keywordRef.current.getClientRect();
+  //     setKwSize({ width, height });
+  //   }
+  // }, []);
+
+  // TODO: Move on Transform. Buggy
   // useEffect(() => {
   //   if (keywordRef.current) {
   //     const bbox = keywordRef.current.getClientRect();
@@ -51,7 +71,7 @@ const KeywordComponent = ({ data, imageBounds, handleKeywordDrag, toggleSelected
   //     updateKeyword(newKeyword);
   //   }
   // }
-  // }, [imageWidth, imageHeight]);
+  // }, [imageWidth, imageHeight, updateKeyword, data]);
 
   const labelEntity = {
     id: "custom-" + data.type + ": " + data.name,
@@ -59,7 +79,6 @@ const KeywordComponent = ({ data, imageBounds, handleKeywordDrag, toggleSelected
     fileid: "custom",
     keyword: data.keyword,
   };
-
 
   // const { addSelectedLabel, removeSelectedLabel, selectedLabelList } =
   //   useLabelSelection();
@@ -74,8 +93,8 @@ const KeywordComponent = ({ data, imageBounds, handleKeywordDrag, toggleSelected
       xpos={data.offsetX + imageX}
       ypos={data.offsetY + imageY}
       onClick={() => {
-        toggleSelected(data)
-        setIsCLicked(!isClicked)
+        toggleSelected(data);
+        setIsCLicked(!isClicked);
       }}
       isSelected={data.isSelected}
       type={labelEntity.type}
@@ -89,7 +108,7 @@ const KeywordComponent = ({ data, imageBounds, handleKeywordDrag, toggleSelected
       onDragEnd={(e) => handleKeywordDrag(e, "updateKeyword", data)}
       keywordRef={keywordRef}
     />
-  ) : null;  
+  ) : null;
 };
 
 export const KeywordLabel = ({

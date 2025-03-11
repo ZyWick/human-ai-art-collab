@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import { Image, Transformer } from "react-konva";
+import { Image, Transformer, Group, Rect } from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
 import KeywordComponent from "./KeywordComponent";
 import useImageSelection from "../hook/useImageSelection";
@@ -15,20 +15,25 @@ const ImageComponent = ({ imgData, stageRef }) => {
   const transformerRef = useRef();
   const dispatch = useDispatch();
   const socket = useSocket();
-  const selectedImageId = useSelector((state) => state.selection.selectedImageId);
+  const selectedImageId = useSelector(
+    (state) => state.selection.selectedImageId
+  );
   const keywordRefs = useRef({});
+  const [isHovered, setIsHovered] = useState(false);
 
-  useEffect(()=> {
-    setKeywords(imgData.keywords)
-  },[imgData.keywords])
+  useEffect(() => {
+    setKeywords(imgData.keywords);
+  }, [imgData.keywords]);
 
   useImageSelection(stageRef, imgData._id);
+
   const imageBounds = {
     width: imgData.width,
     height: imgData.height,
     x: imgData.x,
     y: imgData.y,
   };
+
   useEffect(() => {
     if (!imgData || !imgData.url) return;
     const img = new window.Image();
@@ -37,13 +42,12 @@ const ImageComponent = ({ imgData, stageRef }) => {
     img.onerror = () => console.error("Failed to load image:", imgData.url);
   }, [imgData.url, imgData]);
 
-  const isSelected = selectedImageId ? 
-    selectedImageId === imgData._id : false;
+  const isSelected = selectedImageId ? selectedImageId === imgData._id : false;
 
   const handleDrag = (e, action) => {
     const newImage = { ...imgData, x: e.target.x(), y: e.target.y() };
-    socket.emit(action, newImage);
     dispatch(updateImage(newImage));
+    socket.emit(action, newImage);
   };
 
   const handleTransform = (action, event) => {
@@ -62,9 +66,8 @@ const ImageComponent = ({ imgData, stageRef }) => {
     node.scaleX(1);
     node.scaleY(1);
 
-    socket.emit(action, newImage);
     dispatch(updateImage(newImage));
-
+    socket.emit(action, newImage);
   };
 
   const updateKeyword = useCallback(
@@ -103,66 +106,84 @@ const ImageComponent = ({ imgData, stageRef }) => {
       offsetX: newOffset.newX,
       offsetY: newOffset.newY,
     };
-    socket.emit(action, newKeyword);
     updateKeyword(newKeyword);
+    socket.emit(action, newKeyword);
   };
 
   const toggleSelected = (data) => {
-    socket.emit("toggleSelectedKeyword", data._id)
+    socket.emit("toggleSelectedKeyword", data._id);
     // dispatch(toggleSelectedKeyword(data._id))
-    updateKeyword({...data, isSelected: !data.isSelected});
-    socket.emit("updateKeyword", {...data, isSelected: !data.isSelected})
-  }
+    updateKeyword({ ...data, isSelected: !data.isSelected });
+    socket.emit("updateKeyword", { ...data, isSelected: !data.isSelected });
+  };
 
   const deleteKeyword = (keyword) => {
     let { offsetX, offsetY, ...newKeyword } = keyword;
     socket.emit("removeKeywordOffset", keyword._id);
-    const updatedImage = {...imgData,
+    const updatedImage = {
+      ...imgData,
       keywords: imgData.keywords.map((kw) =>
-        kw._id === newKeyword._id ? newKeyword : kw)
-    }
-    socket.emit("updateImage", updatedImage)
-  }
+        kw._id === newKeyword._id ? newKeyword : kw
+      ),
+    };
+    socket.emit("updateImage", updatedImage);
+  };
 
   return image ? (
     <>
-      <Image
-        ref={imageRef}
-        image={image}
-        width={imgData.width}
-        height={imgData.height}
-        draggable
-        x={imgData.x}
-        y={imgData.y}
-        onClick={(e) => {
-          e.cancelBubble = true;
-          dispatch(setSelectedImage(imgData._id));
-          console.log(imgData._id)
-        }}
-        onTap={(e) => {
-          e.cancelBubble = true;
-          dispatch(setSelectedImage(imgData._id));
-          console.log(imgData._id)
-        }}
-        onDragMove={(e) => handleDrag(e, "imageMoving")}
-        onDragEnd={(e) => handleDrag(e, "updateImage")}
-        onTransform={(e) => handleTransform("imageTransforming", e)}
-        onTransformEnd={(e) => handleTransform("updateImage", e)}
-      />
-      {isSelected && imageRef.current && (
-        <Transformer
-          keepRatio={true}
-          ref={transformerRef}
-          nodes={[imageRef.current]}
-          rotateEnabled={false}
-          enabledAnchors={[
-            "top-left",
-            "top-right",
-            "bottom-left",
-            "bottom-right",
-          ]}
+      <Group
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
+        <Image
+          ref={imageRef}
+          image={image}
+          width={imgData.width}
+          height={imgData.height}
+          draggable
+          x={imgData.x}
+          y={imgData.y}
+          onClick={(e) => {
+            e.cancelBubble = true;
+            dispatch(setSelectedImage(imgData._id));
+            console.log(imgData._id);
+          }}
+          onTap={(e) => {
+            e.cancelBubble = true;
+            dispatch(setSelectedImage(imgData._id));
+            console.log(imgData._id);
+          }}
+          onDragMove={(e) => handleDrag(e, "imageMoving")}
+          onDragEnd={(e) => handleDrag(e, "updateImage")}
+          onTransform={(e) => handleTransform("imageTransforming", e)}
+          onTransformEnd={(e) => handleTransform("updateImage", e)}
         />
-      )}
+        {isSelected && imageRef.current && (
+          <Transformer
+            keepRatio={true}
+            ref={transformerRef}
+            nodes={[imageRef.current]}
+            rotateEnabled={false}
+            enabledAnchors={[
+              "top-left",
+              "top-right",
+              "bottom-left",
+              "bottom-right",
+            ]}
+          />
+        )}
+        {!isSelected && isHovered && (
+          <Rect
+            x={imgData.x}
+            y={imgData.y}
+            width={imgData.width}
+            height={imgData.height}
+            stroke="rgb(109, 128, 212)"
+            strokeWidth={2}
+            listening={false} // Makes sure it doesn't interfere with interactions
+          />
+        )}
+      </Group>
       {keywords
         .filter(
           (keyword) =>
@@ -173,10 +194,13 @@ const ImageComponent = ({ imgData, stageRef }) => {
             key={keyword._id}
             data={keyword}
             imageBounds={imageBounds}
-            handleKeywordDrag ={handleKeywordDrag}
-            toggleSelected = {toggleSelected}
+            handleKeywordDrag={handleKeywordDrag}
+            toggleSelected={toggleSelected}
             deleteKeyword={deleteKeyword}
-            ref={el => { if (el) keywordRefs.current[keyword._id] = el; }}
+            updateKeyword={updateKeyword}
+            ref={(el) => {
+              if (el) keywordRefs.current[keyword._id] = el;
+            }}
           />
         ))}
     </>

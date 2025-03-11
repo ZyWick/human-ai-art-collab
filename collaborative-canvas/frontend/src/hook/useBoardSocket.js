@@ -24,6 +24,9 @@ import {
   removeBoardById,
   selectAllBoards,
 } from "../redux/boardsSlice";
+import {
+  removeKeywordFromSelected,
+} from "../redux/selectionSlice"
 
 const useBoardSocket = () => {
   const dispatch = useDispatch();
@@ -61,8 +64,6 @@ const useBoardSocket = () => {
     socket.on("loadImages", (images) => dispatch(setImages(images)));
 
     socket.on("newImage", (image) => {
-      console.log(image);
-      console.log("heyy");
       if (image.boardId === currentBoardId) dispatch(addImage(image));
     });
 
@@ -71,8 +72,6 @@ const useBoardSocket = () => {
     });
 
     socket.on("updateImage", (image) => {
-      console.log(image.boardId, currentBoardId);
-      console.log(image.boardId === currentBoardId);
       if (image.boardId === currentBoardId) dispatch(updateImage(image));
     });
 
@@ -88,7 +87,12 @@ const useBoardSocket = () => {
 
     socket.on("deleteNoteKeyword", (kwId) => {
       dispatch(deleteBoardNoteKeywords(kwId));
+      dispatch(removeKeywordFromSelected(kwId))
     });
+
+    socket.on("removeKeywordFromSelected", (keywordId) => {
+      dispatch(removeKeywordFromSelected(keywordId))
+    })
 
     socket.on("toggleSelectedKeyword", (kwId) => {
       dispatch(toggleSelectedKeyword(kwId));
@@ -117,7 +121,6 @@ const useBoardSocket = () => {
     );
 
     socket.on("cloneBoard", (newBoardId) => {
-      console.log(newBoardId);
       dispatch(setCurrentBoardId(newBoardId));
     });
 
@@ -128,6 +131,9 @@ const useBoardSocket = () => {
     socket.on("deleteBoard", (deletedId) => {
       handleDeleteBoard(deletedId);
     });
+
+    // this on image component
+    // socket.on("updateKeyword", (newKw) => console.log(newKw))
 
     return () => {
       socket.emit("leave room", { username, roomId });

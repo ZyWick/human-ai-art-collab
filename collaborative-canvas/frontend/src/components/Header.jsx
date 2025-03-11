@@ -1,12 +1,17 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import UserAvatars from "../widgets/UserAvatars";
 import { selectBoardById } from "../redux/boardsSlice";
 import { useSocket } from "./SocketContext";
+import {  setRoomName,} from "../redux/roomSlice";
+import {
+  updateBoard,
+} from "../redux/boardsSlice";
 
 const Header = () => {
   const headerRef = useRef();
   const socket = useSocket();
+  const dispatch = useDispatch();
   const { roomName, roomCode, roomId, currentBoardId } = useSelector(
     (state) => state.room
   );
@@ -23,7 +28,7 @@ const Header = () => {
 
   useEffect (() => {
     setTempName({ board: boardName, room: roomName })
-  }, [currentBoardId])
+  }, [currentBoardId, boardName, roomName])
 
   const handleEdit = (field) => {
     setEditing((prev) => ({ ...prev, [field]: true }));
@@ -40,8 +45,10 @@ const Header = () => {
     setTempName((prev) => ({ ...prev, [field]: newName }));
   
     if (field === "room" && newName !== roomName) {
+      dispatch(setRoomName(newName))
       socket.emit("updateRoomName", { roomId, roomName: newName });
     } else if (field === "board" && newName !== boardName) {
+      dispatch(updateBoard({id: currentBoardId, changes: { name: newName }, }));
       socket.emit("updateBoardName", { boardId: currentBoardId, boardName: newName });
     }
   };

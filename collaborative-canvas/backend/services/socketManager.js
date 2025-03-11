@@ -118,6 +118,13 @@ module.exports = (io, users) => {
       }
     })
 
+    socket.on("removeKeywordFromSelected", (keywordId) => {
+      const user = users[socket.id];
+      if (user) {
+        io.to(user.roomId).emit("removeKeywordFromSelected", keywordId);
+      }
+    });
+
     socket.on("deleteImage", async (_id) => {
       try {
         const user = users[socket.id];
@@ -185,11 +192,11 @@ module.exports = (io, users) => {
       }
     });
 
-    socket.on("removeKeywordOffset", async (updatedKeywordId) => {
+    socket.on("removeKeywordFromBoard", async (updatedKeywordId) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        await keywordService.removeKeywordOffset(updatedKeywordId);
+        await keywordService.removeKeywordFromBoard(updatedKeywordId);
         const newKeyword = await keywordService.getKeyword(updatedKeywordId);
         io.to(user.roomId).emit("updateKeyword", newKeyword);
       } catch (error) {

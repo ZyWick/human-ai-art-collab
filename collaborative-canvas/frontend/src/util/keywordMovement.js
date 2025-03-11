@@ -41,7 +41,7 @@ export const calculateNewKeywordPosition = (
     newY = imageCenter.y + Math.sin(angle) * maxRadius * -1 - targetHeight / 2;
   }
 
-  return { newX, newY };
+  return {offsetX: newX, offsetY: newY };
 };
 
 // export const handleKeywordPositionUpdate = (

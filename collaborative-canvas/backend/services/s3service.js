@@ -28,7 +28,7 @@ async function getTemporaryCredentials() {
 async function uploadS3Image(file) {
     try {
         const s3 = await getTemporaryCredentials();
-        const uniqueFilename = `${Date.now()}-${Math.floor(Math.random() * 10000)}-${file.originalname.replace(/[+\s]+/g, "-")}`;
+        const uniqueFilename = `${Date.now()}-${Math.floor(Math.random() * 10000)}-${file.originalname.replace(/[^a-zA-Z0-9._-]/g, "-")}`;
         const params = {
             Bucket: BUCKET_NAME,
             Key: uniqueFilename,

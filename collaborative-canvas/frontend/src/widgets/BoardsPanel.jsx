@@ -1,6 +1,6 @@
-import React, {useState, useEffect, useRef} from "react";
+import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { selectAllBoards, selectBoardById } from "../redux/boardsSlice";
+import { selectAllBoards,  } from "../redux/boardsSlice";
 import { useSocket } from "../components/SocketContext";
 import { setCurrentBoardId } from "../redux/roomSlice";
 import BoardsList from "./BoardsList";

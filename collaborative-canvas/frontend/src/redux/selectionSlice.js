@@ -25,6 +25,9 @@ const selectionSlice = createSlice({
         state.selectedKeywordIds.push(keywordId);
       }
     },
+    removeKeywordFromSelected(state, action) {
+      state.selectedKeywordIds = state.selectedKeywordIds.filter(id => id !== action.payload);
+    },
     // Set selected keywords to a new array (e.g., when loading selections)
     setSelectedKeywords(state, action) {
       state.selectedKeywordIds = action.payload;
@@ -41,6 +44,7 @@ export const {
   toggleSelectedKeyword,
   setSelectedKeywords,
   clearSelectedKeywords,
+  removeKeywordFromSelected,
 } = selectionSlice.actions;
 
 export default selectionSlice.reducer;

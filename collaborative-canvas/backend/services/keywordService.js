@@ -29,11 +29,15 @@ const updateKeyword = async (keywordId, updateData) =>
 const getKeyword = async (keywordId) =>
    await Keyword.findById(keywordId);
 
-const removeKeywordOffset = async (keywordId) =>
+const removeKeywordFromBoard = async (keywordId) =>
   await Keyword.updateOne(
     { _id: keywordId },
-    { $unset: { offsetX: "", offsetY: "" } }
+    {
+      $unset: { offsetX: "", offsetY: "" }, // Remove offset values
+      $set: { isSelected: false }, // Set isSelected to false
+    }
   );
+
   
 
 /**
@@ -66,7 +70,7 @@ module.exports = {
   getKeyword,
   createKeyword,
   updateKeyword,
-  removeKeywordOffset,
+  removeKeywordFromBoard,
   toggleKeywordSelection,
   deleteKeyword,
 };

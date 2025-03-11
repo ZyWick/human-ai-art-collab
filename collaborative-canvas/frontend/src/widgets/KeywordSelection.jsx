@@ -4,12 +4,15 @@ import { calculateNewKeywordPosition } from "../util/keywordMovement";
 import { useSelector } from "react-redux";
 import { useSocket } from "../components/SocketContext";
 import { selectImageById } from "../redux/imagesSlice";
+import { useDispatch } from "react-redux";
+import { updateImage } from "../redux/imagesSlice";
 import "../styles/keywordSelection.css";
 import { deleteKeyword } from "../util/api";
 
 const KeywordSelection = ({ selectedImageId }) => {
   const keywordRefs = useRef({});
   const socket = useSocket();
+  const dispatch =useDispatch();
   
   const selectedImage = useSelector(state => selectImageById(state, selectedImageId));
   
@@ -56,33 +59,36 @@ const KeywordSelection = ({ selectedImageId }) => {
 
   const toggleOnBoard = keyword => {
     let newKeyword = { ...keyword };
-    if (keyword.offsetX !== undefined && keyword.offsetY !== undefined) {
-      socket.emit("removeKeywordOffset", keyword._id);
+    if ((keyword.offsetX !== undefined && keyword.offsetY !== undefined)) {
+      socket.emit("removeKeywordFromBoard", keyword._id);
     } else {
       const bbox = keywordRefs.current[keyword._id]?.getBoundingClientRect();
       const { x, y } = getRandomPoint(selectedImage.width, selectedImage.height);
-      const { newX, newY } = calculateNewKeywordPosition(x, y, bbox.width, bbox.height, selectedImage.width, selectedImage.height);
-      newKeyword = { ...keyword, offsetX: newX, offsetY: newY };
+      const { offsetX, offsetY } = calculateNewKeywordPosition(x, y, bbox.width, bbox.height, selectedImage.width, selectedImage.height);
+      newKeyword = { ...keyword, offsetX: offsetX, offsetY: offsetY };
       socket.emit("updateKeyword", newKeyword);
     }
     setGroupedKeywords(prev => ({
       ...prev,
       [newKeyword.type]: prev[newKeyword.type].map(kw => kw._id === newKeyword._id ? newKeyword : kw)
     }));
-    socket.emit("updateImage", { ...selectedImage, keywords: selectedImage.keywords.map(kw => kw._id === newKeyword._id ? newKeyword : kw) });
+    const updatedImage =  { ...selectedImage, keywords: selectedImage.keywords.map(kw => kw._id === newKeyword._id ? newKeyword : kw) }
+    dispatch(updateImage(updatedImage));
+    socket.emit("updateImage", updatedImage);
   };
 
   const deleteCustom = async keyword => {
     await deleteKeyword(keyword._id);
     const updatedKeywords = selectedImage.keywords.filter(kw => kw._id !== keyword._id);
-    socket.emit("updateImage", { ...selectedImage, keywords: updatedKeywords });
+    const updatedImage =  { ...selectedImage, keywords: updatedKeywords }
+    dispatch(updateImage(updatedImage));
+    socket.emit("updateImage", updatedImage);
   };
 
   const addKeywordSelection = (type, newKeywordText) => {
     const newKeyword = { boardId: selectedImage.boardId, imageId: selectedImage._id, isCustom: true, type, keyword: newKeywordText };
     socket.emit("newKeyword", { newKeyword, selectedImage });
   };
-
   return (
     <>
       <img className="image-preview" alt="" src={selectedImage?.url} />
@@ -94,34 +100,65 @@ const KeywordSelection = ({ selectedImageId }) => {
       </div>
       
       <div className="image-container">
-          {Object.entries(groupedKeywords).map(([type, keywords]) => (
-            <div key={type} className="keyword-group">
+      {Object.entries(groupedKeywords)
+    .filter(([type]) => type !== "Arrangement") // Exclude "Arrangement" here
+    .map(([type, keywords]) => (
+      <div key={type} className="keyword-group">
+        <KeywordButton
+          className="keyword-button"
+          text={`I like the ${type} of this image`}
+          type={type}
+          isSelected={likedElementTypes[type]}
+          onClick={() => toggleLikedElementType(type)}
+        />
+        {likedElementTypes[type] && (
+          <div className="keyword-list">
+            {keywords.map((keyword) => (
+              <KeywordButton
+                key={keyword._id}
+                ref={(el) => {
+                  if (el) keywordRefs.current[keyword._id] = el;
+                }}
+                text={keyword.keyword}
+                type={keyword.type}
+                isCustom={keyword.isCustom}
+                isSelected={!!(keyword.offsetX || keyword.offsetY)}
+                onClick={() => toggleOnBoard(keyword)}
+                onDelete={() => deleteCustom(keyword)}
+              />
+            ))}
+            <KeywordInput
+              boardId={selectedImage.boardId}
+              imageId={selectedImage._id}
+              type={type}
+              addKeywordSelection={addKeywordSelection}
+            />
+          </div>
+        )}
+      </div>
+    ))}
+    {groupedKeywords["Arrangement"] &&
+           <div key={"Arrangement"} className="keyword-group">
               <KeywordButton
                 className="keyword-button"
-                text={`I like the ${type} of this image`}
-                type={type}
-                isSelected={likedElementTypes[type]}
-                onClick={() => toggleLikedElementType(type)}
+                text={`I like the Arrangement of this image`}
+                type={"Arrangement"}
+                isSelected={(groupedKeywords["Arrangement"][0].offsetX !== undefined && groupedKeywords["Arrangement"][0].offsetY !== undefined)}
+                onClick={(e) => {e.stopPropagation();
+                  toggleLikedElementType("Arrangement")
+                  toggleOnBoard(groupedKeywords["Arrangement"][0])
+                }}
               />
-              {likedElementTypes[type] && (
-                <div className="keyword-list">
-                  {keywords.map(keyword => (
-                    <KeywordButton
-                      key={keyword._id}
-                      ref={el => { if (el) keywordRefs.current[keyword._id] = el; }}
-                      text={keyword.keyword}
-                      type={keyword.type}
-                      isCustom={keyword.isCustom}
-                      isSelected={!!(keyword.offsetX || keyword.offsetY)}
-                      onClick={() => toggleOnBoard(keyword)}
-                      onDelete={() => deleteCustom(keyword)}
-                    />
-                  ))}
-                  <KeywordInput boardId={selectedImage.boardId} imageId={selectedImage._id} type={type} addKeywordSelection={addKeywordSelection} />
-                </div>
-              )}
-            </div>
-          ))}
+              <div className="keyword-list" style={{visibility: "hidden" }}>
+               <KeywordButton
+                key={groupedKeywords["Arrangement"][0]?._id}
+                text={"Arrangement"}
+                type={"Arrangement"}
+                ref={(el) => {
+                  if (el) keywordRefs.current[groupedKeywords["Arrangement"][0]?._id] = el;
+                }}
+              /></div>
+              </div>}
       </div>
     </>
   );

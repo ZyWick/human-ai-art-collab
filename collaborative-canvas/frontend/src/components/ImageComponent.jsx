@@ -6,7 +6,7 @@ import useImageSelection from "../hook/useImageSelection";
 import { updateImage } from "../redux/imagesSlice";
 import { setSelectedImage } from "../redux/selectionSlice";
 import { useSocket } from "./SocketContext";
-import { calculateNewKeywordPosition } from "../util/keywordMovement";
+// import { calculateNewKeywordPosition } from "../util/keywordMovement";
 
 const ImageComponent = ({ imgData, stageRef }) => {
   const [image, setImage] = useState(null);
@@ -18,7 +18,7 @@ const ImageComponent = ({ imgData, stageRef }) => {
   const selectedImageId = useSelector(
     (state) => state.selection.selectedImageId
   );
-  const keywordRefs = useRef({});
+  // const keywordRefs = useRef({});
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
@@ -79,55 +79,22 @@ const ImageComponent = ({ imgData, stageRef }) => {
     [setKeywords]
   );
 
-  useEffect(() => {
-    socket.on("updateKeyword", updateKeyword);
-    return () => socket.off("updateKeyword", updateKeyword);
-  }, [updateKeyword, socket]);
-
-  const handleKeywordDrag = (e, action, keyword) => {
-    e.cancelBubble = true;
-    let newOffset = {
-      newX: e.target.x() - imgData.x,
-      newY: e.target.y() - imgData.y,
-    };
-
-    if (action === "updateKeyword")
-      newOffset = calculateNewKeywordPosition(
-        newOffset.newX,
-        newOffset.newY,
-        e.target.width(),
-        e.target.height(),
-        imgData.width,
-        imgData.height
-      );
-
-    const newKeyword = {
-      ...keyword,
-      offsetX: newOffset.newX,
-      offsetY: newOffset.newY,
-    };
-    updateKeyword(newKeyword);
-    socket.emit(action, newKeyword);
-  };
-
-  const toggleSelected = (data) => {
-    socket.emit("toggleSelectedKeyword", data._id);
-    // dispatch(toggleSelectedKeyword(data._id))
-    updateKeyword({ ...data, isSelected: !data.isSelected });
-    socket.emit("updateKeyword", { ...data, isSelected: !data.isSelected });
-  };
-
-  const deleteKeyword = (keyword) => {
-    let { offsetX, offsetY, ...newKeyword } = keyword;
-    socket.emit("removeKeywordOffset", keyword._id);
+  const updateImageKeyword = (newKeyword) => {
     const updatedImage = {
       ...imgData,
       keywords: imgData.keywords.map((kw) =>
         kw._id === newKeyword._id ? newKeyword : kw
       ),
     };
+    dispatch(updateImage(updatedImage));
     socket.emit("updateImage", updatedImage);
-  };
+  }
+
+  useEffect(() => {
+    socket.on("updateKeyword",  updateKeyword);
+    return () => socket.off("updateKeyword", updateKeyword);
+  }, [updateKeyword, socket]);
+
 
   return image ? (
     <>
@@ -146,7 +113,6 @@ const ImageComponent = ({ imgData, stageRef }) => {
           onClick={(e) => {
             e.cancelBubble = true;
             dispatch(setSelectedImage(imgData._id));
-            console.log(imgData._id);
           }}
           onTap={(e) => {
             e.cancelBubble = true;
@@ -194,13 +160,13 @@ const ImageComponent = ({ imgData, stageRef }) => {
             key={keyword._id}
             data={keyword}
             imageBounds={imageBounds}
-            handleKeywordDrag={handleKeywordDrag}
-            toggleSelected={toggleSelected}
-            deleteKeyword={deleteKeyword}
+            stageRef={stageRef}
+            updateKeywords={updateKeyword}
             updateKeyword={updateKeyword}
-            ref={(el) => {
-              if (el) keywordRefs.current[keyword._id] = el;
-            }}
+            updateImageKeyword={updateImageKeyword}
+            // ref={(el) => {
+            //   if (el) keywordRefs.current[keyword._id] = el;
+            // }}
           />
         ))}
     </>

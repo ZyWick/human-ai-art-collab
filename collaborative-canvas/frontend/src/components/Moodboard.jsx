@@ -1,49 +1,16 @@
-import React, { useRef, useCallback } from "react";
+import React, { useRef } from "react";
 import { Stage, Layer } from "react-konva";
 import ImageComponent from "./ImageComponent";
 import useWindowSize from "../hook/useWindowSize";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import KeywordComponent from "./KeywordComponent";
-import {updateBoardNoteKeywords, deleteBoardNoteKeywords} from '../redux/roomSlice'
-import { useSocket } from "./SocketContext";
-import { toggleSelectedKeyword } from "../redux/selectionSlice";
-import { deleteKeyword } from "../util/api";
 
 const Moodboard = () => {
   const stageRef = useRef(null);
   const windowSize = useWindowSize();
-  const dispatch = useDispatch();
-  const socket = useSocket();
   const images = useSelector((state) => state.images);
   const noteKeywords = useSelector((state) => state.room.boardNoteKeywords);
 
-  const handleKeywordDrag = (e, action, keyword) => {
-      e.cancelBubble = true;
-      const noteAction = action + "Note";
-      const newKeyword = {
-        ...keyword,
-        offsetX: e.target.x(),
-        offsetY: e.target.y(),
-      };
-      socket.emit(noteAction, newKeyword);
-      dispatch(updateBoardNoteKeywords(newKeyword));
-    };
-
-  const toggleSelected = (data) => {
-    const newKw = {...data, isSelected: !data.isSelected}
-    socket.emit("updateKeywordNote", newKw)
-    socket.emit("toggleSelectedKeyword", data._id)
-    dispatch(updateBoardNoteKeywords(newKw))
-  }
-
-  const deleteNoteKeyword = async(keyword) => {
-    try {
-      socket.emit("deleteNoteKeyword", keyword._id)
-      const result = await deleteKeyword(keyword._id)
-    } catch (e) {
-      console.log(e)
-    }
-  }
 
   const handleWheel = (e) => {
     e.evt.preventDefault();
@@ -92,9 +59,6 @@ const Moodboard = () => {
               key={kw._id}
               data={kw}
               imageBounds={{ x: 0, y: 0 }}
-              handleKeywordDrag={handleKeywordDrag}
-              toggleSelected={toggleSelected}
-              deleteKeyword={deleteNoteKeyword}
             />
           ))}
       </Layer>

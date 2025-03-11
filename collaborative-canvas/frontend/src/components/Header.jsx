@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import UserAvatars from "../widgets/UserAvatars";
 import { selectBoardById } from "../redux/boardsSlice";
@@ -21,23 +21,31 @@ const Header = () => {
   });
   const [copied, setCopied] = useState(false);
 
+  useEffect (() => {
+    setTempName({ board: boardName, room: roomName })
+  }, [currentBoardId])
+
   const handleEdit = (field) => {
     setEditing((prev) => ({ ...prev, [field]: true }));
   };
 
   const handleBlur = (field) => {
     setEditing((prev) => ({ ...prev, [field]: false }));
-    if (field === "room")
-      socket.emit("updateRoomName", {
-        roomId: roomId,
-        roomName: tempName.room,
-      });
-    else
-      socket.emit("updateBoardName", {
-        boardId: currentBoardId,
-        boardName: tempName.board,
-      });
+  
+    let newName = tempName[field].trim();
+    if (!newName) {
+      newName = field === "room" ? "Untitled Room" : "Untitled Board";
+    }
+  
+    setTempName((prev) => ({ ...prev, [field]: newName }));
+  
+    if (field === "room" && newName !== roomName) {
+      socket.emit("updateRoomName", { roomId, roomName: newName });
+    } else if (field === "board" && newName !== boardName) {
+      socket.emit("updateBoardName", { boardId: currentBoardId, boardName: newName });
+    }
   };
+  
 
   const handleKeyDown = (e, field) => {
     if (e.key === "Enter") handleBlur(field);

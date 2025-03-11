@@ -15,7 +15,7 @@ import {
   deleteBoardNoteKeywords,
 } from "../redux/roomSlice";
 import {
-  setGeneratedImages,
+  // setGeneratedImages,
   setCurrentBoardId,
   setRoomName,
 } from "../redux/roomSlice";
@@ -95,8 +95,6 @@ const useBoardSocket = () => {
     });
 
     socket.on("generateNewImage", (newBoard) => {
-      if (newBoard._id === currentBoardId)
-        dispatch(setGeneratedImages(newBoard.generatedImages));
       dispatch(
         updateBoard({
           id: newBoard._id,
@@ -105,11 +103,11 @@ const useBoardSocket = () => {
       );
     });
 
-    socket.on("updateBoardName", (newBoard) => {
+    socket.on("updateBoardName", ({boardId, boardName}) => {
       dispatch(
         updateBoard({
-          id: newBoard._id,
-          changes: { name: newBoard.name },
+          id: boardId,
+          changes: { name: boardName },
         })
       );
     });

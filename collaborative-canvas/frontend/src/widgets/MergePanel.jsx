@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { useSelector } from "react-redux";
 import {KeywordButton } from "./KeywordButton";
 import { useSocket } from "../components/SocketContext";
+import { selectBoardById } from "../redux/boardsSlice";
 
 const MergePanel = () => {
     const selectedKeywordIds = useSelector((state) => state.selection.selectedKeywordIds);
@@ -14,8 +15,10 @@ const MergePanel = () => {
     const imageKeywords = images.flatMap(image => image.keywords);
     const allKeywords = [...imageKeywords, ...noteKeywords];
     const selectedKeywords = allKeywords.filter(keyword => selectedKeywordIds.includes(keyword._id));
-    
-    const generatedImages = useSelector((state) => state.room.generatedImages);
+    const currBoard = useSelector((state) =>
+        selectBoardById(state, currentBoardId)
+    );
+    const generatedImages = currBoard.generatedImages;
     const generateImage = () => {
       socket.emit("generateNewImage", currentBoardId)
     }

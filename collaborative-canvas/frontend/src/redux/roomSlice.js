@@ -9,9 +9,7 @@ const roomReducer = createSlice({
     roomName: null,
     updatedAt: null,
     currentBoardId: null,
-    boardName: null,
     boardNoteKeywords: [],
-    generatedImages: [],
     users: [],
   },
   reducers: {
@@ -33,9 +31,6 @@ const roomReducer = createSlice({
     setCurrentBoardId: (state, action) => {
       state.currentBoardId = action.payload;
     },
-    setBoardName: (state, action) => {
-      state.boardName = action.payload;
-    },
     setBoardNoteKeywords: (state, action) => {
       state.boardNoteKeywords = action.payload;
     },
@@ -52,9 +47,6 @@ const roomReducer = createSlice({
         (kw) => kw._id !== action.payload
       );
     },
-    setGeneratedImages: (state, action) => {
-      state.generatedImages = action.payload;
-    },
     setUsers: (state, action) => {
       state.users = action.payload;
     },
@@ -68,12 +60,10 @@ export const {
   setRoomName,
   setUpdatedAt,
   setCurrentBoardId,
-  setBoardName,
   setBoardNoteKeywords,
   updateBoardNoteKeywords,
   addBoardNoteKeyword,
   deleteBoardNoteKeywords,
-  setGeneratedImages,
   setUsers,
 } = roomReducer.actions;
 export default roomReducer.reducer;

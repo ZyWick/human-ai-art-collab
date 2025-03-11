@@ -126,12 +126,15 @@ const clonedImages = await Promise.all(
 
 // Clone board with new images, keywords, and incremental name
 const clonedBoard = new Board({
-    ...board,
-    _id: clonedBoardId, // Use the generated boardId
-    images: clonedImages.filter(Boolean),
-    keywords: clonedBoardKeywords.filter(Boolean),
-    name: newBoardName, // Incremental name
+  ...board,
+  _id: clonedBoardId, // Use the generated boardId
+  images: clonedImages.filter(Boolean),
+  keywords: clonedBoardKeywords.filter(Boolean),
+  name: newBoardName, // Incremental name
+  createdAt: new Date(), // Set to now
+  updatedAt: new Date(), // Set to now
 });
+
 
 await clonedBoard.save();
 

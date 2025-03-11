@@ -5,7 +5,7 @@ import useBoardSocket from "../hook/useBoardSocket";
 import "./Layout.css";
 import OutputHub from "../components/OutputHub";
 import { useDispatch, useSelector } from "react-redux";
-import { setGeneratedImages, setBoardNoteKeywords } from "../redux/roomSlice";
+import { setBoardNoteKeywords } from "../redux/roomSlice";
 import { setImages } from "../redux/imagesSlice";
 import { setSelectedKeywords, setSelectedImage } from "../redux/selectionSlice";
 import { setBoards } from "../redux/boardsSlice";
@@ -23,7 +23,7 @@ const Layout = () => {
         // Ensure there's a valid board ID
         try {
           const newBoard = await getBoard(currentBoardId);
-          dispatch(setGeneratedImages(newBoard.generatedImages));
+          // dispatch(setGeneratedImages(newBoard.generatedImages));
           const newRoomData = await getRoom(newBoard.roomId);
           if (newRoomData) dispatch(setBoards(newRoomData.boards));
           dispatch(setBoardNoteKeywords(newBoard.keywords));

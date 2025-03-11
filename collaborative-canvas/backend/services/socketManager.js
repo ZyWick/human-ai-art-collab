@@ -30,7 +30,7 @@ module.exports = (io, users) => {
         const user = users[socket.id];
         if (!user) return;
         const updatedBoard = await boardService.updateBoardName(boardId, boardName)
-        io.to(user.roomId).emit("updateBoardName", updatedBoard);
+        io.to(user.roomId).emit("updateBoardName", {boardId: updatedBoard._id, boardName: updatedBoard.name});
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });

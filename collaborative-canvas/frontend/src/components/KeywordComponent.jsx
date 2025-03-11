@@ -10,14 +10,14 @@ const KeywordComponent = ({
   handleKeywordDrag,
   toggleSelected,
   deleteKeyword,
-  updateKeyword,
+  // updateKeyword,
 }) => {
   const keywordRef = useRef(null);
   const {
     x: imageX,
     y: imageY,
-    width: imageWidth,
-    height: imageHeight,
+    // width: imageWidth,
+    // height: imageHeight,
   } = imageBounds;
   const dispatch = useDispatch();
   const [isClicked, setIsCLicked] = useState(false);

@@ -1,17 +1,17 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import UserAvatars from "../widgets/UserAvatars";
 import { selectBoardById } from "../redux/boardsSlice";
 import { useSocket } from "./SocketContext";
-import {  setRoomName,} from "../redux/roomSlice";
-import {
-  updateBoard,
-} from "../redux/boardsSlice";
+import { setRoomName } from "../redux/roomSlice";
+import { updateBoard } from "../redux/boardsSlice";
 
 const Header = () => {
   const headerRef = useRef();
   const socket = useSocket();
   const dispatch = useDispatch();
+  const navigate = useNavigate(); // Hook for navigation
   const { roomName, roomCode, roomId, currentBoardId } = useSelector(
     (state) => state.room
   );
@@ -26,9 +26,9 @@ const Header = () => {
   });
   const [copied, setCopied] = useState(false);
 
-  useEffect (() => {
-    setTempName({ board: boardName, room: roomName })
-  }, [currentBoardId, boardName, roomName])
+  useEffect(() => {
+    setTempName({ board: boardName, room: roomName });
+  }, [currentBoardId, boardName, roomName]);
 
   const handleEdit = (field) => {
     setEditing((prev) => ({ ...prev, [field]: true }));
@@ -36,23 +36,22 @@ const Header = () => {
 
   const handleBlur = (field) => {
     setEditing((prev) => ({ ...prev, [field]: false }));
-  
+
     let newName = tempName[field].trim();
     if (!newName) {
       newName = field === "room" ? "Untitled Room" : "Untitled Board";
     }
-  
+
     setTempName((prev) => ({ ...prev, [field]: newName }));
-  
+
     if (field === "room" && newName !== roomName) {
-      dispatch(setRoomName(newName))
+      dispatch(setRoomName(newName));
       socket.emit("updateRoomName", { roomId, roomName: newName });
     } else if (field === "board" && newName !== boardName) {
-      dispatch(updateBoard({id: currentBoardId, changes: { name: newName }, }));
+      dispatch(updateBoard({ id: currentBoardId, changes: { name: newName } }));
       socket.emit("updateBoardName", { boardId: currentBoardId, boardName: newName });
     }
   };
-  
 
   const handleKeyDown = (e, field) => {
     if (e.key === "Enter") handleBlur(field);
@@ -63,6 +62,10 @@ const Header = () => {
     navigator.clipboard.writeText(roomCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500); // Hide after 1.5s
+  };
+
+  const handleBack = () => {
+    navigate("/"); // Navigate back to the home page
   };
 
   return (
@@ -80,6 +83,23 @@ const Header = () => {
         borderBottom: "0.5px ridge rgb(216, 216, 216)",
       }}
     >
+      {/* Back Button */}
+      <button
+        onClick={handleBack}
+        style={{
+          marginRight: "1em",
+          padding: "0.5em 1em",
+          backgroundColor: "#3498db",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+          fontSize: "0.9em",
+        }}
+      >
+        Back
+      </button>
+
       <div
         style={{
           width: "70%",

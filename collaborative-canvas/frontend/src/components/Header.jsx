@@ -85,6 +85,7 @@ const Header = () => {
     >
       {/* Back Button */}
       <button
+        className="header-back-button"
         onClick={handleBack}
         style={{
           marginRight: "1em",

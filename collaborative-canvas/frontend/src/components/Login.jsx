@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import styles from "../css/Login-Register.module.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,29 +21,36 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h1>Login</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
-      <p>
-        Don't have an account? <a href="/register">Signup</a>
-      </p>
+    <div className={styles["login-container"]}>
+      <div className={styles["login-box"]}>
+        <h1 className={styles["login-title"]}>Login</h1>
+        {error && <p className={styles["error-message"]}>{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={styles["login-input"]}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={styles["login-input"]}
+          />
+          <button type="submit" className={styles["login-button"]}>
+            Login
+          </button>
+        </form>
+        <p className={styles["login-text"]}>
+          Don't have an account? <a href="/register" className={styles["login-link"]}>Signup</a>
+        </p>
+      </div>
     </div>
   );
 };
+
 
 export default Login;

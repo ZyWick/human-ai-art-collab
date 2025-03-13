@@ -1,33 +1,33 @@
 import React, { useEffect } from "react";
-import Moodboard from "../components/Moodboard";
-import Dashboard from "../components/Dashboard";
-import useBoardSocket from "../hook/useBoardSocket";
-import "./Layout.css";
-import OutputHub from "../components/OutputHub";
 import { useDispatch, useSelector } from "react-redux";
-import { setBoardNoteKeywords, setRoomChat } from "../redux/roomSlice";
-import { setImages } from "../redux/imagesSlice";
-import { setSelectedKeywords, setSelectedImage } from "../redux/selectionSlice";
-import { setBoards } from "../redux/boardsSlice";
-import { getRoom, getBoard } from "../util/api";
-import Header from "../components/Header"
+import Dashboard from "./Dashboard";
+import OutputHub from "./OutputHub";
+import Header from "./Header";
+import Moodboard from "../moodboard/Moodboard";
+import "../../assets/styles/Layout.css";
+
+import useBoardSocket from "../../hook/useBoardSocket";
+import { setBoardNoteKeywords, setRoomChat } from "../../redux/roomSlice";
+import { setImages } from "../../redux/imagesSlice";
+import { setSelectedKeywords, setSelectedImage } from "../../redux/selectionSlice";
+import { setBoards } from "../../redux/boardsSlice";
+import { getRoom, getBoard } from "../../util/api";
 
 const Layout = () => {
   useBoardSocket();
   const dispatch = useDispatch();
-  const currentBoardId = useSelector((state) => state.room.currentBoardId);  
+  const currentBoardId = useSelector((state) => state.room.currentBoardId);
 
   useEffect(() => {
     const fetchBoard = async () => {
       if (currentBoardId) {
-        // Ensure there's a valid board ID
         try {
           const newBoard = await getBoard(currentBoardId);
-          // dispatch(setGeneratedImages(newBoard.generatedImages));
           const newRoomData = await getRoom(newBoard.roomId);
           if (newRoomData) {
             dispatch(setBoards(newRoomData.boards));
-            dispatch(setRoomChat(newRoomData.roomChat));}
+            dispatch(setRoomChat(newRoomData.roomChat));
+          }
           dispatch(setBoardNoteKeywords(newBoard.keywords));
           dispatch(setImages(newBoard.images));
           const selectedKeywordIds = [
@@ -56,19 +56,21 @@ const Layout = () => {
     fetchBoard(); // Call the async function
   }, [currentBoardId, dispatch]);
 
-  return (<>
-    <Header />
-    <div className="layout-container">
-      <div className="sidebar-overlay left">
-        <Dashboard />
+  return (
+    <>
+      <Header />
+      <div className="layout-container">
+        <div className="sidebar-overlay left">
+          <Dashboard />
+        </div>
+        <div className="moodboard-container">
+          <Moodboard />
+        </div>
+        <div className="sidebar-overlay right">
+          <OutputHub />
+        </div>
       </div>
-      <div className="moodboard-container">
-        <Moodboard />
-      </div>
-      <div className="sidebar-overlay right">
-        <OutputHub />
-      </div>
-    </div></>
+    </>
   );
 };
 

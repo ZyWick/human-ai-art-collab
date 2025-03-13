@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setSelectedImage } from "../redux/selectionSlice";
-import { useSocket } from "../components/SocketContext";
+import { useSocket } from '../context/SocketContext'
 
 const useImageSelection = (stageRef, imgDataId) => {
   const dispatch = useDispatch();
@@ -22,7 +22,7 @@ const useImageSelection = (stageRef, imgDataId) => {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedImageId, imgDataId]);
+  }, [selectedImageId, imgDataId, dispatch, socket]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -43,7 +43,7 @@ const useImageSelection = (stageRef, imgDataId) => {
         stage.off("tap", handleClickOutside);
       }
     };
-  }, [stageRef]);
+  }, [stageRef, dispatch]);
 };
 
 export default useImageSelection;

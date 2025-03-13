@@ -1,8 +1,8 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { selectAllBoards,  } from "../redux/boardsSlice";
-import { useSocket } from "../components/SocketContext";
-import { setCurrentBoardId } from "../redux/roomSlice";
+import { selectAllBoards,  } from "../../redux/boardsSlice";
+import { useSocket } from '../../context/SocketContext'
+import { setCurrentBoardId } from "../../redux/roomSlice";
 import BoardsList from "./BoardsList";
 
 const BoardsPanel = () => {

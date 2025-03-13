@@ -3,7 +3,6 @@ import { useState } from "react";
 const BoardsList = ({ board, loadBoard, deleteBoard }) => {
   const [hovered, setHovered] = useState(false);
 
-
   return (
     <div
       onClick={() => loadBoard(board._id)}

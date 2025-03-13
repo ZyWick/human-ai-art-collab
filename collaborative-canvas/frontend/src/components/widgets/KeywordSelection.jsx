@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useSocket } from '../../context/SocketContext';
 import { KeywordButton, KeywordInput } from "./KeywordButton";
-import { calculateNewKeywordPosition } from "../util/keywordMovement";
-import { useSelector } from "react-redux";
-import { useSocket } from "../components/SocketContext";
-import { selectImageById } from "../redux/imagesSlice";
-import { useDispatch } from "react-redux";
-import { updateImage } from "../redux/imagesSlice";
-import "../styles/keywordSelection.css";
-import { deleteKeyword } from "../util/api";
+import { calculateNewKeywordPosition } from "../../util/keywordMovement";
+import { selectImageById } from "../../redux/imagesSlice";
+import { updateImage } from "../../redux/imagesSlice";
+import { deleteKeyword } from "../../util/api";
+import "../../assets/styles/keywordSelection.css";
 
 const KeywordSelection = ({ selectedImageId }) => {
   const keywordRefs = useRef({});

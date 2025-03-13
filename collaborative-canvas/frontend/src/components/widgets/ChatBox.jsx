@@ -1,17 +1,18 @@
 import React, { useState, useEffect, } from "react";
 import { useSelector, } from "react-redux";
-// import { addRoomChatMessage } from "../redux/roomSlice";
-// import { selectBoardById } from "../redux/boardsSlice";
-import { useSocket } from "../components/SocketContext";
-import { selectBoardById } from "../redux/boardsSlice";
+import { useSocket } from '../../context/SocketContext'
+import { selectBoardById } from "../../redux/boardsSlice";
+import { useAuth } from "../../context/AuthContext";
 
 const ChatBox = ({chatRef}) => {
   const socket = useSocket();
 //   const dispatch = useDispatch();
-  const {username, userId, roomChat, designDetails, currentBoardId} = useSelector((state) => state.room);  
+  const {userId, roomChat, designDetails, currentBoardId} = useSelector((state) => state.room);  
   const currBoard = useSelector((state) =>
     selectBoardById(state, currentBoardId)
   );
+  const { user } = useAuth();
+
   const boardName = currBoard?.name;
   const [input, setInput] = useState("");
   const [forceRerender, setForceRerender] = useState(0)
@@ -28,7 +29,7 @@ useEffect (() => {
 
   const handleSendMessage = () => {
     if (input.trim() !== "") {
-    const newMessage =  {userId: userId, username: username, boardId: currentBoardId, boardName, message: input}
+    const newMessage =  {userId: userId, username: user.username, boardId: currentBoardId, boardName, message: input}
       socket.emit("sendChat", newMessage)
       setInput("");
     }
@@ -83,8 +84,13 @@ useEffect (() => {
       >
         {roomChat?.map((chat, index) => (
           <p key={index} style={{ marginBlock: "0.2em" }}>
-            <strong>{chat.username}[{chat.boardId?.name}]:</strong> {chat.message}
-          </p>
+          <strong>
+            <span style={{ color: "#555" }}>[{chat.boardId?.name}] </span>
+            {chat.username}:
+          </strong>{" "}
+          {chat.message}
+        </p>
+        
         ))}
       </div>
       <textarea

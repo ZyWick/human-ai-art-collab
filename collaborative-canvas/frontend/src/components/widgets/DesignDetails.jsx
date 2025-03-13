@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useSocket } from "../components/SocketContext";
 import { useSelector, useDispatch } from "react-redux";
-import { updateDesignDetails } from "../redux/roomSlice";
-import "../styles/dashboard.css";
+import { useSocket } from '../../context/SocketContext'
+import { updateDesignDetails } from "../../redux/roomSlice";
+import "../../assets/styles/dashboard.css";
 
 const fields = [
   {

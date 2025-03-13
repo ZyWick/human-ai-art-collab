@@ -7,7 +7,7 @@ import {
   removeImage,
   updateImage,
 } from "../redux/imagesSlice";
-import { useSocket } from "../components/SocketContext";
+import { useSocket } from '../context/SocketContext'
 import { toggleSelectedKeyword } from "../redux/selectionSlice";
 import {
   updateBoardNoteKeywords,
@@ -28,13 +28,18 @@ import {
 import {
   removeKeywordFromSelected,
 } from "../redux/selectionSlice"
+import { useAuth } from "../context/AuthContext";
 
 const useBoardSocket = () => {
   const dispatch = useDispatch();
   const socket = useSocket();
-  const { username, roomId, currentBoardId } = useSelector(
+  const { roomId, currentBoardId } = useSelector(
     (state) => state.room
   );
+
+  const { user } = useAuth();
+  const username = user.username
+  console.log(user)
   const boards = useSelector(selectAllBoards);
 
   useEffect(() => {

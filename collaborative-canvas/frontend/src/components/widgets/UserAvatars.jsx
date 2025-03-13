@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import "../styles/UserAvatars.css";
+import "../../assets/styles/UserAvatars.css";
 
 const UserAvatars = ({ headerRef }) => {
   const usernames = useSelector((state) => state.room.users);

@@ -3,12 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const roomReducer = createSlice({
   name: "socket",
   initialState: {
-    username: "Jeff",
-    userId: null,
     roomId: null,
-    roomCode: "UJONZK",
     roomName: null,
-    updatedAt: null,
     currentBoardId: null,
     boardNoteKeywords: [],
     users: [],
@@ -16,20 +12,11 @@ const roomReducer = createSlice({
     designDetails: {},
   },
   reducers: {
-    setUsername: (state, action) => {
-      state.username = action.payload;
-    },
     setRoomId: (state, action) => {
       state.roomId = action.payload;
     },
-    setRoomCode: (state, action) => {
-      state.roomCode = action.payload;
-    },
     setRoomName: (state, action) => {
       state.roomName = action.payload;
-    },
-    setUpdatedAt: (state, action) => {
-      state.updatedAt = action.payload;
     },
     setCurrentBoardId: (state, action) => {
       state.currentBoardId = action.payload;
@@ -69,11 +56,8 @@ const roomReducer = createSlice({
 });
 
 export const {
-  setUsername,
   setRoomId,
-  setRoomCode,
   setRoomName,
-  setUpdatedAt,
   setCurrentBoardId,
   setBoardNoteKeywords,
   updateBoardNoteKeywords,

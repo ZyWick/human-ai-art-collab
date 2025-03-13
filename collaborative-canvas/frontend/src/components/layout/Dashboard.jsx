@@ -1,13 +1,13 @@
 import React, {useRef}  from "react";
-import KeywordSelection from "../widgets/KeywordSelection";
-import UploadButton from "../widgets/UploadButton";
 // import "../styles/Sidebar.css"
 import { useSelector } from "react-redux";
 import {NoteKeywordInput} from '../widgets/KeywordButton'
-import { useSocket } from './SocketContext'
 import DesignDetails from "../widgets/DesignDetails";
 import ChatBox from "../widgets/ChatBox"
-import '../styles/dashboard.css'
+import KeywordSelection from "../widgets/KeywordSelection";
+import UploadButton from "../widgets/UploadButton";
+import { useSocket } from '../../context/SocketContext'
+import '../../assets/styles/dashboard.css'
 
 const Sidebar = () => {
  const selectedImageId = useSelector((state) => state.selection.selectedImageId);

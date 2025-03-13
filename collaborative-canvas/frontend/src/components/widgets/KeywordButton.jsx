@@ -1,5 +1,5 @@
 import React, { forwardRef, useState } from "react";
-import colorMapping from "../config/keywordTypes";
+import colorMapping from "../../config/keywordTypes";
 
 const KeywordButton = forwardRef(
   ({ text, type, isSelected, isCustom, onClick, onDelete, style = {} }, ref) => {
@@ -111,11 +111,11 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
     <hr
       style={{
         border: "none",
-        minHeight: "0.05em",
+        minHeight: "0em",
         backgroundColor: "darkgrey",
         width: "100%",
-      }}
-    /><div style={{width: "90%", 
+      }} />
+    <div style={{width: "90%", 
       display: "flex",
       flexDirection: "column",
       alignItems: "center",}}>

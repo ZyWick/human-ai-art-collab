@@ -2,11 +2,10 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Image, Transformer, Group, Rect } from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
 import KeywordComponent from "./KeywordComponent";
-import useImageSelection from "../hook/useImageSelection";
-import { updateImage } from "../redux/imagesSlice";
-import { setSelectedImage } from "../redux/selectionSlice";
-import { useSocket } from "./SocketContext";
-// import { calculateNewKeywordPosition } from "../util/keywordMovement";
+import useImageSelection from "../../hook/useImageSelection";
+import { updateImage } from "../../redux/imagesSlice";
+import { setSelectedImage } from "../../redux/selectionSlice";
+import { useSocket } from '../../context/SocketContext'
 
 const ImageComponent = ({ imgData, stageRef }) => {
   const [image, setImage] = useState(null);
@@ -18,7 +17,7 @@ const ImageComponent = ({ imgData, stageRef }) => {
   const selectedImageId = useSelector(
     (state) => state.selection.selectedImageId
   );
-  // const keywordRefs = useRef({});
+  
   const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {

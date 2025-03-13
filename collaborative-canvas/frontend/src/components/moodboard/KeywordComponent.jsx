@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Label, Tag, Text } from "react-konva";
-import colorMapping from "../config/keywordTypes";
 import { useDispatch } from "react-redux";
-import { calculateNewKeywordPosition } from "../util/keywordMovement";
-import {updateBoardNoteKeywords} from '../redux/roomSlice'
-import { removeKeywordFromSelected } from "../redux/selectionSlice";
-import { deleteKeyword } from "../util/api";
-import { useSocket } from "./SocketContext";
+import { Label, Tag, Text } from "react-konva";
+import { calculateNewKeywordPosition } from "../../util/keywordMovement";
+import {updateBoardNoteKeywords} from '../../redux/roomSlice'
+import { removeKeywordFromSelected } from "../../redux/selectionSlice";
+import { deleteKeyword } from "../../util/api";
+import { useSocket } from '../../context/SocketContext'
+import colorMapping from "../../config/keywordTypes";
 
 const KeywordComponent = ({
   data,

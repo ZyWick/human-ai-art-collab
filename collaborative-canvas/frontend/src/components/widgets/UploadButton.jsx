@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { processImage, segmentImage } from "../util/processImage";
-import { uploadImageApi } from "../util/api";
-import "../styles/UploadButton.css";
 import { useSelector } from "react-redux";
-import { useSocket } from "../components/SocketContext";
+import { useSocket } from '../../context/SocketContext'
+import { processImage, segmentImage } from "../../util/processImage";
+import { uploadImageApi } from "../../util/api";
+import "../../assets/styles/UploadButton.css";
 
 const UploadButton = () => {
   const [imageUrl, setImageUrl] = useState("");

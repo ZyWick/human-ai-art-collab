@@ -1,18 +1,20 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate
+
 import UserAvatars from "../widgets/UserAvatars";
-import { selectBoardById } from "../redux/boardsSlice";
-import { useSocket } from "./SocketContext";
-import { setRoomName } from "../redux/roomSlice";
-import { updateBoard } from "../redux/boardsSlice";
+import { selectBoardById } from "../../redux/boardsSlice";
+import { useSocket } from '../../context/SocketContext'
+import { setRoomName } from "../../redux/roomSlice";
+import { updateBoard } from "../../redux/boardsSlice";
 
 const Header = () => {
   const headerRef = useRef();
   const socket = useSocket();
   const dispatch = useDispatch();
   const navigate = useNavigate(); // Hook for navigation
-  const { roomName, roomCode, roomId, currentBoardId } = useSelector(
+  const { joinCode } = useParams();
+  const { roomName,  roomId, currentBoardId } = useSelector(
     (state) => state.room
   );
   const currBoard = useSelector((state) =>
@@ -59,7 +61,7 @@ const Header = () => {
 
   const handleCopy = (event) => {
     event.stopPropagation();
-    navigator.clipboard.writeText(roomCode);
+    navigator.clipboard.writeText(joinCode);
     setCopied(true);
     setTimeout(() => setCopied(false), 1500); // Hide after 1.5s
   };
@@ -141,7 +143,7 @@ const Header = () => {
         </div>
         <div style={{ position: "relative", display: "inline-block" }}>
           <h3 style={{ cursor: "pointer", margin: "0" }} onClick={handleCopy}>
-            Room code: {roomCode}
+            Room code: {joinCode}
           </h3>
           {copied && (
             <div

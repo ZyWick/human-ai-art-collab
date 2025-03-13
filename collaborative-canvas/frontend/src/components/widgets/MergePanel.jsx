@@ -1,9 +1,9 @@
 import React, { useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { KeywordButton } from "./KeywordButton";
-import { useSocket } from "../components/SocketContext";
-import { selectBoardById } from "../redux/boardsSlice";
-import { updateBoardNoteKeywords } from "../redux/roomSlice";
+import { useSocket } from '../../context/SocketContext'
+import { selectBoardById } from "../../redux/boardsSlice";
+import { updateBoardNoteKeywords } from "../../redux/roomSlice";
 
 const MergePanel = () => {
   const selectedKeywordIds = useSelector(
@@ -30,7 +30,7 @@ const MergePanel = () => {
   const currBoard = useSelector((state) =>
     selectBoardById(state, currentBoardId)
   );
-  const generatedImages = currBoard.generatedImages;
+  const generatedImages = currBoard?.generatedImages;
   const generateImage = () => {
     socket.emit("generateNewImage", currentBoardId);
   };

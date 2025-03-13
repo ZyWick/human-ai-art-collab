@@ -9,6 +9,8 @@ import {
   setRoomName,
   setUpdatedAt,
   setCurrentBoardId,
+  setDesignDetails,
+  setRoomChat
 } from "./redux/roomSlice";
 import { setBoards } from "./redux/boardsSlice";
 import './App.css';
@@ -91,12 +93,15 @@ const HomePage = () => {
     try {
       const newRoomData = await joinRoom(roomCode);
       if (newRoomData) {
-        const { _id, name, updatedAt, boards } = newRoomData;
+        const { _id, name, updatedAt, boards, roomChat } = newRoomData;
         dispatch(setRoomId(_id));
+        console.log(roomChat)
+        dispatch(setRoomChat(roomChat))
         dispatch(setRoomName(name));
         dispatch(setUpdatedAt(updatedAt));
         dispatch(setBoards(boards));
         dispatch(setCurrentBoardId(boards?.[boards.length - 1]._id));
+        dispatch(setDesignDetails(newRoomData?.designDetails))
         navigate(`/room/${roomCode}`); // Redirect to the room URL
       }
     } catch (error) {

@@ -4,6 +4,7 @@ const roomReducer = createSlice({
   name: "socket",
   initialState: {
     username: "Jeff",
+    userId: null,
     roomId: null,
     roomCode: "UJONZK",
     roomName: null,
@@ -11,6 +12,8 @@ const roomReducer = createSlice({
     currentBoardId: null,
     boardNoteKeywords: [],
     users: [],
+    roomChat: [],
+    designDetails: {},
   },
   reducers: {
     setUsername: (state, action) => {
@@ -50,6 +53,18 @@ const roomReducer = createSlice({
     setUsers: (state, action) => {
       state.users = action.payload;
     },
+    setDesignDetails: (state, action) => {
+      state.designDetails = action.payload;
+    },
+    updateDesignDetails: (state, action) => {
+      state.designDetails = { ...state.designDetails, ...action.payload};
+    },
+    setRoomChat: (state, action) => {
+      state.roomChat = action.payload;
+    },
+    addRoomChatMessage: (state, action) => {
+      state.roomChat.push(action.payload);
+    },
   },
 });
 
@@ -65,5 +80,9 @@ export const {
   addBoardNoteKeyword,
   deleteBoardNoteKeywords,
   setUsers,
+  setDesignDetails,
+  updateDesignDetails,
+  setRoomChat,
+  addRoomChatMessage,
 } = roomReducer.actions;
 export default roomReducer.reducer;

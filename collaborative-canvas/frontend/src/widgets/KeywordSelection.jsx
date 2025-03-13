@@ -20,12 +20,19 @@ const KeywordSelection = ({ selectedImageId }) => {
   const [groupedKeywords, setGroupedKeywords] = useState({});
 
   useEffect(() => {
+    const requiredTypes = ["Action & pose", "Subject matter", "Theme & mood"];
     if (selectedImage?.keywords) {
       const grouped = selectedImage.keywords.reduce((acc, keyword) => {
         acc[keyword.type] = acc[keyword.type] || [];
         acc[keyword.type].push(keyword);
         return acc;
       }, {});
+      requiredTypes.forEach((type) => {
+        if (!grouped[type]) {
+          grouped[type] = [];
+        }
+      });
+
       setGroupedKeywords(grouped);
     }
   }, [selectedImage]);

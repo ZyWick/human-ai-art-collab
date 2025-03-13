@@ -54,7 +54,10 @@ const deleteRoom = async (roomId) => {
 const joinRoom = async (joinCode) => {
   const room = await Room.findOne({ joinCode })
     .populate({
-      path: 'boards'});
+      path: 'boards'}).populate({
+        path: 'roomChat.boardId',
+        model: 'Board' // Explicitly define the model name
+      });
 
   if (!room) throw new Error('Room not found');
   return room;
@@ -62,12 +65,55 @@ const joinRoom = async (joinCode) => {
 
 const getRoom = async (roomId) => {
   const room = await Room.findById(roomId)
+    .populate({path: 'boards'})
     .populate({
-      path: 'boards'});
+      path: 'roomChat.boardId',
+      model: 'Board' // Explicitly define the model name
+    })
 
-  if (!room) throw new Error('Room not found');
   return room;
 };
+
+/**
+ * Updates the designDetails of a specific room.
+ * @param {String} roomId - The ID of the room to update.
+ * @param {Object} designUpdates - The updated designDetails fields.
+ * @returns {Promise<Object>} - The updated room document.
+ */
+const updateDesignDetailsDb = async (roomId, designUpdates) => {
+  const [[field, value]] = Object.entries(designUpdates);
+    const  updatedRoom = await Room.updateOne(
+      { _id: roomId },
+      { $set: { [`designDetails.${field}`]: value } }
+    );
+    return updatedRoom;
+};
+
+/**
+ * Adds a message to the roomChat array of a given room.
+ * @param {string} roomId - The ID of the room.
+ * @param {string} userId - The ID of the user sending the message.
+ * @param {string} username - The username of the sender.
+ * @param {string} boardId - The ID of the associated board.
+ * @param {string} message - The message content.
+ * @returns {Promise<Object>} - The updated room document.
+ */
+const addMessageToRoomChat = async (roomId, messageData) => {
+    const updatedRoom = await Room.findByIdAndUpdate(
+      roomId,
+      {
+        $push: {
+          roomChat: {
+            ...messageData,
+            timestamp: new Date(),
+          },
+        },
+      },
+      { new: true, projection: { roomChat: { $slice: -1 } } } // Return only the last added message
+    ).lean();
+    return updatedRoom.roomChat[0];
+};
+
 
 module.exports = {
   getRoom,
@@ -75,4 +121,6 @@ module.exports = {
   updateRoomName,
   deleteRoom,
   joinRoom,
+  updateDesignDetailsDb,
+  addMessageToRoomChat
 };

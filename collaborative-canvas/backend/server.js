@@ -8,6 +8,8 @@ const multer = require("multer");
 const { uploadS3Image, deleteS3Image } = require("./services/s3service");
 const imageService = require("./services/imageService");
 const socketManager = require('./services/socketManager');
+const {getCaption} = require('./utils/imageCaptioning')
+const { extractKeywords } = require('./utils/llm')
 
 const boardRoutes = require('./routes/board.routes');
 const imageRoutes = require('./routes/image.routes');
@@ -63,25 +65,37 @@ app.use('/keywords', keywordRoutes);
 app.use('/rooms', roomRoutes);
 app.use('/auth', authRoutes); // Add auth routes
 
-app.post("/upload", upload.single("image"), async (req, res) => {
+app.post("/upload", upload.array("images", 10), async (req, res) => {
   try {
-    const result = await uploadS3Image(req.file);
-    const user = users[req.headers["socket-id"]];
-    const { width, height, x, y } = req.body;
-    const newImage = {
-      boardId: req.headers["board-id"],
-      url: result.url,
-      x: x,
-      y: y,
-      width: width,
-      height: height,
-    };
-    console.log(newImage);
-    if (user) {
-      let image = await imageService.createImage(newImage);
-      io.to(user.roomId).emit("newImage", image);
-    }
-    res.json({ message: "Upload successful", ...result });
+        if (!req.files || req.files.length !== 10) {
+          return res.status(400).json({ error: "Expected 10 images (1 full + 9 segments)" });
+      }
+      const fullImage = req.files[0]
+      const imageCaptions = await Promise.all(
+        req.files.map(async (segment) => {
+          const caption = await getCaption(segment.buffer);
+          return caption ;
+        })
+      );
+
+      const keywords = await extractKeywords(imageCaptions)
+      const result = await uploadS3Image(fullImage);
+      const user = users[req.headers["socket-id"]];
+      const { width, height, x, y } = req.body; 
+      const newImage = {
+        boardId: req.headers["board-id"],
+        url: result.url,
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+      };
+      
+      if (user) {
+          let image = await imageService.createImage(newImage, keywords)
+          io.to(user.roomId).emit("newImage", image);
+      }
+      res.json({ message: "Upload successful", ...result });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

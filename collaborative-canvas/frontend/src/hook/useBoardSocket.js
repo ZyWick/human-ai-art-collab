@@ -15,9 +15,10 @@ import {
   deleteBoardNoteKeywords,
 } from "../redux/roomSlice";
 import {
-  // setGeneratedImages,
+  addRoomChatMessage,
   setCurrentBoardId,
   setRoomName,
+  updateDesignDetails
 } from "../redux/roomSlice";
 import {
   updateBoard,
@@ -132,8 +133,13 @@ const useBoardSocket = () => {
       handleDeleteBoard(deletedId);
     });
 
+    socket.on("updateDesignDetails", (designDetails) => {
+      dispatch(updateDesignDetails(designDetails))
+    });
+
     // this on image component
     // socket.on("updateKeyword", (newKw) => console.log(newKw))
+    socket.on("sendChat", (newMessage) => dispatch(addRoomChatMessage(newMessage)))
 
     return () => {
       socket.emit("leave room", { username, roomId });
@@ -152,6 +158,8 @@ const useBoardSocket = () => {
       socket.off("deleteBoard");
       socket.off("updateRoomName");
       socket.off("updateBoardName");
+      socket.off("updateDesignDetails");
+      socket.off("sendChat")
     };
   }, [socket, username, roomId, dispatch, currentBoardId, boards]);
 };

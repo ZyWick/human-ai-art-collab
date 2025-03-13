@@ -1,0 +1,20 @@
+.scrollable-container {
+    overflow-y: auto;
+    scrollbar-width: none;
+    msOverflowStyle: none;
+}
+
+.scrollable-container::-webkit-scrollbar {
+    display: none;
+}
+
+
+
+
+.chatBOX p:last-child {
+    margin-bottom: 0;
+  }
+
+  .note-keywords-container {
+    flex: none; /* Keep it fixed */
+  }

@@ -107,6 +107,22 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
   };
 
   return (
+    <div className={"note-keywords-container"} style={{width: "100%", marginTop: "auto",  marginBottom: "5.5em",}}>
+    <hr
+      style={{
+        border: "none",
+        minHeight: "0.05em",
+        backgroundColor: "darkgrey",
+        width: "100%",
+      }}
+    /><div style={{width: "90%", 
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",}}>
+      <div style={{width: "90%",}}>
+      <h3 style={{marginBlock: "0px", fontSize: "1.25em"}}>Add notes</h3><p style={{ color: "grey", margin: "0", marginBottom: "0.65em" }}>
+        Add Keywords that you like
+      </p>
     <div style={{ display: "inline-flex", alignItems: "center", border: "1px solid black", borderRadius: "4px", overflow: "hidden" }}>
       <select
         value={selectedType}
@@ -129,6 +145,8 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
       >
         +
       </button>
+    </div>
+    </div></div>
     </div>
   );
 };

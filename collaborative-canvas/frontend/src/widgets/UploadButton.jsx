@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { processImage } from "../util/processImage";
+import { processImage, segmentImage } from "../util/processImage";
 import { uploadImageApi } from "../util/api";
 import "../styles/UploadButton.css";
 import { useSelector } from "react-redux";
@@ -15,8 +15,16 @@ const UploadButton = () => {
     if (!newImage) return alert("Please select a file!");
 
     const { file: processedFile, width, height } = await processImage(newImage);
+    const segments = await segmentImage(processedFile);
     const formData = new FormData();
-    formData.append("image", processedFile);
+
+  segments.forEach((segment) => {
+    if (segment.blob instanceof Blob) {
+      formData.append("images", new File([segment.blob], segment.name, { type: "image/webp" }));
+    } else {
+      console.error("Invalid blob detected:", segment);
+    }
+  });
     formData.append("width", width);
     formData.append("height", height);
     formData.append("x", window.innerWidth * (0.5 + Math.random() * 0.5));

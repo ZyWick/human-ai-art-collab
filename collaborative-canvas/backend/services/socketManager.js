@@ -159,6 +159,21 @@ module.exports = (io, users) => {
       }
     });
 
+    socket.on("updateDesignDetails", (designDetails) => {
+      const user = users[socket.id];
+      if (user) {
+        socket.to(user.roomId).emit("updateDesignDetails", designDetails);
+      }
+    });
+
+    socket.on("updateDesignDetailsDone", async (designDetails) => {
+      const user = users[socket.id];
+      if (user) {
+        const newDesignDetails = await roomService.updateDesignDetailsDb(user.roomId, designDetails);
+        socket.to(user.roomId).emit("updateDesignDetails", designDetails);
+      }
+    });
+
     socket.on("keywordMovingNote", (updatedKeyword) => {
       const user = users[socket.id];
       if (user) {
@@ -209,9 +224,22 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-
         const newKeyword = await keywordService.updateKeyword(updatedKeyword._id, updatedKeyword);
         socket.to(user.roomId).emit("updateKeywordNote", newKeyword);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    });
+
+    socket.on("sendChat", async (chatMessageWithBoardName) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        let {boardName, ...chatMessage} = chatMessageWithBoardName
+        const newMessage = await roomService.addMessageToRoomChat(user.roomId, chatMessage);
+        const newChat = {...newMessage, boardId: {_id: newMessage.boardId, name: boardName}}
+        io.to(user.roomId).emit("sendChat", newChat);
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });

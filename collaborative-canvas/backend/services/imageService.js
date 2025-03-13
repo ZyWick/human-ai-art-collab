@@ -2,71 +2,56 @@ const Image = require('../models/image.model');
 const Keyword = require('../models/keyword.model');
 const Board = require('../models/board.model');
 const { deleteS3Image } = require('./s3service');
+const { getCaption } = require('../utils/imageCaptioning')
 
 /**
  * Generates keywords for an image (Placeholder, replace with actual implementation).
  * @param {Object} image - The image document.
  * @returns {Promise<Array>} Array of keyword objects.
  */
-const generateKeywordsForImage = async (image) => [
-  {
-    boardId: image.boardId,
-    imageId: image._id,
-    isSelected: false,
-    type: "Subject matter",
-    keyword: "sample-keyword-1",
-  },
-  {
-    boardId: image.boardId,
-    imageId: image._id,
-    isSelected: false,
-    type: "Subject matter",
-    keyword: "samp",
-  },
-  {
-    boardId: image.boardId,
-    imageId: image._id,
-    isSelected: false,
-    type: "Subject matter",
-    keyword: "sampl323213232rd-1",
-  },
-  {
-    boardId: image.boardId,
-    imageId: image._id,
-    isSelected: false,
-    type: "Theme & mood",
-    keyword: "sample-keyword-2",
-  },
-  {
-    boardId: image.boardId,
-    imageId: image._id,
-    isSelected: false,
-    type: "Action & pose",
-    keyword: "sample-keyword-3",
-  },
-  {
-    boardId: image.boardId,
-    imageId: image._id,
-    isSelected: false,
-    type: "Arrangement",
-    keyword: "Arrangement",
-  },
-];
+const generateKeywordsForImage = async (image, extractedKeywords) => {
+  const keywordObjects = [];
 
+  if(extractedKeywords)
+  Object.entries(extractedKeywords).forEach(([category, keywords]) => {
+    keywords.forEach(keyword => {
+      keywordObjects.push({
+        boardId: image.boardId,
+        imageId: image._id,      // Optional image reference
+        isSelected: false,      // Default value
+        isCustom: false,        // Default value
+        type: category,         // e.g., "Subject Matter", "Action & Pose", "Theme & Mood"
+        keyword: keyword        // The keyword from the array
+      });
+    });
+  });
+
+  keywordObjects.push({
+    boardId: image.boardId,
+    imageId: image._id,      // Optional image reference
+    isSelected: false,      // Default value
+    isCustom: false,        // Default value
+    type: "Arrangement",         // e.g., "Subject Matter", "Action & Pose", "Theme & Mood"
+    keyword: "Arrangement"       // The keyword from the array
+  });
+
+  return keywordObjects
+}
+  
 /**
  * Creates a new image and generates associated keywords.
  * @param {Object} data - Contains boardId, url, x, y, width, height.
  * @returns {Promise<Object>} The created image document with populated keywords.
  */
-const createImage = async (data) => {
+const createImage = async (data, extractedKeywords) => {
   const image = await Image.create(data);
-  
-  const keywordsData = await generateKeywordsForImage(image);
-  if (keywordsData.length) {
-    const insertedKeywords = await Keyword.insertMany(keywordsData);
-    image.keywords = insertedKeywords.map(k => k._id);
-    await image.save();
-  }
+
+    const keywordsData = await generateKeywordsForImage(image, extractedKeywords);
+    if (keywordsData.length) {
+      const insertedKeywords = await Keyword.insertMany(keywordsData);
+      image.keywords = insertedKeywords.map(k => k._id);
+      await image.save();
+    }
   
   await Board.findByIdAndUpdate(image.boardId, { $push: { images: image._id } });
   return image.populate('keywords');

@@ -103,6 +103,7 @@ const HomePage = () => {
         dispatch(setCurrentBoardId(boards?.[boards.length - 1]._id));
         dispatch(setDesignDetails(newRoomData?.designDetails))
         navigate(`/room/${roomCode}`); // Redirect to the room URL
+        setJoined(true);
       }
     } catch (error) {
       console.error("Failed to join room:", error);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Route, Routes, useNavigate, useParams } from "react-router-dom";
+import { BrowserRouter as Router, Route, Routes, useNavigate, useParams, Navigate } from "react-router-dom";
 import Layout from "./layout/Layout";
 import { joinRoom, createRoom } from "./util/api";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,15 +12,70 @@ import {
 } from "./redux/roomSlice";
 import { setBoards } from "./redux/boardsSlice";
 import './App.css';
+import { AuthProvider } from "./context/AuthContext";
+import Register from "./components/Register";
+import Profile from "./components/Profile";
+import Login from "./components/Login"; // Ensure the correct path
+import { useAuth } from "./context/AuthContext"; // Ensure you import `useAuth`
 
 const App = () => {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} /> {/* Front page */}
-        <Route path="/room/:roomCode" element={<RoomPage />} /> {/* Room page */}
-      </Routes>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<FrontPage />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/login" element={<Login />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/home"
+            element={
+              <PrivateRoute>
+                <HomePage />
+              </PrivateRoute>
+            }
+          />
+          <Route 
+          path="/room/:roomCode" 
+          element={
+            <PrivateRoute>
+              <RoomPage />
+            </PrivateRoute>
+          }
+        />
+          <Route 
+            path="/profile" 
+            element={
+              <PrivateRoute>
+                <Profile />
+              </PrivateRoute>
+            } 
+          />
+            
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
+};
+
+// PrivateRoute Component: Protects routes for authenticated users
+const PrivateRoute = ({ children }) => {
+  const { user } = useAuth(); // Get authentication state
+  return user ? children : <Navigate to="/login" />; // Redirect to login if not authenticated
+};
+
+// FrontPage Component: Shows Login and Signup options
+const FrontPage = () => {
+  return (
+    <div>
+      <h1>Welcome to Collaborative Canvas</h1>
+      <div>
+        <a href="/login">Login</a>
+        <a href="/register">Signup</a>
+      </div>
+    </div>
   );
 };
 
@@ -68,6 +123,9 @@ const HomePage = () => {
     }
   };
 
+  const { logout } = useAuth(); // Get logout function
+  const { Profile } = useAuth(); // Get Profile function
+
   return (
     <div style={{ 
     width: "100vw", 
@@ -100,7 +158,9 @@ const HomePage = () => {
       <button onClick={() => setIsCreatingRoom(!isCreatingRoom)}>
         {isCreatingRoom ? "Switch to Join Room" : "Switch to Create Room"}
       </button>
+      <button onClick={logout}>Logout</button>
       </div>
+      {/*<button onClick={() => navigate("/profile")}>Profile</button>*/}
     </div>
   );
 };

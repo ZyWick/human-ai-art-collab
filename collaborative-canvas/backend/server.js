@@ -6,13 +6,14 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const multer = require("multer");
 const { uploadS3Image, deleteS3Image } = require("./services/s3service");
-const imageService = require("./services/imageService")
+const imageService = require("./services/imageService");
 const socketManager = require('./services/socketManager');
 
 const boardRoutes = require('./routes/board.routes');
 const imageRoutes = require('./routes/image.routes');
 const keywordRoutes = require('./routes/keyword.routes');
 const roomRoutes = require('./routes/room.routes');
+const authRoutes = require('./routes/auth.routes'); // Import auth routes
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
@@ -22,14 +23,14 @@ const allowedOrigins = [
 ];
 
 const upload = multer({
-    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max file size
-    storage: multer.memoryStorage(), // Store file in memory for processing
-    fileFilter: (req, file, cb) => {
-        if (!file.mimetype.startsWith("image/")) {
-            return cb(new Error("Only image files are allowed"), false);
-        }
-        cb(null, true);
-    },
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max file size
+  storage: multer.memoryStorage(), // Store file in memory for processing
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Only image files are allowed"), false);
+    }
+    cb(null, true);
+  },
 });
 
 const app = express();
@@ -51,36 +52,38 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error("MongoDB connection error:", err));
 
 const server = http.createServer(app);
-const io = new Server(server, {cors: { origin: "*" }});
+const io = new Server(server, { cors: { origin: "*" } });
 let users = [];
 socketManager(io, users);
 
+// Routes
 app.use('/boards', boardRoutes);
 app.use('/images', imageRoutes);
 app.use('/keywords', keywordRoutes);
 app.use('/rooms', roomRoutes);
+app.use('/auth', authRoutes); // Add auth routes
 
 app.post("/upload", upload.single("image"), async (req, res) => {
   try {
-      const result = await uploadS3Image(req.file);
-      const user = users[req.headers["socket-id"]];
-      const { width, height, x, y } = req.body; 
-      const newImage = {
-        boardId: req.headers["board-id"],
-        url: result.url,
-        x: x,
-        y: y,
-        width: width,
-        height: height,
-      };
-      console.log(newImage)
-      if (user) {
-          let image = await imageService.createImage(newImage)
-          io.to(user.roomId).emit("newImage", image);
-      }
-      res.json({ message: "Upload successful", ...result });
+    const result = await uploadS3Image(req.file);
+    const user = users[req.headers["socket-id"]];
+    const { width, height, x, y } = req.body;
+    const newImage = {
+      boardId: req.headers["board-id"],
+      url: result.url,
+      x: x,
+      y: y,
+      width: width,
+      height: height,
+    };
+    console.log(newImage);
+    if (user) {
+      let image = await imageService.createImage(newImage);
+      io.to(user.roomId).emit("newImage", image);
+    }
+    res.json({ message: "Upload successful", ...result });
   } catch (error) {
-      res.status(500).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 });
 

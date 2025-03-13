@@ -65,7 +65,7 @@ const Header = () => {
   };
 
   const handleBack = () => {
-    navigate("/"); // Navigate back to the home page
+    navigate("/home"); // Navigate back to the home page
   };
 
   return (

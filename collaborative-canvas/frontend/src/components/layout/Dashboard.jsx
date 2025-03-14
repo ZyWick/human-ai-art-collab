@@ -1,28 +1,15 @@
 import React, {useRef}  from "react";
-// import "../styles/Sidebar.css"
 import { useSelector } from "react-redux";
-import {NoteKeywordInput} from '../widgets/KeywordButton'
 import DesignDetails from "../widgets/DesignDetails";
 import ChatBox from "../widgets/ChatBox"
 import KeywordSelection from "../widgets/KeywordSelection";
 import UploadButton from "../widgets/UploadButton";
-import { useSocket } from '../../context/SocketContext'
 import '../../assets/styles/dashboard.css'
 
 const Sidebar = () => {
  const selectedImageId = useSelector((state) => state.selection.selectedImageId);
 const designDetails = useSelector((state) => state.room.designDetails);
-  const boardId  = useSelector((state) => state.room.currentBoardId);
-  const socket = useSocket();
   const chatRef = useRef(null);
-
-  const addKeywordSelection = (type, newKeywordText) => {
-    const newKeyword = { boardId: boardId,  type, keyword: newKeywordText,
-      offsetX: window.innerWidth * (0.5 + Math.random() * 0.5),
-      offsetY: window.innerHeight * (0.5 + Math.random() * 0.5),
-     }
-    socket.emit("newNoteKeyword", newKeyword)
-  }
 
   const isDesignDetailsEmpty = Object.entries(designDetails)
       .filter(([key]) => key !== "others") 
@@ -62,9 +49,7 @@ const designDetails = useSelector((state) => state.room.designDetails);
         <ChatBox chatRef={chatRef}/>
         </div>
     )}
-      <NoteKeywordInput addKeywordSelection={addKeywordSelection} />
   </div>
-
   );
 };
 

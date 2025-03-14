@@ -11,7 +11,6 @@ const Moodboard = () => {
   const images = useSelector((state) => state.images);
   const noteKeywords = useSelector((state) => state.room.boardNoteKeywords);
 
-
   const handleWheel = (e) => {
     e.evt.preventDefault();
     
@@ -40,7 +39,7 @@ const Moodboard = () => {
     stage.batchDraw(); // Optimize drawing performance
   };
   
-  return (
+  return ( <>
     <Stage
       width={windowSize.width}
       height={windowSize.height}
@@ -63,6 +62,8 @@ const Moodboard = () => {
           ))}
       </Layer>
     </Stage>
+    
+    </>
   );
 };
 

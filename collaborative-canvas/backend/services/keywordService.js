@@ -38,7 +38,22 @@ const removeKeywordFromBoard = async (keywordId) =>
     }
   );
 
-  
+const updateKeywordVotes =async(keywordId, userId) => {
+  const keyword = await Keyword.findById(keywordId);
+  if (!keyword) {
+    throw new Error("Keyword not found");
+}
+const updateOperation = keyword.votes?.includes(userId)
+            ? { $pull: { votes: userId } }  // Remove the vote if it exists
+            : { $addToSet: { votes: userId } }; // Add the vote if it doesn't exist
+console.log(updateOperation)
+        const updatedKeyword = await Keyword.findByIdAndUpdate(
+            keywordId,
+            updateOperation,
+            { new: true } // Return the updated document
+        );
+        return updatedKeyword;
+}
 
 /**
  * Toggle the isSelected field of a keyword.
@@ -66,6 +81,14 @@ const deleteKeyword = async (keywordId) => {
   await Keyword.findByIdAndDelete(keywordId);
 }
 
+const resetVotesForBoard = async (boardId) => {
+    const result = await Keyword.updateMany(
+      { boardId: boardId }, // Filter: Only keywords with this boardId
+      { $set: { votes: [] } } // Reset votes to an empty array
+    );
+    return result;
+};
+
 module.exports = {
   getKeyword,
   createKeyword,
@@ -73,4 +96,6 @@ module.exports = {
   removeKeywordFromBoard,
   toggleKeywordSelection,
   deleteKeyword,
+  updateKeywordVotes,
+  resetVotesForBoard,
 };

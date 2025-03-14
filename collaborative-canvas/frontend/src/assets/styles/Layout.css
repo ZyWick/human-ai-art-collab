@@ -13,7 +13,7 @@
   width: 20%;
   min-width: 294px;
   max-width: 610px;
-  max-height: calc(100vh - 3sem);
+  max-height: calc(100vh - 2em);
   height: 100vh; /* Full height */
   z-index: 10;
   background: white;
@@ -43,4 +43,47 @@
   background-size: 35px 35px; /* Adjust grid size */
   background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
                     linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+}
+
+.outside-button {
+  position: absolute; /* or use fixed if needed */
+  bottom: 5%; /* Adjust the position as needed */
+  left: max(calc(20% + 24px), 318px); /* Position it outside the sidebar */
+  background-color: white;
+  color: black;
+  /* padding-block: "15px"; */
+  padding: 4px 10px;
+  border: .5px solid darkgray;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 9;
+}
+
+.outside-button:hover {
+  background-color: rgb(245, 245, 245);
+}
+
+.outside-widget {
+  position: absolute; /* or use fixed if needed */
+  bottom: 3%; /* Adjust the position as needed */
+  left: max(calc(20% + 124px), 370px); /* Position it outside the sidebar */
+  background-color: white;
+  color: black;
+  padding: 1em;
+  /* padding-block: "15px"; */
+  /* padding: 4px 10px; */
+  border: .5px solid darkgray;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 9;
+  height: 10%;
+  min-width: 294px;
+}
+
+.votes {
+  bottom: 10%;
+}
+
+.resetVotes {
+  bottom: 15%;
 }

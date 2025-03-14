@@ -52,6 +52,12 @@ const roomReducer = createSlice({
     addRoomChatMessage: (state, action) => {
       state.roomChat.push(action.payload);
     },
+    clearAllNoteKeywordVotes: (state) => {
+      state.boardNoteKeywords = state.boardNoteKeywords.map(keyword => ({
+        ...keyword,
+        votes: [] // Clear votes for all keywords
+      }));
+    }
   },
 });
 
@@ -68,5 +74,6 @@ export const {
   updateDesignDetails,
   setRoomChat,
   addRoomChatMessage,
+  clearAllNoteKeywordVotes
 } = roomReducer.actions;
 export default roomReducer.reducer;

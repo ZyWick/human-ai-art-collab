@@ -153,6 +153,29 @@ const getBoard = async (boardId) => {
   ]);
 };
 
+const toggleStarredBoard = async (boardId) => {
+  const board = await Board.findById(boardId);
+  if (!board) throw new Error("Board not found");
+
+  return await Board.findByIdAndUpdate(
+    boardId,
+    { isStarred: !board.isStarred }, // Toggle value manually
+    { new: true }
+  );
+};
+
+const toggleVoting = async (boardId) => {
+  const board = await Board.findById(boardId);
+  if (!board) throw new Error("Board not found");
+
+  return await Board.findByIdAndUpdate(
+    boardId,
+    { isVoting: !board.isVoting }, // Toggle value manually
+    { new: true }
+  );
+};
+
+
   
 
 module.exports = {
@@ -163,4 +186,6 @@ module.exports = {
   setGeneratedImages,
   cloneBoard,
   deleteBoard,
+  toggleStarredBoard,
+  toggleVoting,
 };

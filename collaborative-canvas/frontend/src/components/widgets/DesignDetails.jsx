@@ -22,7 +22,7 @@ const fields = [
   },
   {
     key: "whatSetsUsApart",
-    label: "What sets us apart",
+    label: "What makes us unique",
     placeholder: "What elements set our design apart?",
   },
   {

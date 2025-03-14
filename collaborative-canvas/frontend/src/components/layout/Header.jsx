@@ -91,16 +91,19 @@ const Header = () => {
         onClick={handleBack}
         style={{
           marginRight: "1em",
-          padding: "0.5em 1em",
-          backgroundColor: "#3498db",
-          color: "white",
+          padding: "0.5em",
+          paddingTop: "0.85em",
+          paddingLeft: "0",
+          backgroundColor: "transparent",
           border: "none",
-          borderRadius: "4px",
           cursor: "pointer",
-          fontSize: "0.9em",
         }}
       >
-        Back
+         <img
+            src="/icons/home-svgrepo-com.svg"
+            alt="Home"
+            style={{ width: "24px", height: "24px" }}
+          />
       </button>
 
       <div

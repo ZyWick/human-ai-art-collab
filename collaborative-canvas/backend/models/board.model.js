@@ -29,6 +29,14 @@ const boardSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    isStarred: {
+      type: Boolean,
+      default: false,
+    },
+    isVoting: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

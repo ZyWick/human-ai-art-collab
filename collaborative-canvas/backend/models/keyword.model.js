@@ -33,6 +33,11 @@ const keywordSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    votes: {
+      type: [mongoose.Schema.Types.ObjectId], // Array of user IDs
+      ref: 'User',
+      default: [], // Default to an empty array
+    },
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

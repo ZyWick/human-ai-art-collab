@@ -97,7 +97,7 @@ const KeywordSelection = ({ selectedImageId }) => {
   };
   return (
     <>
-      <img className="image-preview" alt="" src={selectedImage?.url} />
+      <img className="image-preview-selection" alt="" src={selectedImage?.url} />
       <hr className="divider" />
       
       <div className="keyword-container">

@@ -1,17 +1,12 @@
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { selectAllBoards,  } from "../../redux/boardsSlice";
 import { useSocket } from '../../context/SocketContext'
-import { setCurrentBoardId } from "../../redux/roomSlice";
 import BoardsList from "./BoardsList";
 
 const BoardsPanel = () => {
   const socket = useSocket();
-  const dispatch = useDispatch();
   const currentRoomId = useSelector((state) => state.room.roomId);
-  const boardData = useSelector(selectAllBoards)
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
-  const sortedBoards = [...boardData].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
   const addNewBoard = () => {
     const newBoard = {
@@ -20,6 +15,7 @@ const BoardsPanel = () => {
         images: [],
         keywords: [],
         generatedImages: [],
+        isStarred: false,
     };
     socket.emit("newBoard", newBoard);
   };
@@ -28,15 +24,6 @@ const BoardsPanel = () => {
     socket.emit("cloneBoard", currentBoardId);
   };
 
-  const loadBoard = (boardId) => {
-    dispatch(setCurrentBoardId(boardId))
-  };
-
-  const deleteBoard = (boardId, roomId) => {
-    if (sortedBoards.length === 1)
-      addNewBoard()
-    socket.emit("deleteBoard", boardId, roomId);
-  };
 
   return (
     <>
@@ -55,15 +42,7 @@ const BoardsPanel = () => {
         }}
         className="image-container"
       >
-        {sortedBoards.map((board) => (
-            <BoardsList
-                key={board._id} 
-                board={board} 
-                currentBoardId={currentBoardId}
-                loadBoard={loadBoard} 
-                deleteBoard={deleteBoard} 
-            />
-            ))}
+      <BoardsList addNewBoard={addNewBoard} />
       </div>
       <div style={{ width: "100%", marginTop: "auto", marginBottom: "4.5em" }}>
         <hr

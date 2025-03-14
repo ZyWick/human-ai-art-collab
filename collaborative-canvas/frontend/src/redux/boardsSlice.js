@@ -23,7 +23,7 @@ const boardsSlice = createSlice({
   },
 });
 
-export const { setBoards, addBoard, updateBoard, removeBoard, removeBoardById } = boardsSlice.actions;
+export const { setBoards, addBoard, updateBoard, removeBoard, removeBoardById  } = boardsSlice.actions;
 
 // Selectors
 export const {

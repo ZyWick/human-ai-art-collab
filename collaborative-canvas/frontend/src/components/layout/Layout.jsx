@@ -5,6 +5,7 @@ import OutputHub from "./OutputHub";
 import Header from "./Header";
 import Moodboard from "../moodboard/Moodboard";
 import "../../assets/styles/Layout.css";
+import MoreStuff from './MoreStuff'
 
 import useBoardSocket from "../../hook/useBoardSocket";
 import { setBoardNoteKeywords, setRoomChat } from "../../redux/roomSlice";
@@ -61,8 +62,9 @@ const Layout = () => {
       <Header />
       <div className="layout-container">
         <div className="sidebar-overlay left">
-          <Dashboard />
-        </div>
+          <Dashboard />          
+        </div> 
+          <MoreStuff />
         <div className="moodboard-container">
           <Moodboard />
         </div>

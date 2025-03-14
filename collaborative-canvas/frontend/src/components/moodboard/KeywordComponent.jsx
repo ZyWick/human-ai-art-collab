@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useDispatch } from "react-redux";
-import { Label, Tag, Text } from "react-konva";
+import { useDispatch, useSelector } from "react-redux";
+import { Label, Tag, Text, Group, Rect } from "react-konva";
 import { calculateNewKeywordPosition } from "../../util/keywordMovement";
 import {updateBoardNoteKeywords} from '../../redux/roomSlice'
+import { selectBoardById } from "../../redux/boardsSlice";
 import { removeKeywordFromSelected } from "../../redux/selectionSlice";
 import { deleteKeyword } from "../../util/api";
 import { useSocket } from '../../context/SocketContext'
+import { useAuth } from "../../context/AuthContext";
 import colorMapping from "../../config/keywordTypes";
 
 const KeywordComponent = ({
@@ -13,7 +15,7 @@ const KeywordComponent = ({
   imageBounds,
   stageRef,
   updateKeyword,
-  updateImageKeyword
+  updateImageKeyword,
 }) => {
   const keywordRef = useRef(null);
   const {
@@ -24,8 +26,37 @@ const KeywordComponent = ({
   } = imageBounds;
   const dispatch = useDispatch();
   const socket = useSocket()
+  const { user } = useAuth();
   const [isClicked, setIsCLicked] = useState(false);
-  // const [isHovered, setIsHovered] = useState(false)
+  const [textWidth, setTextWidth] = useState(0);
+  const isVotedByUser = data.votes?.includes(user.id)
+  const votesNumber = data.votes?.length
+  const kwBoard = useSelector((state) =>
+    selectBoardById(state, data.boardId)
+  );
+  const isVoting = kwBoard.isVoting
+  useEffect(() => {
+  if (keywordRef.current) {
+    setTextWidth(keywordRef.current.getClientRect().width);
+  }
+}, [keywordRef])
+
+  const handleVoteClick = (e) =>{
+    e.cancelBubble = true;
+    const userId = user.id
+    const updatedVotes = data.votes?.includes(userId)
+        ? data.votes.filter(id => id !== userId) // Remove user.id if it's already there
+        : [...(data.votes || []), userId]; // Add user.id if it's not there
+
+    const updatedKeyword = { ...data, votes: updatedVotes };
+    const isNote = !data.imageId
+
+    isNote
+      ? dispatch(updateBoardNoteKeywords(updatedKeyword))
+      : updateKeyword(updatedKeyword);
+
+    socket.emit("updateKeywordVotes", {keywordId: data._id, userId, isNote});
+ }
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -48,15 +79,6 @@ const KeywordComponent = ({
     };
   }, [stageRef]);
 
-
-  // const [kwSize, setKwSize] = useState({ width: 0, height: 0 });
-
-  // useEffect(() => {
-  //   if (keywordRef.current) {
-  //     const { width, height } = keywordRef.current.getClientRect();
-  //     setKwSize({ width, height });
-  //   }
-  // }, []);
 
   // TODO: Move on Transform. Buggy
   // useEffect(() => {
@@ -92,15 +114,10 @@ const KeywordComponent = ({
     keyword: data.keyword,
   };
 
-  // const { addSelectedLabel, removeSelectedLabel, selectedLabelList } =
-  //   useLabelSelection();
-  // const isSelected = useMemo(() => {
-  //   return selectedLabelList.some((label) => label.id === labelEntity.id);
-  // }, [selectedLabelList, labelEntity.id]);
 
-  const handleKeywordDrag = (e, action, keyword) => {
+  const handleKeywordDrag = (e, action) => {
     e.cancelBubble = true;
-    const isNote = !keyword.imageId
+    const isNote = !data.imageId
     
     const newOffset = isNote
       ? { offsetX: e.target.x(), offsetY: e.target.y() }
@@ -109,7 +126,7 @@ const KeywordComponent = ({
           offsetY: e.target.y() - imageY,
         };
   
-    let newKeyword = { ...keyword, ...newOffset };
+    let newKeyword = { ...data, ...newOffset };
   
     if (!isNote && action === "updateKeyword") {
       newKeyword = {
@@ -129,32 +146,33 @@ const KeywordComponent = ({
     socket.emit(isNote ? action + "Note" : action, newKeyword);
   };
   
-  const toggleSelected = (keyword) => {
-    const updatedKeyword = { ...keyword, isSelected: !keyword.isSelected };
-    const isNote = !keyword.imageId
+  const toggleSelected = (e) => {
+    e.cancelBubble = true;
+    const updatedKeyword = { ...data, isSelected: !data.isSelected };
+    const isNote = !data.imageId
     
     isNote
       ? dispatch(updateBoardNoteKeywords(updatedKeyword))
       : updateKeyword(updatedKeyword);
 
-    socket.emit("toggleSelectedKeyword", keyword._id);
+    socket.emit("toggleSelectedKeyword", data._id);
     socket.emit(isNote ? "updateKeywordNote" : "updateKeyword", updatedKeyword);
   };
 
   useEffect(() => {
-    const deleteKeywordButton = async (keyword) => {
+    const deleteKeywordButton = async () => {
       try {
-        if (!keyword.imageId) {
-          socket.emit("deleteNoteKeyword", keyword._id);
-          await deleteKeyword(keyword._id);
+        if (!data.imageId) {
+          socket.emit("deleteNoteKeyword", data._id);
+          await deleteKeyword(data._id);
         } else {
-          let { offsetX, offsetY, ...newKeyword1 } = keyword;
+          let { offsetX, offsetY, ...newKeyword1 } = data;
           const newKeyword2 = { ...newKeyword1, isSelected: false };
           
-          dispatch(removeKeywordFromSelected(keyword._id))
+          dispatch(removeKeywordFromSelected(data._id))
           updateImageKeyword(newKeyword2)
-          socket.emit("removeKeywordFromBoard", keyword._id);
-          socket.emit("removeKeywordFromSelected",keyword._id)
+          socket.emit("removeKeywordFromBoard", data._id);
+          socket.emit("removeKeywordFromSelected",data._id)
         }
       } catch (e) {
         console.log(e);
@@ -163,7 +181,7 @@ const KeywordComponent = ({
 
     const handleKeyDown = (event) => {
       if ((event.key === "Delete" || event.key === "Backspace") && isClicked) {
-        deleteKeywordButton(data);
+        deleteKeywordButton();
       }
     };
 
@@ -187,13 +205,18 @@ const KeywordComponent = ({
           : labelEntity.type + ": " + labelEntity.keyword
       }
       draggable={true}
-      onDragMove={(e) => handleKeywordDrag(e, "keywordMoving", data)}
-      onDragEnd={(e) => handleKeywordDrag(e, "updateKeyword", data)}
-      onClick={() => {
-        toggleSelected(data);
+      onDragMove={(e) => handleKeywordDrag(e, "keywordMoving")}
+      onDragEnd={(e) => handleKeywordDrag(e, "updateKeyword")}
+      onClick={(e) => {
+        toggleSelected(e);
         setIsCLicked(true);
       }}
       keywordRef={keywordRef}
+      textWidth={textWidth}
+      votesNumber={votesNumber}
+      isVotedByUser={isVotedByUser}
+      isVoting={isVoting}
+      handleVoteClick={handleVoteClick}
     />
   ) : null;
 };
@@ -213,8 +236,13 @@ export const KeywordLabel = ({
   onDragMove,
   onDragEnd,
   keywordRef,
+  textWidth,
+  votesNumber,
+  isVotedByUser,
+  isVoting,
+  handleVoteClick
 }) => {
-  return (
+  return (<Group>
     <Label
       id={id}
       x={xpos}
@@ -224,7 +252,7 @@ export const KeywordLabel = ({
       draggable={draggable}
       onDragMove={onDragMove}
       onDragEnd={onDragEnd}
-      ref={keywordRef}
+      handleVoteClick={handleVoteClick}
     >
       <Tag
         name="label-tag"
@@ -233,6 +261,7 @@ export const KeywordLabel = ({
         strokeWidth={1}
         stroke={colorMapping[type]}
         cornerRadius={4}
+        ref={keywordRef}
       />
       <Text
         text={text}
@@ -243,7 +272,32 @@ export const KeywordLabel = ({
         padding={8}
         fill={isSelected ? "white" : colorMapping[type]}
       />
+      
     </Label>
+    {isVoting &&
+    <Group x={textWidth + xpos + 5} y={ypos -10} 
+      onClick={(e) => handleVoteClick(e)} 
+      cursor="pointer">
+        <Rect
+          width={35}
+          height={20}
+          fill={isVotedByUser ? colorMapping[type] : "transparent"}
+          cornerRadius={5}
+          shadowBlur={1}
+          stroke={colorMapping[type]}
+          strokeWidth={0.5}
+        />
+        <Text
+          text={`👍${votesNumber}`}
+          fontSize={10}
+          fill={isVotedByUser ? "white" : colorMapping[type]}
+          align="center"
+          width={35}
+          height={20}
+          verticalAlign="middle"
+        />
+      </Group>}
+    </Group>
   );
 };
 

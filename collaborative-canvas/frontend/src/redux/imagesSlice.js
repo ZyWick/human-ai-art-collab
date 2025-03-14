@@ -14,6 +14,15 @@ const imagesSlice = createSlice({
         img._id === action.payload._id ? { ...img, ...action.payload } : img
       );
     },
+    clearAllImageKeywordVotes: (state) => {
+      return state.map(image => ({
+        ...image,
+        keywords: image.keywords.map(keyword => ({
+          ...keyword,
+          votes: [] // Clear votes for all keywords
+        }))
+      }));
+    }
   },
 });
 
@@ -24,6 +33,6 @@ export const selectImageById = createSelector(
   (images, imageId) => images.find((image) => image._id === imageId)
 );
 
-export const { setImages, addImage, removeImage, updateImage } =
+export const { setImages, addImage, removeImage, updateImage, clearAllImageKeywordVotes} =
 imagesSlice.actions;
 export default imagesSlice.reducer;

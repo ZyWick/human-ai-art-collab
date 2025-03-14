@@ -15,12 +15,13 @@
 }
 
 .upload-button {
+    margin-top: 1em;
     padding: 8px;
     background: blue;
     color: white;
     border: none;
     cursor: pointer;
-    width: 95%;
+    width: 100%;
 }
 
 .file-input {

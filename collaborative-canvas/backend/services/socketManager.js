@@ -118,6 +118,19 @@ module.exports = (io, users) => {
       }
     })
 
+    socket.on("updateKeywordVotes", async({keywordId, userId, isNote}) =>{
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        const newKeyword = await keywordService.updateKeywordVotes(keywordId, userId);
+        if (isNote) io.to(user.roomId).emit("updateKeywordNote", newKeyword);
+        else  io.to(user.roomId).emit("updateKeyword", newKeyword);
+      } catch (error) {
+          console.error("Error updating keyword:", error);
+          socket.emit("error", { message: "Failed to delete note keyword" });
+      }
+    })
+
     socket.on("removeKeywordFromSelected", (keywordId) => {
       const user = users[socket.id];
       if (user) {
@@ -245,6 +258,42 @@ module.exports = (io, users) => {
         socket.emit("error", { message: "Failed to update keyword position" });
       }
     });
+
+    socket.on("starBoard", async (boardId) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        const newBoard = await boardService.toggleStarredBoard(boardId);
+        io.to(user.roomId).emit("starBoard", newBoard);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    });
+
+    socket.on("toggleVoting", async (boardId) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        const newBoard = await boardService.toggleVoting(boardId);
+        io.to(user.roomId).emit("toggleVoting", newBoard);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    });
+
+    socket.on("clearKeywordVotes", async(boardId)=> {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        const result = await keywordService.resetVotesForBoard(boardId)
+        io.to(user.roomId).emit("clearKeywordVotes", boardId);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    })
     
     const imageUrls = [
       "https://www.cnet.com/a/img/resize/8d159fb0c99a75843d3585dd2ae8cc9e6fa12773/hub/2017/08/03/75c3b0ae-5a2d-4d75-b72b-055247b4378f/marvelinfinitywar-captainamerica.jpg?auto=webp&fit=crop&height=1200&width=1200",
@@ -287,8 +336,6 @@ module.exports = (io, users) => {
         if (!user) return;
 
         const newBoard = await boardService.cloneBoard(boardId);
-        console.log(newBoard)
-        console.log(newBoard._id)
         io.to(user.roomId).emit("cloneBoard", newBoard._id);
       } catch (error) {
         console.error("Error updating keyword:", error);
@@ -312,9 +359,7 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        console.log(boardId, roomId)
         const result = await boardService.deleteBoard(boardId, roomId);
-        console.log(result)
         io.to(user.roomId).emit("deleteBoard", boardId);
       } catch (error) {
         console.error("Error updating keyword:", error);

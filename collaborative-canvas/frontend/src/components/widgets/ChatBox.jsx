@@ -51,10 +51,11 @@ useEffect (() => {
         flexDirection: "column",
         justifyContent: "flex-end",
         alignItems: "center",
-        flexShrink: "3",
+        flexShrink: "2",
         minHeight: "2em",
         height: "100%",
         width: "95%",
+        paddingBottom: "2em"
         // marginTop: "auto",
       }}
     >

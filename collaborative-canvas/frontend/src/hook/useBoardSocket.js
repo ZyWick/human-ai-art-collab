@@ -6,6 +6,7 @@ import {
   addImage,
   removeImage,
   updateImage,
+  clearAllImageKeywordVotes,
 } from "../redux/imagesSlice";
 import { useSocket } from '../context/SocketContext'
 import { toggleSelectedKeyword } from "../redux/selectionSlice";
@@ -18,7 +19,8 @@ import {
   addRoomChatMessage,
   setCurrentBoardId,
   setRoomName,
-  updateDesignDetails
+  updateDesignDetails,
+  clearAllNoteKeywordVotes,
 } from "../redux/roomSlice";
 import {
   updateBoard,
@@ -29,7 +31,6 @@ import {
   removeKeywordFromSelected,
 } from "../redux/selectionSlice"
 import { useAuth } from "../context/AuthContext";
-
 const useBoardSocket = () => {
   const dispatch = useDispatch();
   const socket = useSocket();
@@ -39,7 +40,6 @@ const useBoardSocket = () => {
 
   const { user } = useAuth();
   const username = user.username
-  console.log(user)
   const boards = useSelector(selectAllBoards);
 
   useEffect(() => {
@@ -146,6 +146,31 @@ const useBoardSocket = () => {
     // socket.on("updateKeyword", (newKw) => console.log(newKw))
     socket.on("sendChat", (newMessage) => dispatch(addRoomChatMessage(newMessage)))
 
+    socket.on("starBoard", (board) => {
+      dispatch(updateBoard({
+        id: board._id,
+        changes: { isStarred: board.isStarred },
+      }))
+    })
+
+    socket.on("toggleVoting", (board) => {
+       dispatch(updateBoard({
+         id: board._id,
+         changes: { isVoting: board.isVoting },
+       }))
+     })
+
+     socket.on("clearKeywordVotes", (boardId) => {
+      console.log(currentBoardId, boardId)
+      console.log(boardId === currentBoardId)
+      if (boardId === currentBoardId) {
+        console.log("whatt")
+        dispatch(clearAllNoteKeywordVotes())
+        dispatch(clearAllImageKeywordVotes())
+      }
+
+     })
+    
     return () => {
       socket.emit("leave room", { username, roomId });
       socket.off("updateRoomUsers");
@@ -165,6 +190,8 @@ const useBoardSocket = () => {
       socket.off("updateBoardName");
       socket.off("updateDesignDetails");
       socket.off("sendChat")
+      socket.off("starBoard")
+      socket.off("clearKeywordVotes")
     };
   }, [socket, username, roomId, dispatch, currentBoardId, boards]);
 };

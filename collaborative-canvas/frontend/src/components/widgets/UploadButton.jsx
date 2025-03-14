@@ -9,7 +9,6 @@ const UploadButton = () => {
   const [imageUrl, setImageUrl] = useState("");
   const socket = useSocket();
   const boardId = useSelector((state) => state.room.currentBoardId);
-  console.log()
 
   const uploadImage = async (newImage) => {
     if (!newImage) return alert("Please select a file!");
@@ -48,13 +47,13 @@ const UploadButton = () => {
 
   return (
     <div className="upload-container">
-      <input
+      {/* <input
         type="text"
         value={imageUrl}
         onChange={(e) => setImageUrl(e.target.value)}
         placeholder="Enter image URL"
         className="upload-input"
-      />
+      /> */}
       <button
         onClick={
           imageUrl.trim()

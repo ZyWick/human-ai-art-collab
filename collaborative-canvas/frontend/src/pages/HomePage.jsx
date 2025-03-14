@@ -13,7 +13,7 @@ const HomePage = () => {
   const [newRoomCode, setNewRoomCode] = useState("");
   const [joinCode, setJoinCode] = useState("UJONZK");
 
-  console.log(user)
+  
   const handleCreateRoom = () => {
     if (!newRoomCode) return;
     createRoomService(newRoomCode, dispatch, navigate);

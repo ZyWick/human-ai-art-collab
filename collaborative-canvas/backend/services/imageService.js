@@ -83,4 +83,13 @@ const deleteImage = async (imageId) => {
   return await Image.findByIdAndDelete(imageId);
 };
 
-module.exports = { createImage, updateImage, deleteImage };
+const addFeedback = async (imageId, feedbackData) => {
+  const updatedImage = await Image.findByIdAndUpdate(
+    imageId,
+    { $push: { feedback: feedbackData } },
+    { new: true, projection: { feedback: { $slice: -1 } } } // Return only the last added feedback
+  );
+  return updatedImage ? updatedImage.feedback[0] : null;
+};
+
+module.exports = { createImage, updateImage, deleteImage, addFeedback };

@@ -8,12 +8,11 @@ import { updateImage } from "../../redux/imagesSlice";
 import { deleteKeyword } from "../../util/api";
 import "../../assets/styles/keywordSelection.css";
 
-const KeywordSelection = ({ selectedImageId }) => {
+const KeywordSelection = ({selectedImage}) => {
   const keywordRefs = useRef({});
   const socket = useSocket();
   const dispatch =useDispatch();
   
-  const selectedImage = useSelector(state => selectImageById(state, selectedImageId));
   
   const [likedElementTypes, setLikedElementTypes] = useState({});
   const [groupedKeywords, setGroupedKeywords] = useState({});
@@ -97,8 +96,6 @@ const KeywordSelection = ({ selectedImageId }) => {
   };
   return (
     <>
-      <img className="image-preview-selection" alt="" src={selectedImage?.url} />
-      <hr className="divider" />
       
       <div className="keyword-container">
         <h3 className="keyword-title">Why do you like this image?</h3>
@@ -169,5 +166,6 @@ const KeywordSelection = ({ selectedImageId }) => {
     </>
   );
 };
+
 
 export default KeywordSelection;

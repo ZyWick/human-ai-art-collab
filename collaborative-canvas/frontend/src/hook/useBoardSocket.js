@@ -7,6 +7,7 @@ import {
   removeImage,
   updateImage,
   clearAllImageKeywordVotes,
+  addFeedbackToImage
 } from "../redux/imagesSlice";
 import { useSocket } from '../context/SocketContext'
 import { toggleSelectedKeyword } from "../redux/selectionSlice";
@@ -146,6 +147,10 @@ const useBoardSocket = () => {
     // socket.on("updateKeyword", (newKw) => console.log(newKw))
     socket.on("sendChat", (newMessage) => dispatch(addRoomChatMessage(newMessage)))
 
+    socket.on("sendImageChat", ({imageId, feedback}) => {
+      dispatch(addFeedbackToImage({ imageId, feedback }))
+    })
+
     socket.on("starBoard", (board) => {
       dispatch(updateBoard({
         id: board._id,
@@ -190,6 +195,7 @@ const useBoardSocket = () => {
       socket.off("updateBoardName");
       socket.off("updateDesignDetails");
       socket.off("sendChat")
+      socket.off("sendImageChat")
       socket.off("starBoard")
       socket.off("clearKeywordVotes")
     };

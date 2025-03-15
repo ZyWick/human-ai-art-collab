@@ -22,6 +22,14 @@ const imagesSlice = createSlice({
           votes: [] // Clear votes for all keywords
         }))
       }));
+    },
+    addFeedbackToImage: (state, action) => {
+      const { imageId, feedback } = action.payload;
+      return state.map(image =>
+        image._id === imageId
+          ? { ...image, feedback: [...image.feedback, feedback] }
+          : image
+      );
     }
   },
 });
@@ -33,6 +41,6 @@ export const selectImageById = createSelector(
   (images, imageId) => images.find((image) => image._id === imageId)
 );
 
-export const { setImages, addImage, removeImage, updateImage, clearAllImageKeywordVotes} =
+export const { setImages, addImage, removeImage, updateImage, clearAllImageKeywordVotes, addFeedbackToImage} =
 imagesSlice.actions;
 export default imagesSlice.reducer;

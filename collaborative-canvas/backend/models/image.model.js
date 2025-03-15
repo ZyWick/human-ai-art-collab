@@ -32,7 +32,18 @@ const imageSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Keyword',
         },
-    ]
+    ],
+    feedback:[
+          {
+            userId: { type: String},
+            username: { type: String, required: true },
+            boardId: {type: mongoose.Schema.Types.ObjectId, ref: 'Board', required: true},
+            message: { type: String }, // Regular text message
+            keywordType: {type: String},
+            keyword: { type: String},
+            timestamp: { type: Date, default: Date.now },
+          }
+        ]
   },
   { timestamps: true, }
 );

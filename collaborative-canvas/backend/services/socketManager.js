@@ -259,6 +259,19 @@ module.exports = (io, users) => {
       }
     });
 
+    socket.on("sendImageChat", async (chatMessage) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        let {imageId, ...newChatMessage} = chatMessage
+        const newMessage = await imageService.addFeedback(imageId, newChatMessage);
+       io.to(user.roomId).emit("sendImageChat", {imageId, feedback: newMessage});
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    });
+
     socket.on("starBoard", async (boardId) => {
       try {
         const user = users[socket.id];

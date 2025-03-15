@@ -40,7 +40,7 @@ app.use(cors({
   origin: allowedOrigins,
   credentials: true,
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
-  allowedHeaders: "Origin,X-Requested-With,Content-Type,Accept,Authorization"
+  allowedHeaders: "Origin,X-Requested-With,Content-Type,Accept,Authorization,board-id,socket-id"
 }));
 
 app.options("*", cors());
@@ -91,11 +91,12 @@ app.post("/upload", upload.array("images", 10), async (req, res) => {
         height: height,
       };
       
-      if (user) {
-          let image = await imageService.createImage(newImage, keywords)
-          io.to(user.roomId).emit("newImage", image);
-      }
-      res.json({ message: "Upload successful", ...result });
+      if (!user) return;
+
+      let image = await imageService.createImage(newImage, keywords)
+      io.to(user.roomId).emit("newImage", image);
+      
+      res.json({ message: "Upload successful", ...result, ...image });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -7,6 +7,38 @@
     width: 100%;
     cursor: pointer;
   }
+
+  .all-boards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Space between board rows */
+  }
+  
+  .board-row {
+    display: flex;
+    flex-direction: column; /* Stack board name above images */
+    align-items: flex-start; /* Align title to the left */
+    gap: 10px;
+  }
+  
+  .board-title {
+    margin-block: 0;
+    font-size: 18px;
+    font-weight: bold;
+    margin-left: 5px; /* Slight spacing from the left */
+  }
+  
+  .image-container-all {
+    display: flex;
+    gap: 10px; /* Space between images */
+    flex-wrap: wrap;
+    margin-top: 0;
+    min-width: 600px;
+  }
+  
+  .row-image{
+    max-width: 19%;
+  }
   
   .star-button {
     position: absolute;

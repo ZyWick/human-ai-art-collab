@@ -1,15 +1,16 @@
-import React, {useRef}  from "react";
+import React, {useState, useRef}  from "react";
 import { useSelector } from "react-redux";
 import DesignDetails from "../widgets/DesignDetails";
 import ChatBox from "../widgets/ChatBox"
-import KeywordSelection from "../widgets/KeywordSelection";
 import UploadButton from "../widgets/UploadButton";
 import '../../assets/styles/dashboard.css'
+import SelectedImage from "../widgets/SelectedImage"
 
 const Sidebar = () => {
- const selectedImageId = useSelector((state) => state.selection.selectedImageId);
+  const selectedImageId = useSelector((state) => state.selection.selectedImageId);
 const designDetails = useSelector((state) => state.room.designDetails);
   const chatRef = useRef(null);
+  const [isUploadingImg, setIsUploadingImg] = useState(false)
 
   const isDesignDetailsEmpty = Object.entries(designDetails)
       .filter(([key]) => key !== "others") 
@@ -25,11 +26,11 @@ const designDetails = useSelector((state) => state.room.designDetails);
       flexDirection: "column",
       alignItems: "center",
     }}
-  >{!isDesignDetailsEmpty ?  <UploadButton /> : <p style={{ fontSize: "0.75em", marginBottom: "0"}}>Complete design details to add images</p>}
-
-    {selectedImageId ? (
-      <KeywordSelection selectedImageId={selectedImageId} />
-    ) : (
+  >{!isDesignDetailsEmpty ?  <UploadButton isUploadingImg={isUploadingImg} setIsUploadingImg={setIsUploadingImg}/> : <p style={{ fontSize: "0.75em", marginBottom: "0"}}>Complete design details to add images</p>}
+  {!isUploadingImg && (
+    selectedImageId ? (
+      <SelectedImage selectedImageId={selectedImageId}/>
+    ) :  (
       <div style={{
         width: "90%",
         height: "100%",
@@ -48,7 +49,7 @@ const designDetails = useSelector((state) => state.room.designDetails);
         <DesignDetails chatRef={chatRef}/>
         <ChatBox chatRef={chatRef}/>
         </div>
-    )}
+    ))}
   </div>
   );
 };

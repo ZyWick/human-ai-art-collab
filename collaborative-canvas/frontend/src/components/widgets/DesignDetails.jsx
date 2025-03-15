@@ -78,13 +78,12 @@ const DesignDetails = ({chatRef}) => {
       className="scrollable-container"
       style={{
         display: "grid",
-        gap: "0.5rem",
-        flexGrow: "2",
-        flexShrink: "1",
+        gap: "1.5rem",
+        // flexGrow: "2",
+        // flexShrink: "1",
         width: "100%",
-        minHeight: "50%",
         maxHeight: "70%",
-        height: "100%"
+        // height: "100%"
       }}
     >
       {fields.map(({ key, label, placeholder }) => (

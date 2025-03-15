@@ -1,36 +1,36 @@
-import React, { useState, useEffect, } from "react";
-import { useSelector, } from "react-redux";
-import { useSocket } from '../../context/SocketContext'
+import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import { useSocket } from '../../context/SocketContext';
 import { selectBoardById } from "../../redux/boardsSlice";
 import { useAuth } from "../../context/AuthContext";
 
-const ChatBox = ({chatRef}) => {
+const ChatBox = ({ chatRef }) => {
   const socket = useSocket();
-//   const dispatch = useDispatch();
-  const {userId, roomChat, designDetails, currentBoardId} = useSelector((state) => state.room);  
-  const currBoard = useSelector((state) =>
-    selectBoardById(state, currentBoardId)
-  );
+  const { userId, roomChat, designDetails, currentBoardId } = useSelector((state) => state.room);
+  const currBoard = useSelector((state) => selectBoardById(state, currentBoardId));
   const { user } = useAuth();
 
-  const boardName = currBoard?.name;
+  const boardName = currBoard?.name || "No Board Selected";
   const [input, setInput] = useState("");
-  const [forceRerender, setForceRerender] = useState(0)
-
-useEffect (() => {
-    setForceRerender((prev) => prev + 1);
-}, [designDetails])
+  const [activeTab, setActiveTab] = useState("currentBoard");
+  const boardChat = roomChat?.filter((chat) => chat.boardId?._id === currentBoardId) || [];
 
   useEffect(() => {
     if (chatRef.current) {
       chatRef.current.scrollTop = chatRef.current.scrollHeight;
     }
-  }, [roomChat, chatRef]);
+  }, [roomChat, chatRef, activeTab]);
 
   const handleSendMessage = () => {
     if (input.trim() !== "") {
-    const newMessage =  {userId: userId, username: user.username, boardId: currentBoardId, boardName, message: input}
-      socket.emit("sendChat", newMessage)
+      const newMessage = {
+        userId,
+        username: user.username,
+        boardId: currentBoardId,
+        boardName,
+        message: input
+      };
+      socket.emit("sendChat", newMessage);
       setInput("");
     }
   };
@@ -39,36 +39,57 @@ useEffect (() => {
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       handleSendMessage();
-      console.log("tf")
     }
   };
 
   return (
     <div
-    key={forceRerender}
       style={{
         display: "flex",
         flexDirection: "column",
         justifyContent: "flex-end",
         alignItems: "center",
-        flexShrink: "2",
+        // flexShrink: "2",
         minHeight: "2em",
-        height: "100%",
+        maxHeight: "32.5%",
         width: "95%",
+        marginTop: "1em",
         paddingBottom: "2em"
-        // marginTop: "auto",
       }}
     >
-      <h3
-        style={{
-          margin: "0",
-          fontSize: "1.5em",
-          marginBottom: "0",
-          marginTop: "1em",
-        }}
-      >
-        Chat
-      </h3>
+      {/* Tab Navigation */}
+      <div style={{ display: "flex", width: "100%", justifyContent: "center", marginBottom: "0.5em" }}>
+        <button
+          onClick={() => setActiveTab("currentBoard")}
+          style={{
+            flex: 1,
+            padding: "0.5em",
+            border: "none",
+            backgroundColor: activeTab === "currentBoard" ? "#007bff" : "#ddd",
+            color: activeTab === "currentBoard" ? "#fff" : "#000",
+            cursor: "pointer",
+            borderRadius: "4px 0 0 4px"
+          }}
+        >
+          {boardName}
+        </button>
+        <button
+          onClick={() => setActiveTab("all")}
+          style={{
+            flex: 1,
+            padding: "0.5em",
+            border: "none",
+            backgroundColor: activeTab === "all" ? "#007bff" : "#ddd",
+            color: activeTab === "all" ? "#fff" : "#000",
+            cursor: "pointer",
+            borderRadius: "0 4px 4px 0"
+          }}
+        >
+          All
+        </button>
+      </div>
+
+      {/* Chat Messages */}
       <div
         ref={chatRef}
         className="scrollable-container"
@@ -80,27 +101,29 @@ useEffect (() => {
           padding: "0.5em",
           backgroundColor: "rgb(249, 249, 249)",
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "column"
         }}
       >
-        {roomChat?.map((chat, index) => (
+        {(activeTab === "all" ? roomChat : boardChat).map((chat, index) => (
           <p key={index} style={{ marginBlock: "0.2em" }}>
-          <strong>
-            <span style={{ color: "#555" }}>[{chat.boardId?.name}] </span>
-            {chat.username}:
-          </strong>{" "}
-          {chat.message}
-        </p>
-        
+            {activeTab === "all" && (
+              <span style={{ color: "#555", fontWeight: "bold" }}>
+                [{chat.boardId === currentBoardId ? boardName : `${chat.boardId?.name}`}]{" "}
+              </span>
+            )}
+            <strong>{chat.username}:</strong> {chat.message}
+          </p>
         ))}
       </div>
+
+      {/* Message Input */}
       <textarea
         style={{
           width: "100%",
           minHeight: "10%",
           padding: "0.5em",
           borderRadius: "4px",
-          border: "1px solid lightgrey",
+          border: "1px solid lightgrey"
         }}
         placeholder="Type your message..."
         value={input}

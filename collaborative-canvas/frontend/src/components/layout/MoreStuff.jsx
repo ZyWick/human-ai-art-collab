@@ -5,10 +5,12 @@ import { useSocket } from '../../context/SocketContext'
 import { selectBoardById, updateBoard } from "../../redux/boardsSlice";
 import { clearAllNoteKeywordVotes } from "../../redux/roomSlice";
 import { clearAllImageKeywordVotes } from "../../redux/imagesSlice";
+import DisplayAllBoardImages from '../widgets/DisplayAllBoardImages'
 import "../../assets/styles/Layout.css";
 
 const MoreStuff = () => {
   const [showAddKeyword, setShowAddKeyword] = useState(false);
+  const [showAllBoards, setShowAllBoards] = useState(false);
   const boardId  = useSelector((state) => state.room.currentBoardId);
     const currBoard = useSelector((state) =>
       selectBoardById(state, boardId)
@@ -40,8 +42,18 @@ const MoreStuff = () => {
 
   return (
     <>
+    {showAllBoards && (
+        <div className="outside-widget boardsDisplay scrollable-container">
+          <DisplayAllBoardImages />
+        </div>
+      )}
+    <button
+        className="outside-button showBoards"
+        onClick={() => setShowAllBoards(!showAllBoards)}
+      >  {showAllBoards ? ">" : "<"}
+      </button>
       <button
-        class="outside-button "
+        class="outside-button addNotes"
         onClick={() => setShowAddKeyword(!showAddKeyword)}
       >
         <svg
@@ -89,20 +101,20 @@ const MoreStuff = () => {
         </svg>
       </button>
       <button
-        class="outside-button votes"
+        className="outside-button votes"
         onClick={toggleVoting}
       > 👍
       </button>
 
       <button
-        class="outside-button resetVotes"
+        className="outside-button resetVotes"
         onClick={resetKeywordVotes}
       > x
       </button>
 
 
       {showAddKeyword && (
-        <div class="outside-widget">
+        <div className="outside-widget noteInput">
      
       <NoteKeywordInput addKeywordSelection={addKeywordSelection} />
         </div>

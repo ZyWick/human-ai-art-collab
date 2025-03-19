@@ -5,9 +5,18 @@ import KeywordComponent from "./KeywordComponent";
 import useImageSelection from "../../hook/useImageSelection";
 import { updateImage } from "../../redux/imagesSlice";
 import { setSelectedImage } from "../../redux/selectionSlice";
-import { useSocket } from '../../context/SocketContext'
+import { useSocket } from "../../context/SocketContext";
+import ThreadBubble from "./ThreadBubble";
 
-const ImageComponent = ({ imgData, stageRef }) => {
+const ImageComponent = ({
+  imgData,
+  stageRef,
+  handleElementClick,
+  onReply,
+  handleThreadClick,
+  setTooltipData,
+  handleThreadHover,
+}) => {
   const [image, setImage] = useState(null);
   const [keywords, setKeywords] = useState(imgData.keywords || []);
   const imageRef = useRef(null);
@@ -17,9 +26,15 @@ const ImageComponent = ({ imgData, stageRef }) => {
   const selectedImageId = useSelector(
     (state) => state.selection.selectedImageId
   );
-  
-  const [isHovered, setIsHovered] = useState(false);
+  const isAddingComments = useSelector((state) => state.room.isAddingComments);
+  const imageThreads = imgData.parentThreads;
+  const handleClick = (e) => {
+    if (isAddingComments) handleElementClick(e, { imageId: imgData._id });
+    else dispatch(setSelectedImage(imgData._id));
+  };
 
+  const [isHovered, setIsHovered] = useState(false);
+  console.log(imgData)
   useEffect(() => {
     setKeywords(imgData.keywords);
   }, [imgData.keywords]);
@@ -87,13 +102,12 @@ const ImageComponent = ({ imgData, stageRef }) => {
     };
     dispatch(updateImage(updatedImage));
     socket.emit("updateImage", updatedImage);
-  }
+  };
 
   useEffect(() => {
-    socket.on("updateKeyword",  updateKeyword);
+    socket.on("updateKeyword", updateKeyword);
     return () => socket.off("updateKeyword", updateKeyword);
   }, [updateKeyword, socket]);
-
 
   return image ? (
     <>
@@ -109,15 +123,8 @@ const ImageComponent = ({ imgData, stageRef }) => {
           draggable
           x={imgData.x}
           y={imgData.y}
-          onClick={(e) => {
-            e.cancelBubble = true;
-            dispatch(setSelectedImage(imgData._id));
-          }}
-          onTap={(e) => {
-            e.cancelBubble = true;
-            dispatch(setSelectedImage(imgData._id));
-            console.log(imgData._id);
-          }}
+          onClick={(e) => handleClick(e)}
+          onTap={(e) => handleClick(e)}
           onDragMove={(e) => handleDrag(e, "imageMoving")}
           onDragEnd={(e) => handleDrag(e, "updateImage")}
           onTransform={(e) => handleTransform("imageTransforming", e)}
@@ -163,9 +170,21 @@ const ImageComponent = ({ imgData, stageRef }) => {
             updateKeywords={updateKeyword}
             updateKeyword={updateKeyword}
             updateImageKeyword={updateImageKeyword}
-            // ref={(el) => {
-            //   if (el) keywordRefs.current[keyword._id] = el;
-            // }}
+            handleElementClick={handleElementClick}
+            setTooltipData={setTooltipData}
+            handleThreadClick={handleThreadClick}
+            handleThreadHover={handleThreadHover}
+          />
+        ))}
+      {imageThreads && 
+        imageThreads.map((thread, i) => (
+          <ThreadBubble
+            key={thread._id}
+            thread={thread}
+            position={{x: imgData.x + imgData.width -  15 - 35 * i, y: imgData.y - 20}}
+            onMouseEnter={(event) => handleThreadHover(event, thread)}
+            onMouseLeave={() => setTooltipData(null)}
+            onClick={(event) =>handleThreadClick(event, thread, {type: "imageId", _id: imgData._id})}
           />
         ))}
     </>

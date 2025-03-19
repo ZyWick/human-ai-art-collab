@@ -38,15 +38,16 @@ const deleteBoard = async (boardId, roomId) => {
   return await Board.findByIdAndDelete(boardId);
 };
 
-const getGeneratedImages = async (boardId) =>
-  await Board.findById(boardId).select('generatedImages')
+const getIterations = async (boardId) =>
+  await Board.findById(boardId).select('iteration');
 
-const setGeneratedImages = async (boardId, images) => 
+const addIteration = async (boardId, newIteration) => 
   await Board.findByIdAndUpdate(
     boardId,
-    { $set: { generatedImages: images } },
+    { $push: { iterations: newIteration } }, // Push new iteration to the array
     { new: true, runValidators: true } // Returns the updated document
-  ); 
+  );
+
 
 
 
@@ -147,11 +148,42 @@ return clonedBoard;
 }
 
 const getBoard = async (boardId) => {
-  return await Board.findById(boardId).populate([
-    { path: 'images', populate: { path: 'keywords' } },
-    { path: 'keywords' },
-  ]);
+  return await Board.findById(boardId)
+    .populate([
+      {
+        path: "parentThreads",
+        model: "Thread",
+        populate: { path: "children", model: "Thread" }, // Populate child threads for parentThreads
+      },
+      {
+        path: "images",
+        populate: [{
+          path: "parentThreads",
+          model: "Thread",
+          populate: { path: "children", model: "Thread" }, // Populate child threads for images' parentThreads
+        },
+        {
+          path: "keywords",
+          populate: {
+            path: "parentThreads",
+            model: "Thread",
+            populate: { path: "children", model: "Thread" }, // Populate child threads for keywords' parentThreads
+          },
+        },
+      ]
+      },
+      {
+        path: "keywords",
+        populate: {
+          path: "parentThreads",
+          model: "Thread",
+          populate: { path: "children", model: "Thread" }, // Populate child threads for keywords' parentThreads
+        },
+      },
+    ])
+    .lean();
 };
+
 
 const toggleStarredBoard = async (boardId) => {
   const board = await Board.findById(boardId);
@@ -182,8 +214,8 @@ module.exports = {
   getBoard,
   createBoard,
   updateBoardName,
-  getGeneratedImages,
-  setGeneratedImages,
+  getIterations,
+  addIteration,
   cloneBoard,
   deleteBoard,
   toggleStarredBoard,

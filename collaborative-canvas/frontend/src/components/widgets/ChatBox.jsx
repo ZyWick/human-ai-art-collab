@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 
 const ChatBox = ({ chatRef }) => {
   const socket = useSocket();
-  const { userId, roomChat, designDetails, currentBoardId } = useSelector((state) => state.room);
+  const { roomChat, currentBoardId } = useSelector((state) => state.room);
   const currBoard = useSelector((state) => selectBoardById(state, currentBoardId));
   const { user } = useAuth();
 
@@ -24,7 +24,7 @@ const ChatBox = ({ chatRef }) => {
   const handleSendMessage = () => {
     if (input.trim() !== "") {
       const newMessage = {
-        userId,
+        userId: user.id,
         username: user.username,
         boardId: currentBoardId,
         boardName,

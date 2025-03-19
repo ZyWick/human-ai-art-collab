@@ -34,10 +34,22 @@
     flex-wrap: wrap;
     margin-top: 0;
     min-width: 600px;
+    flex-wrap: nowrap; 
+    white-space: nowrap;
   }
   
   .row-image{
     max-width: 19%;
+    flex-shrink: 0;
+    margin-block: 0;
+    width: 95%;
+    object-fit: contain;
+    max-height: 15vh;
+  }
+
+  .image-preview {
+    margin-bottom: 1%;
+    margin-top: 0;
   }
   
   .star-button {

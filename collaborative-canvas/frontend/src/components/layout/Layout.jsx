@@ -8,7 +8,7 @@ import "../../assets/styles/Layout.css";
 import MoreStuff from './MoreStuff'
 
 import useBoardSocket from "../../hook/useBoardSocket";
-import { setBoardNoteKeywords, setRoomChat } from "../../redux/roomSlice";
+import { setBoardNoteKeywords, setRoomChat, setBoardThreads } from "../../redux/roomSlice";
 import { setImages } from "../../redux/imagesSlice";
 import { setSelectedKeywords, setSelectedImage } from "../../redux/selectionSlice";
 import { setBoards } from "../../redux/boardsSlice";
@@ -24,6 +24,7 @@ const Layout = () => {
       if (currentBoardId) {
         try {
           const newBoard = await getBoard(currentBoardId);
+          console.log(newBoard)
           const newRoomData = await getRoom(newBoard.roomId);
           if (newRoomData) {
             dispatch(setBoards(newRoomData.boards));
@@ -31,6 +32,7 @@ const Layout = () => {
           }
           dispatch(setBoardNoteKeywords(newBoard.keywords));
           dispatch(setImages(newBoard.images));
+          dispatch(setBoardThreads(newBoard.parentThreads));
           const selectedKeywordIds = [
             ...newBoard.images.flatMap((image) =>
               image.keywords
@@ -61,16 +63,16 @@ const Layout = () => {
     <>
       <Header />
       <div className="layout-container">
-        <div className="sidebar-overlay left">
+        {/* <div className="sidebar-overlay left">
           <Dashboard />          
         </div> 
-          <MoreStuff />
+          <MoreStuff /> */}
         <div className="moodboard-container">
           <Moodboard />
         </div>
-        <div className="sidebar-overlay right">
+        {/* <div className="sidebar-overlay right">
           <OutputHub />
-        </div>
+        </div> */}
       </div>
     </>
   );

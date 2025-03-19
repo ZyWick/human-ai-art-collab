@@ -9,6 +9,7 @@ import { deleteKeyword } from "../../util/api";
 import { useSocket } from '../../context/SocketContext'
 import { useAuth } from "../../context/AuthContext";
 import colorMapping from "../../config/keywordTypes";
+import ThreadBubble from "./ThreadBubble";
 
 const KeywordComponent = ({
   data,
@@ -16,6 +17,11 @@ const KeywordComponent = ({
   stageRef,
   updateKeyword,
   updateImageKeyword,
+  handleElementClick,
+  onReply,
+  handleThreadClick,
+  setTooltipData,
+  handleThreadHover,
 }) => {
   const keywordRef = useRef(null);
   const {
@@ -29,6 +35,10 @@ const KeywordComponent = ({
   const { user } = useAuth();
   const [isClicked, setIsCLicked] = useState(false);
   const [textWidth, setTextWidth] = useState(0);
+  const isAddingComments = useSelector((state) => state.room.isAddingComments);
+  const [hovered, setHovered] = useState(false)
+  const keywordThreads = data.parentThreads;
+
   const isVotedByUser = data.votes?.includes(user.id)
   const votesNumber = data.votes?.length
   const kwBoard = useSelector((state) =>
@@ -78,6 +88,15 @@ const KeywordComponent = ({
       }
     };
   }, [stageRef]);
+
+    const handleClick = (e) => {
+      if(isAddingComments) {
+        handleElementClick(e, {keywordId: data._id} )
+      }else {
+        toggleSelected(e);
+        setIsCLicked(true);
+      }
+    }
 
 
   // TODO: Move on Transform. Buggy
@@ -191,7 +210,9 @@ const KeywordComponent = ({
     };
   }, [isClicked, dispatch, data._id, data, socket, updateImageKeyword]);
   
+  
   return data.offsetX !== undefined && data.offsetY !== undefined ? (
+    <>
     <KeywordLabel
       id={data._id}
       labelkey={labelEntity.id}
@@ -207,17 +228,30 @@ const KeywordComponent = ({
       draggable={true}
       onDragMove={(e) => handleKeywordDrag(e, "keywordMoving")}
       onDragEnd={(e) => handleKeywordDrag(e, "updateKeyword")}
-      onClick={(e) => {
-        toggleSelected(e);
-        setIsCLicked(true);
-      }}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onClick={(e) => handleClick(e)}
       keywordRef={keywordRef}
       textWidth={textWidth}
       votesNumber={votesNumber}
       isVotedByUser={isVotedByUser}
       isVoting={isVoting}
       handleVoteClick={handleVoteClick}
+      hovered={hovered}
     />
+    {keywordThreads && 
+        keywordThreads.map((thread, i) => (
+          <ThreadBubble
+            key={thread._id}
+            thread={thread}
+            position={{x: data.offsetX + imageX + textWidth - 15 - 35 * i, 
+                        y: data.offsetY + imageY - 35}}
+                        onMouseEnter={(event) => handleThreadHover(event, thread)}
+                        onMouseLeave={() => setTooltipData(null)}
+                        onClick={(event) => handleThreadClick(event, thread, {type: "keywordId", _id: data._id, isNote: !data.imageId})}
+          />
+        ))}
+    </>
   ) : null;
 };
 
@@ -235,12 +269,15 @@ export const KeywordLabel = ({
   draggable,
   onDragMove,
   onDragEnd,
+  onMouseEnter,
+  onMouseLeave,
   keywordRef,
   textWidth,
   votesNumber,
   isVotedByUser,
   isVoting,
-  handleVoteClick
+  handleVoteClick,
+  hovered
 }) => {
   return (<Group>
     <Label
@@ -252,6 +289,8 @@ export const KeywordLabel = ({
       draggable={draggable}
       onDragMove={onDragMove}
       onDragEnd={onDragEnd}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
       handleVoteClick={handleVoteClick}
     >
       <Tag
@@ -262,6 +301,9 @@ export const KeywordLabel = ({
         stroke={colorMapping[type]}
         cornerRadius={4}
         ref={keywordRef}
+        shadowColor={hovered ? colorMapping[type] : "transparent"}
+        shadowBlur={hovered ? 5 : 0}
+        shadowOpacity={hovered ? 2 : 0}
       />
       <Text
         text={text}

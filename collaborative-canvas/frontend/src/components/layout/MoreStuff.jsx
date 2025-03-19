@@ -44,7 +44,7 @@ const MoreStuff = () => {
     <>
     {showAllBoards && (
         <div className="outside-widget boardsDisplay scrollable-container">
-          <DisplayAllBoardImages />
+          <DisplayAllBoardImages currBoard={currBoard} />
         </div>
       )}
     <button

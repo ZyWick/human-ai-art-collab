@@ -10,10 +10,26 @@ const roomReducer = createSlice({
     users: [],
     roomChat: [],
     designDetails: {},
+    isAddingComments: true,
+    stagePosition: { x: 0, y: 0 },
+    stagePointerPosition: null,
+    boardThreads: [],
   },
   reducers: {
     setRoomId: (state, action) => {
       state.roomId = action.payload;
+    },
+    setIsAddingComments: (state, action) => {
+      state.isAddingComments = action.payload;
+    },
+    setBoardThreads:  (state, action) => {
+      state.boardThreads = action.payload;
+    },
+    setStagePosition:  (state, action) => {
+      state.stagePosition = action.payload;
+    },
+    setStagePointerPosition:  (state, action) => {
+      state.stagePointerPosition = action.payload;
     },
     setRoomName: (state, action) => {
       state.roomName = action.payload;
@@ -74,6 +90,10 @@ export const {
   updateDesignDetails,
   setRoomChat,
   addRoomChatMessage,
-  clearAllNoteKeywordVotes
+  clearAllNoteKeywordVotes,
+  setIsAddingComments,
+  setStagePointerPosition,
+  setStagePosition,
+  setBoardThreads
 } = roomReducer.actions;
 export default roomReducer.reducer;

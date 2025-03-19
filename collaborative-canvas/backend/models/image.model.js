@@ -33,6 +33,7 @@ const imageSchema = new mongoose.Schema(
             ref: 'Keyword',
         },
     ],
+    parentThreads: [{ type: mongoose.Schema.Types.ObjectId, ref: "Thread" }],
     feedback:[
           {
             userId: { type: String},

@@ -24,9 +24,16 @@ const boardSchema = new mongoose.Schema(
         ref: 'Keyword',
       },
     ],
-    generatedImages: [
+    parentThreads: [{ type: mongoose.Schema.Types.ObjectId, ref: "Thread" }],
+    iterations: [
       {
-        type: String,
+        generatedImages: [{ type: String, required: true }], // Array of image URLs
+        keywords: [ {
+          keyword: { type: String, required: true },
+          type: { type: String, required: true }
+        },
+        { timestamps: true }
+      ]
       },
     ],
     isStarred: {

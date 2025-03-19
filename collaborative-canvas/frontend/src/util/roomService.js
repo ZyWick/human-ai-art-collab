@@ -13,8 +13,6 @@ const initiateRoom = (roomData, dispatch, navigate) => {
     if (!roomData) return;
   
     const { _id, name, boards, roomChat, designDetails } = roomData;
-  
-    console.log(roomData)
     dispatch(setRoomId(_id));
     dispatch(setRoomChat(roomChat));
     dispatch(setRoomName(name));
@@ -22,7 +20,7 @@ const initiateRoom = (roomData, dispatch, navigate) => {
     dispatch(setCurrentBoardId(boards?.[boards.length - 1]?._id));
     dispatch(setDesignDetails(designDetails));
   
-    navigate(`/room/${roomData.joinCode || _id}`);
+    navigate(`/room/${roomData.joinCode}`);
   };
   
   export const joinRoomService = async (roomCode, dispatch, navigate) => {

@@ -7,7 +7,6 @@ import '../App.css'
 
 const RoomPage = () => {
   const { joinCode } = useParams();
-  console.log(useParams())
   const dispatch = useDispatch();
   const navigate = useNavigate();
 

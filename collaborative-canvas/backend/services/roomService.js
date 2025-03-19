@@ -53,11 +53,11 @@ const deleteRoom = async (roomId) => {
  */
 const joinRoom = async (joinCode) => {
   const room = await Room.findOne({ joinCode })
-    .populate({
-      path: 'boards'}).populate({
-        path: 'roomChat.boardId',
-        model: 'Board' // Explicitly define the model name
-      });
+  .populate({
+    path: 'boards',
+    select: { name: 1, roomId: 1, images: 1, keywords: 1, isStarred: 1, isVoting: 1, createdAt: 1, updatedAt: 1, iterations: { $slice: -1 } } 
+  })
+  .lean(); 
 
   if (!room) throw new Error('Room not found');
   return room;
@@ -65,11 +65,11 @@ const joinRoom = async (joinCode) => {
 
 const getRoom = async (roomId) => {
   const room = await Room.findById(roomId)
-    .populate({path: 'boards'})
-    .populate({
-      path: 'roomChat.boardId',
-      model: 'Board' // Explicitly define the model name
-    })
+  .populate({
+    path: 'boards',
+    select: { name: 1, roomId: 1, images: 1, keywords: 1, isStarred: 1, isVoting: 1, createdAt: 1, updatedAt: 1, iterations: { $slice: -1 } } 
+  })
+  .lean(); 
 
   return room;
 };

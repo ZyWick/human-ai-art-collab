@@ -1,6 +1,8 @@
 const imageService = require('./imageService');
 const keywordService = require('./keywordService');
 const boardService = require('./boardService')
+const threadService = require("./threadService"); // ✅ If inside the same "services" folder
+
 const roomService = require('./roomService')
 const { getImageDimensions } = require('../utils/imageProcessor');
 
@@ -199,8 +201,28 @@ module.exports = (io, users) => {
         const user = users[socket.id];
         if (!user) return;
         const newImage = await imageService.updateImage(updatedImage._id, updatedImage);
-        const populatedImage = await newImage.populate("keywords");
-
+        const populatedImage = await newImage.populate([
+          {
+            path: "parentThreads",
+            model: "Thread",
+            populate: { 
+              path: "children", 
+              model: "Thread" 
+            }, // Populate child threads for images' parentThreads
+          },
+          {
+            path: "keywords",
+            populate: {
+              path: "parentThreads",
+              model: "Thread",
+              populate: { 
+                path: "children", 
+                model: "Thread" 
+              }, // Populate child threads for keywords' parentThreads
+            },
+          }
+        ]);
+        
         io.to(user.roomId).emit("updateImage", populatedImage);
       } catch (error) {
         console.error("Error updating image:", error);
@@ -307,6 +329,21 @@ module.exports = (io, users) => {
         socket.emit("error", { message: "Failed to update keyword position" });
       }
     })
+
+    socket.on("createThread", async(inputData)=> {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        console.log(inputData)
+        const result = await threadService.createThread(inputData);
+        console.log(result)
+        // const result = await keywordService.resetVotesForBoard(boardId)
+        // io.to(user.roomId).emit("clearKeywordVotes", boardId);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    })
     
     const imageUrls = [
       "https://www.cnet.com/a/img/resize/8d159fb0c99a75843d3585dd2ae8cc9e6fa12773/hub/2017/08/03/75c3b0ae-5a2d-4d75-b72b-055247b4378f/marvelinfinitywar-captainamerica.jpg?auto=webp&fit=crop&height=1200&width=1200",
@@ -325,17 +362,20 @@ module.exports = (io, users) => {
     };
     
 
-    socket.on("generateNewImage", async (boardId) => {
+    socket.on("generateNewImage", async (generateData) => {
       try {
         const user = users[socket.id];
-        if (!user) return;
+        if (!user) return; 
+        const {boardId, keywords} = generateData;
+        console.log({boardId, keywords})
         // get selected keywords!
         // generate new images
-        const newImages = getRandomImages();
+        const generatedImages = getRandomImages();
         // store to aws
         // pack urls to array
         // store urls to db
-        const newBoard = await boardService.setGeneratedImages(boardId, newImages)
+        const newIteration = {generatedImages, keywords}
+        const newBoard = await boardService.addIteration(boardId, newIteration)
         io.to(user.roomId).emit("generateNewImage", newBoard);
       } catch (error) {
         console.error("Error updating keyword:", error);

@@ -30,7 +30,41 @@ const imagesSlice = createSlice({
           ? { ...image, feedback: [...image.feedback, feedback] }
           : image
       );
-    }
+    },
+    addChildToThread: (state, action) => {
+      const { boardId, parentId, child } = action.payload;
+
+      return state.map((image) => {
+        if (image.boardId === boardId) {
+          return {
+            ...image,
+            parentThreads: image.parentThreads.map((thread) => {
+              if (thread._id === parentId) {
+                return {
+                  ...thread,
+                  children: [...thread.children, child],
+                };
+              }
+              return thread;
+            }),
+          };
+        }
+        return image;
+      });
+    },
+    addParentThread: (state, action) => {
+      const { boardId, parentThread } = action.payload;
+
+      return state.map((image) => {
+        if (image.boardId === boardId) {
+          return {
+            ...image,
+            parentThreads: [...image.parentThreads, parentThread],
+          };
+        }
+        return image;
+      });
+    },
   },
 });
 
@@ -41,6 +75,6 @@ export const selectImageById = createSelector(
   (images, imageId) => images.find((image) => image._id === imageId)
 );
 
-export const { setImages, addImage, removeImage, updateImage, clearAllImageKeywordVotes, addFeedbackToImage} =
+export const { addChildToThread, addParentThread, setImages, addImage, removeImage, updateImage, clearAllImageKeywordVotes, addFeedbackToImage} =
 imagesSlice.actions;
 export default imagesSlice.reducer;

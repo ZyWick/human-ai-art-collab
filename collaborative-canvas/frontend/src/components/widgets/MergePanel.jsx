@@ -30,9 +30,21 @@ const MergePanel = () => {
   const currBoard = useSelector((state) =>
     selectBoardById(state, currentBoardId)
   );
-  const generatedImages = currBoard?.generatedImages;
+
+  const itLength = currBoard?.iterations?.length ?? 0; // Ensure it's a number
+  let currGenerated = undefined; // Declare variable outside if-block
+  
+  if (itLength > 0) {
+    const latestIteration = currBoard?.iterations[itLength - 1];
+    currGenerated = latestIteration?.generatedImages; // Assign inside the block
+  }  
+
+  const filterdata = (metadataArray) => 
+    metadataArray.map(({ keyword, type }) => ({ keyword, type }));
+
   const generateImage = () => {
-    socket.emit("generateNewImage", currentBoardId);
+    if (selectedKeywords?.length > 0)
+    socket.emit("generateNewImage", {boardId: currentBoardId, keywords:  filterdata(selectedKeywords)});
   };
 
     const toggleSelected = (keyword) => {
@@ -110,8 +122,8 @@ const MergePanel = () => {
         }}
         className="image-container"
       >
-        {generatedImages && generatedImages.length > 0
-          ? generatedImages.map((img, index) => (
+        {currGenerated && currGenerated.length > 0
+          ? currGenerated.map((img, index) => (
               <img
                 key={index}
                 style={{

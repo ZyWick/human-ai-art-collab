@@ -6,41 +6,43 @@ import {
   addImage,
   removeImage,
   updateImage,
-  clearAllImageKeywordVotes,
-  addFeedbackToImage
+  addKeywordToImage,
+  removeKeywordFromImage,
 } from "../redux/imagesSlice";
-import { useSocket } from '../context/SocketContext'
+import { useSocket } from "../context/SocketContext";
 import { toggleSelectedKeyword } from "../redux/selectionSlice";
 import {
-  updateBoardNoteKeywords,
-  addBoardNoteKeyword,
-  deleteBoardNoteKeywords,
-} from "../redux/roomSlice";
-import {
-  addRoomChatMessage,
   setCurrentBoardId,
   setRoomName,
   updateDesignDetails,
-  clearAllNoteKeywordVotes,
 } from "../redux/roomSlice";
 import {
   updateBoard,
   removeBoardById,
   selectAllBoards,
 } from "../redux/boardsSlice";
-import {
-  removeKeywordFromSelected,
-} from "../redux/selectionSlice"
+import { removeKeywordFromSelected } from "../redux/selectionSlice";
 import { useAuth } from "../context/AuthContext";
+import {
+  addKeyword,
+  addKeywords,
+  removeKeyword,
+  removeKeywords,
+  updateKeyword,
+  clearAllVotes,
+} from "../redux/keywordsSlice";
+import {
+  addThread,
+  updateThread
+} from "../redux/threadsSlice"
+
 const useBoardSocket = () => {
   const dispatch = useDispatch();
   const socket = useSocket();
-  const { roomId, currentBoardId } = useSelector(
-    (state) => state.room
-  );
+  const { roomId, currentBoardId } = useSelector((state) => state.room);
 
   const { user } = useAuth();
-  const username = user.username
+  const username = user.username;
   const boards = useSelector(selectAllBoards);
 
   useEffect(() => {
@@ -71,50 +73,42 @@ const useBoardSocket = () => {
     socket.on("loadImages", (images) => dispatch(setImages(images)));
 
     socket.on("newImage", (image) => {
-      if (image.boardId === currentBoardId) dispatch(addImage(image));
+      if (image.boardId === currentBoardId) {
+        dispatch(addKeywords(image.keywords));
+
+        const processedImage = {
+          ...image,
+          keywords: image.keywords.map((keyword) => keyword._id.toString()), // Store only IDs
+        };
+
+        dispatch(addImage(processedImage));
+      }
     });
 
-    socket.on("deleteImage", (id) => {
-      dispatch(removeImage(id));
+    socket.on("deleteImage", ({ _id, keywords }) => {
+      dispatch(removeImage(_id));
+      dispatch(removeKeywords(keywords));
     });
 
     socket.on("updateImage", (image) => {
       if (image.boardId === currentBoardId) dispatch(updateImage(image));
     });
 
-    socket.on("newNoteKeyword", (newKw) => {
-      if (newKw.boardId === currentBoardId)
-        dispatch(addBoardNoteKeyword(newKw));
-    });
-
-    socket.on("updateKeywordNote", (newKw) => {
-      if (newKw.boardId === currentBoardId)
-        dispatch(updateBoardNoteKeywords(newKw));
-    });
-
-    socket.on("deleteNoteKeyword", (kwId) => {
-      dispatch(deleteBoardNoteKeywords(kwId));
-      dispatch(removeKeywordFromSelected(kwId))
-    });
-
-    socket.on("removeKeywordFromSelected", (keywordId) => {
-      dispatch(removeKeywordFromSelected(keywordId))
-    })
-
-    socket.on("toggleSelectedKeyword", (kwId) => {
-      dispatch(toggleSelectedKeyword(kwId));
-    });
-
-    socket.on("generateNewImage", (newBoard) => {
+    socket.on("generateNewImage", ({ boardId, newIterations }) => {
       dispatch(
         updateBoard({
-          id: newBoard._id,
-          changes: { generatedImages: newBoard.generatedImages },
+          id: boardId,
+          changes: { iterations: newIterations },
         })
       );
     });
 
-    socket.on("updateBoardName", ({boardId, boardName}) => {
+    socket.on("addThread", (newThread) => {
+      console.log(newThread)
+      dispatch(addThread(newThread))
+    })
+
+    socket.on("updateBoardName", ({ boardId, boardName }) => {
       dispatch(
         updateBoard({
           id: boardId,
@@ -127,10 +121,6 @@ const useBoardSocket = () => {
       dispatch(setRoomName(newRoomName))
     );
 
-    socket.on("cloneBoard", (newBoardId) => {
-      dispatch(setCurrentBoardId(newBoardId));
-    });
-
     socket.on("newBoard", (newBoardId) => {
       dispatch(setCurrentBoardId(newBoardId));
     });
@@ -140,64 +130,149 @@ const useBoardSocket = () => {
     });
 
     socket.on("updateDesignDetails", (designDetails) => {
-      dispatch(updateDesignDetails(designDetails))
+      dispatch(updateDesignDetails(designDetails));
     });
 
-    // this on image component
-    // socket.on("updateKeyword", (newKw) => console.log(newKw))
-    socket.on("sendChat", (newMessage) => dispatch(addRoomChatMessage(newMessage)))
-
-    socket.on("sendImageChat", ({imageId, feedback}) => {
-      dispatch(addFeedbackToImage({ imageId, feedback }))
-    })
-
     socket.on("starBoard", (board) => {
-      dispatch(updateBoard({
-        id: board._id,
-        changes: { isStarred: board.isStarred },
-      }))
-    })
+      dispatch(
+        updateBoard({
+          id: board._id,
+          changes: { isStarred: board.isStarred },
+        })
+      );
+    });
 
     socket.on("toggleVoting", (board) => {
-       dispatch(updateBoard({
-         id: board._id,
-         changes: { isVoting: board.isVoting },
-       }))
-     })
+      dispatch(
+        updateBoard({
+          id: board._id,
+          changes: { isVoting: board.isVoting },
+        })
+      );
+    });
 
-     socket.on("clearKeywordVotes", (boardId) => {
-      console.log(currentBoardId, boardId)
-      console.log(boardId === currentBoardId)
+    socket.on("markThreadResolved", ({_id, isResolved}) => {
+      console.log({_id, isResolved})
+      dispatch(
+        updateThread({
+          id: _id,
+          changes: {isResolved},
+        })
+      );
+    });
+    socket.on("editThreadValue", ({_id, value}) => {
+      dispatch(
+        updateThread({
+          id: _id,
+          changes: {value},
+        })
+      );
+    });
+
+    socket.on("updateKeywordOffset", ({ _id, newOffsetX, newOffsetY }) => {
+      dispatch(
+        updateKeyword({
+          id: _id,
+          changes: { offsetX: newOffsetX, offsetY: newOffsetY },
+        })
+      );
+    });
+
+    socket.on("removeKeywordOffset", ({ _id }) => {
+      dispatch(
+        updateKeyword({
+          id: _id,
+          changes: { offsetX: undefined, offsetY: undefined },
+        })
+      );
+    });
+
+    socket.on("keywordMoving", (update) => {
+      dispatch(updateKeyword(update));
+    });
+
+    socket.on("updateKeywordSelected", ({ _id, newIsSelected }) => {
+      dispatch(
+        updateKeyword({ id: _id, changes: { isSelected: newIsSelected } })
+      );
+    });
+
+    socket.on("updateKeywordVotes", ({ _id, votes, downvotes }) => {
+      console.log({ _id, votes, downvotes })
+      dispatch(updateKeyword({ id: _id, changes: { votes, downvotes } }));
+    });
+
+    socket.on("updateKeywordThreads", ({ _id, newThreads }) => {
+      dispatch(
+        updateKeyword({ id: _id, changes: { parentThreads: newThreads } })
+      );
+    });
+
+    socket.on("clearKeywordVotes", (boardId) => {
       if (boardId === currentBoardId) {
-        console.log("whatt")
-        dispatch(clearAllNoteKeywordVotes())
-        dispatch(clearAllImageKeywordVotes())
+        dispatch(clearAllVotes());
+        console.log("done")
       }
+    });
 
-     })
-    
+    socket.on("newKeyword", (newKw) => {
+      if (newKw.boardId === currentBoardId) {
+        dispatch(addKeyword(newKw));
+        dispatch(
+          addKeywordToImage({ imageId: newKw.imageId, keywordId: newKw._id })
+        );
+      }
+    });
+
+    socket.on("deleteKeyword", ({ keywordId, imageId }) => {
+      if (imageId)
+        dispatch(
+          removeKeywordFromImage({ imageId: imageId, keywordId: keywordId })
+        );
+      dispatch(removeKeyword(keywordId));
+      dispatch(removeKeywordFromSelected(keywordId));
+    });
+
+    socket.on("removeKeywordFromSelected", (keywordId) => {
+      dispatch(removeKeywordFromSelected(keywordId));
+    });
+
+    socket.on("toggleSelectedKeyword", (kwId) => {
+      dispatch(toggleSelectedKeyword(kwId));
+    });
+
+
+
     return () => {
       socket.emit("leave room", { username, roomId });
+      // Remove ALL event listeners
       socket.off("updateRoomUsers");
       socket.off("loadImages");
       socket.off("newImage");
       socket.off("deleteImage");
       socket.off("updateImage");
-      socket.off("newNoteKeyword");
-      socket.off("updateKeywordNote");
-      socket.off("deleteNoteKeyword");
-      socket.off("toggleSelectedKeyword");
       socket.off("generateNewImage");
-      socket.off("cloneBoard");
+      socket.off("updateBoardName");
+      socket.off("updateRoomName");
       socket.off("newBoard");
       socket.off("deleteBoard");
-      socket.off("updateRoomName");
-      socket.off("updateBoardName");
+      socket.off("addThread");
+      socket.off("markThreadResolved");
+      socket.off("editThreadValue");
       socket.off("updateDesignDetails");
-      socket.off("sendChat")
-      socket.off("sendImageChat")
-      socket.off("starBoard")
-      socket.off("clearKeywordVotes")
+      socket.off("starBoard");
+      socket.off("toggleVoting");
+      socket.off("updateKeywordOffset");
+      socket.off("removeKeywordOffset");
+      socket.off("keywordMoving");
+      socket.off("updateKeywordSelected");
+      socket.off("updateKeywordVotes");
+      socket.off("updateKeywordThreads");
+      socket.off("clearKeywordVotes");
+      socket.off("newKeyword");
+      socket.off("deleteKeyword");
+      socket.off("removeKeywordFromSelected");
+      socket.off("toggleSelectedKeyword");
     };
   }, [socket, username, roomId, dispatch, currentBoardId, boards]);
 };

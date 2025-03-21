@@ -14,23 +14,34 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
       onSubmit();
     }
   };
-  const maxX = window.innerWidth - 240 - 10;
+  const maxX = window.innerWidth - 240 - 10 - 15;
   const minY = 40;
   const adjustedPosition = {x: Math.min(position.x, maxX),
   y: Math.max(position.y, minY),}
+  
 
   return (
     <div
       style={{
         position: "absolute",
-        top: adjustedPosition.y,
-        left: adjustedPosition.x,
+        top: adjustedPosition.y + 15,
+        left: adjustedPosition.x - 15,
         display: "flex",
         alignItems: "center",
         gap: "5px",
       }}
       onClick={(e) => e.stopPropagation()}
     >
+      <div
+      style={{
+        width: "30px",
+        height: "30px",
+        backgroundColor: "transparent",
+        borderRadius: "50%",
+        border: "1px solid grey"
+      }}
+    ></div>
+
       <input
         ref={inputRef}
         type="text"

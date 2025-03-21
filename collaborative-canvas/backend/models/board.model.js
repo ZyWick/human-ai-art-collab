@@ -24,7 +24,9 @@ const boardSchema = new mongoose.Schema(
         ref: 'Keyword',
       },
     ],
-    parentThreads: [{ type: mongoose.Schema.Types.ObjectId, ref: "Thread" }],
+    parentThreads: [
+          { type: mongoose.Schema.Types.ObjectId, ref: "Thread", default: [] },
+        ],
     iterations: [
       {
         generatedImages: [{ type: String, required: true }], // Array of image URLs

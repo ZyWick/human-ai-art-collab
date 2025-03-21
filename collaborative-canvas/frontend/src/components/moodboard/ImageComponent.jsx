@@ -1,10 +1,10 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Image, Transformer, Group, Rect } from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
-import KeywordComponent from "./KeywordComponent";
 import useImageSelection from "../../hook/useImageSelection";
 import { updateImage } from "../../redux/imagesSlice";
-import { setSelectedImage } from "../../redux/selectionSlice";
+import { setSelectedImage, setSelectedKeyword } from "../../redux/selectionSlice";
+import { selectParentThreadsByImage } from "../../redux/threadsSlice";
 import { useSocket } from "../../context/SocketContext";
 import ThreadBubble from "./ThreadBubble";
 
@@ -12,13 +12,11 @@ const ImageComponent = ({
   imgData,
   stageRef,
   handleElementClick,
-  onReply,
   handleThreadClick,
   setTooltipData,
   handleThreadHover,
 }) => {
   const [image, setImage] = useState(null);
-  const [keywords, setKeywords] = useState(imgData.keywords || []);
   const imageRef = useRef(null);
   const transformerRef = useRef();
   const dispatch = useDispatch();
@@ -27,25 +25,19 @@ const ImageComponent = ({
     (state) => state.selection.selectedImageId
   );
   const isAddingComments = useSelector((state) => state.room.isAddingComments);
-  const imageThreads = imgData.parentThreads;
-  const handleClick = (e) => {
-    if (isAddingComments) handleElementClick(e, { imageId: imgData._id });
-    else dispatch(setSelectedImage(imgData._id));
-  };
+  const imageThreads = useSelector(selectParentThreadsByImage(imgData._id));
 
   const [isHovered, setIsHovered] = useState(false);
-  console.log(imgData)
-  useEffect(() => {
-    setKeywords(imgData.keywords);
-  }, [imgData.keywords]);
+  const isSelected = selectedImageId ? selectedImageId === imgData._id : false;
+  
+  useImageSelection(stageRef, imgData._id, imgData.keywords);
 
-  useImageSelection(stageRef, imgData._id);
-
-  const imageBounds = {
-    width: imgData.width,
-    height: imgData.height,
-    x: imgData.x,
-    y: imgData.y,
+  const handleClick = (e) => {
+    if (isAddingComments) handleElementClick(e, { imageId: imgData._id });
+    else {
+      dispatch(setSelectedImage(imgData._id));
+      dispatch(setSelectedKeyword(null));
+    }
   };
 
   useEffect(() => {
@@ -56,7 +48,6 @@ const ImageComponent = ({
     img.onerror = () => console.error("Failed to load image:", imgData.url);
   }, [imgData.url, imgData]);
 
-  const isSelected = selectedImageId ? selectedImageId === imgData._id : false;
 
   const handleDrag = (e, action) => {
     const newImage = { ...imgData, x: e.target.x(), y: e.target.y() };
@@ -84,36 +75,19 @@ const ImageComponent = ({
     socket.emit(action, newImage);
   };
 
-  const updateKeyword = useCallback(
-    (newKeyword) => {
-      setKeywords((prev) =>
-        prev.map((kw) => (kw._id === newKeyword._id ? newKeyword : kw))
-      );
-    },
-    [setKeywords]
-  );
-
-  const updateImageKeyword = (newKeyword) => {
-    const updatedImage = {
-      ...imgData,
-      keywords: imgData.keywords.map((kw) =>
-        kw._id === newKeyword._id ? newKeyword : kw
-      ),
-    };
-    dispatch(updateImage(updatedImage));
-    socket.emit("updateImage", updatedImage);
-  };
-
-  useEffect(() => {
-    socket.on("updateKeyword", updateKeyword);
-    return () => socket.off("updateKeyword", updateKeyword);
-  }, [updateKeyword, socket]);
-
   return image ? (
     <>
       <Group
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+        onMouseEnter={e => {
+          const container = e.target.getStage().container();
+          container.style.cursor = "pointer";
+          setIsHovered(true)
+        }}
+        onMouseLeave={e => {
+          const container = e.target.getStage().container();
+          container.style.cursor = "default";
+          setIsHovered(false)
+        }}
       >
         <Image
           ref={imageRef}
@@ -156,35 +130,20 @@ const ImageComponent = ({
           />
         )}
       </Group>
-      {keywords
-        .filter(
-          (keyword) =>
-            keyword.offsetX !== undefined && keyword.offsetY !== undefined
-        )
-        .map((keyword) => (
-          <KeywordComponent
-            key={keyword._id}
-            data={keyword}
-            imageBounds={imageBounds}
-            stageRef={stageRef}
-            updateKeywords={updateKeyword}
-            updateKeyword={updateKeyword}
-            updateImageKeyword={updateImageKeyword}
-            handleElementClick={handleElementClick}
-            setTooltipData={setTooltipData}
-            handleThreadClick={handleThreadClick}
-            handleThreadHover={handleThreadHover}
-          />
-        ))}
-      {imageThreads && 
+      {imageThreads &&
         imageThreads.map((thread, i) => (
           <ThreadBubble
             key={thread._id}
             thread={thread}
-            position={{x: imgData.x + imgData.width -  15 - 35 * i, y: imgData.y - 20}}
+            position={{
+              x: imgData.x + imgData.width - 15 - 35 * i,
+              y: imgData.y - 20,
+            }}
             onMouseEnter={(event) => handleThreadHover(event, thread)}
             onMouseLeave={() => setTooltipData(null)}
-            onClick={(event) =>handleThreadClick(event, thread, {type: "imageId", _id: imgData._id})}
+            onClick={(event) =>
+              handleThreadClick(event, thread._id)
+            }
           />
         ))}
     </>

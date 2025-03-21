@@ -1,7 +1,8 @@
-const Board = require('../models/board.model');
-const Image = require('../models/image.model');
-const Keyword = require('../models/keyword.model');
-const Room = require('../models/room.model')
+const Board = require("../models/board.model");
+const Image = require("../models/image.model");
+const Keyword = require("../models/keyword.model");
+const Room = require("../models/room.model");
+const Thread = require("../models/thread.model");
 const mongoose = require("mongoose");
 
 /**
@@ -13,7 +14,7 @@ const createBoard = async (boardData) => {
   const board = await Board.create(boardData);
   await Room.findByIdAndUpdate(board.roomId, { $push: { boards: board._id } });
   return board;
-}
+};
 
 /**
  * Update the board's name.
@@ -21,8 +22,12 @@ const createBoard = async (boardData) => {
  * @param {String} newName - The new board name.
  * @returns {Promise<Object|null>} The updated board document.
  */
-const updateBoardName = async (boardId, newName) => 
-  await Board.findByIdAndUpdate(boardId, { name: newName }, { new: true, runValidators: true });
+const updateBoardName = async (boardId, newName) =>
+  await Board.findByIdAndUpdate(
+    boardId,
+    { name: newName },
+    { new: true, runValidators: true }
+  );
 
 /**
  * Delete a board and all its associated images and keywords.
@@ -39,149 +44,137 @@ const deleteBoard = async (boardId, roomId) => {
 };
 
 const getIterations = async (boardId) =>
-  await Board.findById(boardId).select('iteration');
+  await Board.findById(boardId).select("iteration");
 
-const addIteration = async (boardId, newIteration) => 
+const addIteration = async (boardId, newIteration) =>
   await Board.findByIdAndUpdate(
     boardId,
     { $push: { iterations: newIteration } }, // Push new iteration to the array
     { new: true, runValidators: true } // Returns the updated document
+  );
   );
 
 
 
 
 const cloneBoard = async(boardId) => {
+const cloneBoard = async (boardId) => {
   const board = await Board.findById(boardId).lean();
   if (!board) throw new Error("Board not found");
 
   // Find existing copies to determine the next number
-  const baseName = board.name.replace(/ \(v\d+\)$/, "");  // Remove previous copy numbering
-  const existingCopies = await Board.find({ name: new RegExp(`^${baseName} \\(v\\d+\\)$`) }).lean();
+  const baseName = board.name.replace(/ \(v\d+\)$/, ""); // Remove previous copy numbering
+  const existingCopies = await Board.find({
+    name: new RegExp(`^${baseName} \\(v\\d+\\)$`),
+  }).lean();
   // Determine next available copy number
   const versionNumbers = existingCopies
-        .map(b => {
-            const match = b.name.match(/\(v(\d+)\)$/);
-            return match ? parseInt(match[1], 10) : 0;
-        })
-        .sort((a, b) => a - b);
+    .map((b) => {
+      const match = b.name.match(/\(v(\d+)\)$/);
+      return match ? parseInt(match[1], 10) : 0;
+    })
+    .sort((a, b) => a - b);
 
-    const nextVersionNumber = (versionNumbers.length > 0) ? versionNumbers[versionNumbers.length - 1] + 1 : 1;
-    const newBoardName = `${baseName} (v${nextVersionNumber})`;
+  const nextVersionNumber =
+    versionNumbers.length > 0
+      ? versionNumbers[versionNumbers.length - 1] + 1
+      : 1;
+  const newBoardName = `${baseName} (v${nextVersionNumber})`;
 
-    const clonedBoardId = new mongoose.Types.ObjectId(); // Generate new boardId first
+  const clonedBoardId = new mongoose.Types.ObjectId(); // Generate new boardId first
 
-// Clone board keywords and assign boardId
-const clonedBoardKeywords = await Promise.all(
+  // Clone board keywords and assign boardId
+  const clonedBoardKeywords = await Promise.all(
     board.keywords.map(async (keywordId) => {
-        const keyword = await Keyword.findById(keywordId).lean();
-        if (!keyword) return null;
+      const keyword = await Keyword.findById(keywordId).lean();
+      if (!keyword) return null;
 
-        const newKeyword = new Keyword({
+      const newKeyword = new Keyword({
+        ...keyword,
+        _id: new mongoose.Types.ObjectId(),
+        boardId: clonedBoardId, // Assign correct boardId
+        imageId: null, // Not linked to any image
+      });
+      await newKeyword.save();
+      return newKeyword._id;
+    })
+  );
+
+  // Clone images and their keywords
+  const clonedImages = await Promise.all(
+    board.images.map(async (imageId) => {
+      const image = await Image.findById(imageId).lean();
+      if (!image) return null;
+
+      const newImageId = new mongoose.Types.ObjectId(); // Generate new imageId
+
+      // Clone image keywords and assign correct boardId & imageId
+      const clonedImageKeywords = await Promise.all(
+        image.keywords.map(async (keywordId) => {
+          const keyword = await Keyword.findById(keywordId).lean();
+          if (!keyword) return null;
+
+          const newKeyword = new Keyword({
             ...keyword,
             _id: new mongoose.Types.ObjectId(),
             boardId: clonedBoardId, // Assign correct boardId
-            imageId: null, // Not linked to any image
-        });
-        await newKeyword.save();
-        return newKeyword._id;
+            imageId: newImageId, // Assign correct new imageId
+          });
+          await newKeyword.save();
+          return newKeyword._id;
+        })
+      );
+
+      // Clone image with new keywords and assign boardId
+      const newImage = new Image({
+        ...image,
+        _id: newImageId,
+        keywords: clonedImageKeywords.filter(Boolean),
+        boardId: clonedBoardId, // Assign correct boardId
+      });
+      await newImage.save();
+      return newImage._id;
     })
-);
+  );
 
-// Clone images and their keywords
-const clonedImages = await Promise.all(
-    board.images.map(async (imageId) => {
-        const image = await Image.findById(imageId).lean();
-        if (!image) return null;
+  // Clone board with new images, keywords, and incremental name
+  const clonedBoard = new Board({
+    ...board,
+    _id: clonedBoardId, // Use the generated boardId
+    images: clonedImages.filter(Boolean),
+    keywords: clonedBoardKeywords.filter(Boolean),
+    name: newBoardName, // Incremental name
+    createdAt: new Date(), // Set to now
+    updatedAt: new Date(), // Set to now
+  });
 
-        const newImageId = new mongoose.Types.ObjectId(); // Generate new imageId
+  await clonedBoard.save();
 
-        // Clone image keywords and assign correct boardId & imageId
-        const clonedImageKeywords = await Promise.all(
-            image.keywords.map(async (keywordId) => {
-                const keyword = await Keyword.findById(keywordId).lean();
-                if (!keyword) return null;
+  // Update room reference
+  await Room.findByIdAndUpdate(clonedBoard.roomId, {
+    $push: { boards: clonedBoard._id },
+  });
 
-                const newKeyword = new Keyword({
-                    ...keyword,
-                    _id: new mongoose.Types.ObjectId(),
-                    boardId: clonedBoardId, // Assign correct boardId
-                    imageId: newImageId, // Assign correct new imageId
-                });
-                await newKeyword.save();
-                return newKeyword._id;
-            })
-        );
-
-        // Clone image with new keywords and assign boardId
-        const newImage = new Image({
-            ...image,
-            _id: newImageId,
-            keywords: clonedImageKeywords.filter(Boolean),
-            boardId: clonedBoardId, // Assign correct boardId
-        });
-        await newImage.save();
-        return newImage._id;
-    })
-);
-
-// Clone board with new images, keywords, and incremental name
-const clonedBoard = new Board({
-  ...board,
-  _id: clonedBoardId, // Use the generated boardId
-  images: clonedImages.filter(Boolean),
-  keywords: clonedBoardKeywords.filter(Boolean),
-  name: newBoardName, // Incremental name
-  createdAt: new Date(), // Set to now
-  updatedAt: new Date(), // Set to now
-});
-
-
-await clonedBoard.save();
-
-// Update room reference
-await Room.findByIdAndUpdate(clonedBoard.roomId, { $push: { boards: clonedBoard._id } });
-
-return clonedBoard;
-
-  
-}
+  return clonedBoard;
+};
 
 const getBoard = async (boardId) => {
-  return await Board.findById(boardId)
-    .populate([
-      {
-        path: "parentThreads",
-        model: "Thread",
-        populate: { path: "children", model: "Thread" }, // Populate child threads for parentThreads
-      },
-      {
-        path: "images",
-        populate: [{
-          path: "parentThreads",
-          model: "Thread",
-          populate: { path: "children", model: "Thread" }, // Populate child threads for images' parentThreads
-        },
-        {
-          path: "keywords",
-          populate: {
-            path: "parentThreads",
-            model: "Thread",
-            populate: { path: "children", model: "Thread" }, // Populate child threads for keywords' parentThreads
-          },
-        },
-      ]
-      },
-      {
+  const board = await Board.findById(boardId)
+  .populate([
+    {
+      path: "images",
+      populate: {
         path: "keywords",
-        populate: {
-          path: "parentThreads",
-          model: "Thread",
-          populate: { path: "children", model: "Thread" }, // Populate child threads for keywords' parentThreads
-        },
       },
-    ])
-    .lean();
+    },
+    {
+      path: "keywords",
+    },
+  ])
+  .lean();
+  
+  const threads = await Thread.find({ boardId }).sort({ createdAt: 1 }).lean();
+  return { board, threads };
 };
 
 
@@ -206,9 +199,6 @@ const toggleVoting = async (boardId) => {
     { new: true }
   );
 };
-
-
-  
 
 module.exports = {
   getBoard,

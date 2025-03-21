@@ -107,14 +107,15 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
   };
 
   return (
-    <div className={"note-keywords-container"} style={{width: "100%", marginTop: "auto",  marginBottom: "5.5em",}}>
-    {/* <hr
-      style={{
-        border: "none",
-        minHeight: "0em",
-        backgroundColor: "darkgrey",
-        width: "100%",
-      }} /> */}
+    <div className={"note-keywords-container"} style={{width: "100%", marginTop: "auto",  marginBottom: "4.5em",}}>
+        <hr
+          style={{
+            border: "none",
+            minHeight: "0",
+            backgroundColor: "darkgrey",
+            width: "100%",
+          }}
+        />
     <div style={{width: "90%", 
       display: "flex",
       flexDirection: "column",

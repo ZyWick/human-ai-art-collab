@@ -3,24 +3,22 @@ import { useSelector, useDispatch } from "react-redux";
 import { useSocket } from '../../context/SocketContext';
 import { KeywordButton, KeywordInput } from "./KeywordButton";
 import { calculateNewKeywordPosition } from "../../util/keywordMovement";
-import { selectImageById } from "../../redux/imagesSlice";
-import { updateImage } from "../../redux/imagesSlice";
-import { deleteKeyword } from "../../util/api";
 import "../../assets/styles/keywordSelection.css";
+import { selectKeywordsByImage } from "../../redux/keywordsSlice";
+import { updateKeyword } from "../../redux/keywordsSlice";
 
 const KeywordSelection = ({selectedImage}) => {
   const keywordRefs = useRef({});
   const socket = useSocket();
   const dispatch =useDispatch();
-  
-  
-  const [likedElementTypes, setLikedElementTypes] = useState({});
+   const [likedElementTypes, setLikedElementTypes] = useState({});
   const [groupedKeywords, setGroupedKeywords] = useState({});
+  const imageKeywords = useSelector((state) => selectKeywordsByImage(state, selectedImage));
 
   useEffect(() => {
     const requiredTypes = ["Action & pose", "Subject matter", "Theme & mood"];
-    if (selectedImage?.keywords) {
-      const grouped = selectedImage.keywords.reduce((acc, keyword) => {
+    if (imageKeywords) {
+      const grouped = imageKeywords.reduce((acc, keyword) => {
         acc[keyword.type] = acc[keyword.type] || [];
         acc[keyword.type].push(keyword);
         return acc;
@@ -33,15 +31,15 @@ const KeywordSelection = ({selectedImage}) => {
 
       setGroupedKeywords(grouped);
     }
-  }, [selectedImage]);
+  }, [imageKeywords]);
 
   useEffect(() => {
-    if (!selectedImage) return;
+    if (!imageKeywords) return;
   
     setLikedElementTypes((prev) => {
       const updatedLikes = { ...prev };
   
-      selectedImage.keywords.forEach((keyword) => {
+      imageKeywords.forEach((keyword) => {
         if (keyword.offsetX !== undefined && keyword.offsetY !== undefined) {
           updatedLikes[keyword.type] = true;
         }
@@ -49,7 +47,7 @@ const KeywordSelection = ({selectedImage}) => {
   
       return updatedLikes;
     });
-  }, [selectedImage]);
+  }, [imageKeywords]);
 
   const toggleLikedElementType = type => {
     setLikedElementTypes(prev => ({ ...prev, [type]: !prev[type] }));
@@ -70,33 +68,29 @@ const KeywordSelection = ({selectedImage}) => {
       const bbox = keywordRefs.current[keyword._id]?.getBoundingClientRect();
       const { x, y } = getRandomPoint(selectedImage.width, selectedImage.height);
       const { offsetX, offsetY } = calculateNewKeywordPosition(x, y, bbox.width, bbox.height, selectedImage.width, selectedImage.height);
-      newKeyword = { ...keyword, offsetX: offsetX, offsetY: offsetY };
-      socket.emit("updateKeyword", newKeyword);
+      const update = { id: newKeyword._id, changes: { offsetX: offsetX, offsetY: offsetY } }
+      dispatch(updateKeyword(update));
+      socket.emit("updateKeywordOffset", update);
     }
     setGroupedKeywords(prev => ({
       ...prev,
       [newKeyword.type]: prev[newKeyword.type].map(kw => kw._id === newKeyword._id ? newKeyword : kw)
     }));
-    const updatedImage =  { ...selectedImage, keywords: selectedImage.keywords.map(kw => kw._id === newKeyword._id ? newKeyword : kw) }
-    dispatch(updateImage(updatedImage));
-    socket.emit("updateImage", updatedImage);
   };
 
   const deleteCustom = async keyword => {
-    await deleteKeyword(keyword._id);
-    const updatedKeywords = selectedImage.keywords.filter(kw => kw._id !== keyword._id);
-    const updatedImage =  { ...selectedImage, keywords: updatedKeywords }
-    dispatch(updateImage(updatedImage));
-    socket.emit("updateImage", updatedImage);
+    socket.emit("deleteKeyword", {imageId: selectedImage._id, keywordId: keyword._id});
   };
 
   const addKeywordSelection = (type, newKeywordText) => {
     const newKeyword = { boardId: selectedImage.boardId, imageId: selectedImage._id, isCustom: true, type, keyword: newKeywordText };
-    socket.emit("newKeyword", { newKeyword, selectedImage });
+    socket.emit("newKeyword", newKeyword);
   };
   return (
     <>
       
+      <img className="image-preview-selection" alt="" src={selectedImage?.url} />
+      <hr className="divider" />
       <div className="keyword-container">
         <h3 className="keyword-title">Why do you like this image?</h3>
         <p className="keyword-subtitle">Choose keywords that you like.</p>
@@ -163,6 +157,16 @@ const KeywordSelection = ({selectedImage}) => {
               /></div>
               </div>}
       </div>
+      <hr
+          style={{
+            marginTop: "8px",
+            marginBottom: "0",
+            border: "none",
+            minHeight: "0.05em",
+            backgroundColor: "darkgrey",
+            width: "100%",
+          }}
+        />
     </>
   );
 };

@@ -65,14 +65,14 @@ const joinRoom = async (joinCode) => {
 
 const getRoom = async (roomId) => {
   const room = await Room.findById(roomId)
-  .populate({
-    path: 'boards',
-    select: { name: 1, roomId: 1, images: 1, keywords: 1, isStarred: 1, isVoting: 1, createdAt: 1, updatedAt: 1, iterations: { $slice: -1 } } 
-  })
-  .lean(); 
+    .populate({
+      path: "boards",
+    })
+    .lean();
 
   return room;
 };
+
 
 /**
  * Updates the designDetails of a specific room.

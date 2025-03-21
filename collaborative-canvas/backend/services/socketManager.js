@@ -4,6 +4,7 @@ const boardService = require('./boardService')
 const threadService = require("./threadService"); // ✅ If inside the same "services" folder
 
 const roomService = require('./roomService')
+const threadService = require('./threadService')
 const { getImageDimensions } = require('../utils/imageProcessor');
 
 const rooms = {};
@@ -68,85 +69,13 @@ module.exports = (io, users) => {
       }
     });
 
-    socket.on("newKeyword", async ({newKeyword, selectedImage}) => {
-      try {
-        const user = users[socket.id];
-        if (!user) return;
-
-        const keyword = await keywordService.createKeyword(newKeyword);
-        const updatedImage = {...selectedImage,
-          keywords: [
-            ...selectedImage.keywords,
-            keyword
-          ]
-        }
-        io.to(user.roomId).emit("updateImage", updatedImage);
-      } catch (error) {
-          console.error("Error adding keyword:", error);
-          socket.emit("error", { message: "Failed to add image" });
-      }
-    })
-
-    socket.on("newNoteKeyword", async (newKeyword) => {
-      try {
-        const user = users[socket.id];
-        if (!user) return;
-        const keyword = await keywordService.createKeyword(newKeyword);
-        io.to(user.roomId).emit("newNoteKeyword", keyword);
-      } catch (error) {
-          console.error("Error adding keyword:", error);
-          socket.emit("error", { message: "Failed to add note keyword" });
-      }
-    })
-    socket.on("deleteNoteKeyword", async (keywordId) => {
-      try {
-        const user = users[socket.id];
-        if (!user) return;
-        io.to(user.roomId).emit("deleteNoteKeyword", keywordId);
-      } catch (error) {
-          console.error("Error deleting keyword:", error);
-          socket.emit("error", { message: "Failed to delete note keyword" });
-      }
-    })
-
-    socket.on("toggleSelectedKeyword", async(keywordId) =>{
-      try {
-        const user = users[socket.id];
-        if (!user) return;
-        io.to(user.roomId).emit("toggleSelectedKeyword", keywordId);
-      } catch (error) {
-          console.error("Error deleting keyword:", error);
-          socket.emit("error", { message: "Failed to delete note keyword" });
-      }
-    })
-
-    socket.on("updateKeywordVotes", async({keywordId, userId, isNote}) =>{
-      try {
-        const user = users[socket.id];
-        if (!user) return;
-        const newKeyword = await keywordService.updateKeywordVotes(keywordId, userId);
-        if (isNote) io.to(user.roomId).emit("updateKeywordNote", newKeyword);
-        else  io.to(user.roomId).emit("updateKeyword", newKeyword);
-      } catch (error) {
-          console.error("Error updating keyword:", error);
-          socket.emit("error", { message: "Failed to delete note keyword" });
-      }
-    })
-
-    socket.on("removeKeywordFromSelected", (keywordId) => {
-      const user = users[socket.id];
-      if (user) {
-        io.to(user.roomId).emit("removeKeywordFromSelected", keywordId);
-      }
-    });
-
-    socket.on("deleteImage", async (_id) => {
+    socket.on("deleteImage", async ({_id, keywords}) => {
       try {
         const user = users[socket.id];
         if (!user) return;
 
         await imageService.deleteImage(_id);
-        io.to(user.roomId).emit("deleteImage", _id);
+        io.to(user.roomId).emit("deleteImage", {_id, keywords});
       } catch (error) {
         console.error("Error deleting image:", error);
         socket.emit("error", { message: "Failed to delete image" });
@@ -167,13 +96,6 @@ module.exports = (io, users) => {
       }
     });
 
-    socket.on("keywordMoving", (updatedKeyword) => {
-      const user = users[socket.id];
-      if (user) {
-        socket.to(user.roomId).emit("updateKeyword", updatedKeyword);
-      }
-    });
-
     socket.on("updateDesignDetails", (designDetails) => {
       const user = users[socket.id];
       if (user) {
@@ -185,16 +107,10 @@ module.exports = (io, users) => {
       const user = users[socket.id];
       if (user) {
         const newDesignDetails = await roomService.updateDesignDetailsDb(user.roomId, designDetails);
-        socket.to(user.roomId).emit("updateDesignDetails", designDetails);
+        socket.to(user.roomId).emit("updateDesignDetails", newDesignDetails);
       }
     });
 
-    socket.on("keywordMovingNote", (updatedKeyword) => {
-      const user = users[socket.id];
-      if (user) {
-        socket.to(user.roomId).emit("updateKeywordNote", updatedKeyword);
-      }
-    });
       
     socket.on("updateImage", async (updatedImage) => {
       try {
@@ -230,37 +146,124 @@ module.exports = (io, users) => {
       }
     });
 
-    socket.on("updateKeyword", async (updatedKeyword) => {
+    socket.on("newKeyword", async (newKeyword) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        const newKeyword = await keywordService.updateKeyword(updatedKeyword._id, updatedKeyword);
-        io.to(user.roomId).emit("updateKeyword", newKeyword);
+        const keyword = await keywordService.createKeyword(newKeyword);
+        io.to(user.roomId).emit("newKeyword", keyword);
+      } catch (error) {
+          console.error("Error adding keyword:", error);
+          socket.emit("error", { message: "Failed to add note keyword" });
+      }
+    })
+    socket.on("deleteKeyword", async ({imageId, keywordId}) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        await await keywordService.deleteKeyword(keywordId)
+        io.to(user.roomId).emit("deleteKeyword", {imageId, keywordId});
+      } catch (error) {
+          console.error("Error deleting keyword:", error);
+          socket.emit("error", { message: "Failed to delete note keyword" });
+      }
+    })
+
+    socket.on("removeKeywordFromSelected", (keywordId) => {
+      const user = users[socket.id];
+      if (user) {
+        io.to(user.roomId).emit("removeKeywordFromSelected", keywordId);
+      }
+    });
+
+    
+    socket.on("clearKeywordVotes", async(boardId)=> {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        await keywordService.resetVotesForBoard(boardId)
+        io.to(user.roomId).emit("clearKeywordVotes", boardId);
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    })
+
+    
+    socket.on("toggleSelectedKeyword", async(keywordId) =>{
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        io.to(user.roomId).emit("toggleSelectedKeyword", keywordId);
+      } catch (error) {
+          console.error("Error deleting keyword:", error);
+          socket.emit("error", { message: "Failed to delete note keyword" });
+      }
+    })
+
+    socket.on("updateKeywordSelected", async (update) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        const updatedKeyword = await keywordService.updateKeywordWithChanges(update);
+        socket.to(user.roomId).emit("updateKeywordSelected", {_id: updatedKeyword._id, 
+          newIsSelected: updatedKeyword.isSelected});
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });
       }
     });
+
+    
+    socket.on("updateKeywordVotes", async({ keywordId, userId, action }) =>{
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        const updatedKeyword = await keywordService.updateKeywordVotes(keywordId, userId, action);
+        io.to(user.roomId).emit("updateKeywordVotes", {_id: updatedKeyword._id, 
+          votes: updatedKeyword.votes, downvotes: updatedKeyword.downvotes});
+      } catch (error) {
+          console.error("Error updating keyword:", error);
+          socket.emit("error", { message: "Failed to delete note keyword" });
+      }
+    })
+    
+    socket.on("keywordMoving", (update) => {
+      const user = users[socket.id];
+      if (user) socket.to(user.roomId).emit("keywordMoving", update);
+    });
+
+    socket.on("updateKeywordOffset", async(update) =>{
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        const updatedKeyword = await keywordService.updateKeywordWithChanges( update);
+        io.to(user.roomId).emit("updateKeywordOffset", {_id: updatedKeyword._id, 
+          newOffsetX: updatedKeyword.offsetX, newOffsetY: updatedKeyword.offsetY});
+      } catch (error) {
+          console.error("Error updating keyword:", error);
+          socket.emit("error", { message: "Failed to delete note keyword" });
+      }
+    })
+
+    // socket.on("updateKeyword", async (updatedKeyword) => {
+    //   try {
+    //     const user = users[socket.id];
+    //     if (!user) return;
+    //     const newKeyword = await keywordService.updateKeyword(updatedKeyword._id, updatedKeyword);
+    //     io.to(user.roomId).emit("updateKeyword", newKeyword);
+    //   } catch (error) {
+    //     console.error("Error updating keyword:", error);
+    //     socket.emit("error", { message: "Failed to update keyword position" });
+    //   }
+    // });
 
     socket.on("removeKeywordFromBoard", async (updatedKeywordId) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        await keywordService.removeKeywordFromBoard(updatedKeywordId);
-        const newKeyword = await keywordService.getKeyword(updatedKeywordId);
-        io.to(user.roomId).emit("updateKeyword", newKeyword);
-      } catch (error) {
-        console.error("Error updating keyword:", error);
-        socket.emit("error", { message: "Failed to update keyword position" });
-      }
-    });
-
-    socket.on("updateKeywordNote", async (updatedKeyword) => {
-      try {
-        const user = users[socket.id];
-        if (!user) return;
-        const newKeyword = await keywordService.updateKeyword(updatedKeyword._id, updatedKeyword);
-        socket.to(user.roomId).emit("updateKeywordNote", newKeyword);
+        const updatedKeyword = await keywordService.removeKeywordFromBoard(updatedKeywordId);
+       io.to(user.roomId).emit("removeKeywordOffset", {_id: updatedKeyword._id});
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });
@@ -318,32 +321,44 @@ module.exports = (io, users) => {
       }
     });
 
-    socket.on("clearKeywordVotes", async(boardId)=> {
+    socket.on("createThread", async(inputData)=> {
       try {
         const user = users[socket.id];
         if (!user) return;
-        const result = await keywordService.resetVotesForBoard(boardId)
-        io.to(user.roomId).emit("clearKeywordVotes", boardId);
+        const newThread = await threadService.createThread(inputData);
+        io.to(user.roomId).emit("addThread", newThread)
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });
       }
     })
 
-    socket.on("createThread", async(inputData)=> {
+    socket.on("editThreadValue", async (update) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        console.log(inputData)
-        const result = await threadService.createThread(inputData);
-        console.log(result)
-        // const result = await keywordService.resetVotesForBoard(boardId)
-        // io.to(user.roomId).emit("clearKeywordVotes", boardId);
+        const updatedThread = await threadService.updateThreadWithChanges(update);
+        io.to(user.roomId).emit("editThreadValue", {_id: updatedThread._id, 
+          value: updatedThread.value});
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });
       }
-    })
+    });
+
+    socket.on("markThreadResolved", async (update) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        console.log(update)
+        const updatedThread = await threadService.updateThreadWithChanges(update);
+        io.to(user.roomId).emit("markThreadResolved", {_id: updatedThread._id, 
+          isResolved: updatedThread.isResolved});
+      } catch (error) {
+        console.error("Error updating keyword:", error);
+        socket.emit("error", { message: "Failed to update keyword position" });
+      }
+    });
     
     const imageUrls = [
       "https://www.cnet.com/a/img/resize/8d159fb0c99a75843d3585dd2ae8cc9e6fa12773/hub/2017/08/03/75c3b0ae-5a2d-4d75-b72b-055247b4378f/marvelinfinitywar-captainamerica.jpg?auto=webp&fit=crop&height=1200&width=1200",
@@ -367,7 +382,6 @@ module.exports = (io, users) => {
         const user = users[socket.id];
         if (!user) return; 
         const {boardId, keywords} = generateData;
-        console.log({boardId, keywords})
         // get selected keywords!
         // generate new images
         const generatedImages = getRandomImages();
@@ -376,7 +390,7 @@ module.exports = (io, users) => {
         // store urls to db
         const newIteration = {generatedImages, keywords}
         const newBoard = await boardService.addIteration(boardId, newIteration)
-        io.to(user.roomId).emit("generateNewImage", newBoard);
+        io.to(user.roomId).emit("generateNewImage", {boardId: newBoard._id, newIterations: newBoard.iterations});
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });
@@ -389,7 +403,7 @@ module.exports = (io, users) => {
         if (!user) return;
 
         const newBoard = await boardService.cloneBoard(boardId);
-        io.to(user.roomId).emit("cloneBoard", newBoard._id);
+        io.to(user.roomId).emit("newBoard", newBoard._id);
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });

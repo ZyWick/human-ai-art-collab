@@ -50,8 +50,6 @@ const UploadButton = ({isUploadingImg, setIsUploadingImg}) => {
     formData.append("y", window.innerHeight * (0.5 + Math.random() * 0.5));
 
     const result = await uploadImageApi(formData, socket.id, boardId);
-    console.log(answer)
-    console.log(result._doc._id)
     dispatch(setSelectedImage(result._doc._id))
     setIsUploadingImg(false);
     setImageSrc(null);

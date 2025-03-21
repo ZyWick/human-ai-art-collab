@@ -3,26 +3,27 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSelectedImage } from "../redux/selectionSlice";
 import { useSocket } from '../context/SocketContext'
 
-const useImageSelection = (stageRef, imgDataId) => {
+const useImageSelection = (stageRef, imgDataId, keywords) => {
   const dispatch = useDispatch();
   const socket = useSocket();
   const selectedImageId = useSelector((state) => state.selection.selectedImageId);
-
+  const selectedKeywordId = useSelector((state) => state.selection.selectedKeywordId);
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (
         selectedImageId &&
         selectedImageId === imgDataId &&
+        !selectedKeywordId &&
         e.key === "Delete"
       ) {
-        socket.emit("deleteImage", imgDataId);
+        socket.emit("deleteImage", {_id: selectedImageId, keywords});
         dispatch(setSelectedImage(null));
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedImageId, imgDataId, dispatch, socket]);
+  }, [selectedImageId, selectedKeywordId,keywords, imgDataId, dispatch, socket]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {

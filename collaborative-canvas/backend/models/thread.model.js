@@ -11,21 +11,51 @@ const ThreadSchema = new mongoose.Schema(
       ref: "User",
       required: true
     },
-    username: { type: String, required: true},
+    boardId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Board",
+      required: true
+    },
+    imageId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Image",
+      default: null
+    },
+    keywordId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Keyword",  // Fixed reference
+      default: null
+    },
+    username: { 
+      type: String, 
+      required: true
+    },
     parentId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Thread",
-      default: null  // Null if it's a top-level comment
+      default: null  // Null for top-level comments
     },
-    children: [{ type: mongoose.Schema.Types.ObjectId, ref: "Thread" }],
     position: {  
-        x: { type: Number, default: null },  
-        y: { type: Number, default: null }  
-      },
+      x: { type: Number, default: null },  
+      y: { type: Number, default: null }  
+    },
+    isResolved: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );
 
+<<<<<<< HEAD
+=======
+// Indexing for faster queries
+ThreadSchema.index({ boardId: 1 });
+ThreadSchema.index({ imageId: 1 });
+ThreadSchema.index({ keywordId: 1 });
+ThreadSchema.index({ parentId: 1 });
+
+>>>>>>> main
 const Thread = mongoose.model("Thread", ThreadSchema);
 
 module.exports = Thread;

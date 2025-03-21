@@ -1,17 +1,52 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
+import {
+  selectPopulatedThreadById,
+  updateThread,
+} from "../../redux/threadsSlice";
 
-const FeedbackPopup = ({ popupData, onClose, onResolve }) => {
+const FeedbackPopup = ({ popupData, onClose }) => {
   const [reply, setReply] = useState("");
-  const [adjustedPosition, setAdjustedPosition] = useState(popupData.position);
-  const popupRef = useRef(null);
-  const { user } = useAuth();
-  const socket = useSocket();
-  const threadData = popupData.data;
-  const repliesContainerRef = useRef(null);
+  const [position, setPosition] = useState(popupData.position);
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState("");
+
+  const popupRef = useRef(null);
+  const repliesContainerRef = useRef(null);
+  const { user } = useAuth();
+  const socket = useSocket();
+  const dispatch = useDispatch();
+  const threadData = useSelector(selectPopulatedThreadById(popupData.threadId));
+
+  const handleEditClick = (child) => {
+    setEditingId(child._id);
+    setEditText(child.value); // Pre-fill input with current value
+  };
+
+  const handleSave = () => {
+    const update = {
+      id: editingId,
+      changes: { value: editText },
+    };
+
+    dispatch(updateThread(update));
+    socket.emit("editThreadValue", update);
+    setEditingId(null); // Exit edit mode
+  };
+
+  const onResolve = () => {
+    const update = {
+      id: threadData._id,
+      changes: { isResolved: true },
+    };
+
+    dispatch(updateThread(update));
+    socket.emit("markThreadResolved", update);
+  };
 
   useEffect(() => {
     if (repliesContainerRef.current) {
@@ -23,81 +58,71 @@ const FeedbackPopup = ({ popupData, onClose, onResolve }) => {
   useEffect(() => {
     if (popupRef.current) {
       const { width, height } = popupRef.current.getBoundingClientRect();
-
-      // Adjust position if the popup overflows the viewport
-      const maxX = window.innerWidth - width - 10;
-      const maxY = window.innerHeight - height - 10;
-
-      setAdjustedPosition({
-        x: Math.min(popupData.position.x, maxX),
-        y: Math.min(popupData.position.y, maxY),
-      });
+      setPosition((prev) => ({
+        x: Math.min(prev.x, window.innerWidth - width - 10),
+        y: Math.min(prev.y, window.innerHeight - height - 10),
+      }));
     }
   }, [popupData.position]);
 
-  const onMouseDown = (e) => {
+  const handleMouseDown = (e) => {
     setDragging(true);
-    setOffset({
-      x: e.clientX - adjustedPosition.x,
-      y: e.clientY - adjustedPosition.y,
+    setOffset({ x: e.clientX - position.x, y: e.clientY - position.y });
+  };
+
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (!dragging) return;
+      setPosition({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+    },
+    [dragging, offset]
+  );
+
+  const handleMouseUp = () => setDragging(false);
+
+  useEffect(() => {
+    if (dragging) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [dragging, handleMouseMove]);
+
+  const handleReply = () => {
+    if (!reply.trim()) return;
+    socket.emit("createThread", {
+      userId: user.id,
+      username: user.username,
+      boardId: threadData.boardId,
+      imageId: threadData.imageId,
+      keywordId: threadData.keywordId,
+      parentId: threadData._id,
+      value: reply,
     });
+    setReply("");
   };
 
-  const onMouseMove = (e) => {
-    if (!dragging) return;
-    setAdjustedPosition({
-      x: e.clientX - offset.x,
-      y: e.clientY - offset.y,
-    });
-  };
-
-  const onMouseUp = () => {
-    setDragging(false);
-  };
-
-  const timeAgo = (date) => {
+  const timeAgo = useCallback((date) => {
     const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    if (seconds < 60) return `${seconds} second${seconds > 1 ? "s" : ""} ago`;
+    if (seconds == 0) return `Just now`;
+    if (seconds < 60) return `${seconds} seconds ago`;
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-    const days = Math.floor(hours / 24);
-    return `${days} day${days > 1 ? "s" : ""} ago`;
-  };
-
-  useEffect(() => {
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-  }, [dragging]);
-
-  const onReply = () => {
-    const newReply = {
-      userId: user.id,
-      username: user.username,
-      boardId: popupData.boardId,
-      imageId: popupData.imageId,
-      keywordId: popupData.keywordId,
-      parentId: threadData._id,
-      value: reply,
-    };
-    if (newReply) {
-      socket.emit("createThread", newReply);
-    }
-    setReply("");
-  };
+    return `${Math.floor(hours / 24)} day${hours > 1 ? "s" : ""} ago`;
+  }, []);
 
   return (
     <div
       ref={popupRef}
       style={{
         position: "absolute",
-        top: adjustedPosition.y,
-        left: adjustedPosition.x,
+        top: position.y,
+        left: position.x,
         background: "rgba(255, 255, 255, 0.95)",
         backdropFilter: "blur(12px)",
         border: "1px solid rgba(0, 0, 0, 0.2)",
@@ -123,7 +148,7 @@ const FeedbackPopup = ({ popupData, onClose, onResolve }) => {
           paddingBottom: "8px",
           cursor: "grab",
         }}
-        onMouseDown={onMouseDown}
+        onMouseDown={handleMouseDown}
       >
         <strong style={{ fontSize: "16px", color: "#222" }}>Comment</strong>
         <div style={{ display: "flex", gap: "8px" }}>
@@ -182,7 +207,7 @@ const FeedbackPopup = ({ popupData, onClose, onResolve }) => {
             {timeAgo(threadData.createdAt)}
           </span>
         </span>
-        {threadData.userId === user.id && (
+        {threadData.userId === user.id && editingId !== threadData._id && (
           <button
             style={{
               background: "none",
@@ -191,21 +216,70 @@ const FeedbackPopup = ({ popupData, onClose, onResolve }) => {
               fontSize: "16px",
               color: "#777",
             }}
+            onClick={() => handleEditClick(threadData)}
           >
             &#8230;
           </button>
         )}
       </div>
-      <p
-        style={{
-          fontSize: "13px",
-          color: "#555",
-          wordWrap: "break-word",
-          marginTop: "4px",
-        }}
-      >
-        {threadData.value}
-      </p>
+
+      {editingId === threadData._id ? (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            marginTop: "4px",
+            width: "90%",
+          }}
+        >
+          <textarea
+            value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            style={{
+              fontSize: "13px",
+              padding: "6px",
+              width: "100%",
+              minHeight: "60px",
+              resize: "vertical",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginTop: "4px",
+            }}
+          >
+            <button
+              onClick={handleSave}
+              style={{
+                fontSize: "13px",
+                padding: "6px 10px",
+                background: "#007bff",
+                color: "#fff",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ) : (
+        <p
+          style={{
+            fontSize: "13px",
+            color: "#555",
+            wordWrap: "break-word",
+            marginTop: "4px",
+          }}
+        >
+          {threadData.value}
+        </p>
+      )}
 
       <div
         ref={repliesContainerRef}
@@ -236,7 +310,7 @@ const FeedbackPopup = ({ popupData, onClose, onResolve }) => {
                   {timeAgo(child.createdAt)}
                 </span>
               </span>
-              {child.userId === user.id && (
+              {child.userId === user.id && editingId !== child._id && (
                 <button
                   style={{
                     background: "none",
@@ -245,21 +319,70 @@ const FeedbackPopup = ({ popupData, onClose, onResolve }) => {
                     fontSize: "16px",
                     color: "#777",
                   }}
+                  onClick={() => handleEditClick(child)}
                 >
                   &#8230;
                 </button>
               )}
             </div>
-            <p
-              style={{
-                fontSize: "13px",
-                color: "#555",
-                wordWrap: "break-word",
-                marginTop: "4px",
-              }}
-            >
-              {child.value}
-            </p>
+
+            {editingId === child._id ? (
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "4px",
+                  width: "90%",
+                }}
+              >
+                <textarea
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  style={{
+                    fontSize: "13px",
+                    padding: "6px",
+                    width: "100%",
+                    minHeight: "60px",
+                    resize: "vertical",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                  }}
+                />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    marginTop: "4px",
+                  }}
+                >
+                  <button
+                    onClick={handleSave}
+                    style={{
+                      fontSize: "10px",
+                      padding: "6px 10px",
+                      background: "#007bff",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p
+                style={{
+                  fontSize: "13px",
+                  color: "#555",
+                  wordWrap: "break-word",
+                  marginTop: "4px",
+                }}
+              >
+                {child.value}
+              </p>
+            )}
           </div>
         ))}
       </div>
@@ -277,6 +400,7 @@ const FeedbackPopup = ({ popupData, onClose, onResolve }) => {
           type="text"
           value={reply}
           onChange={(e) => setReply(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleReply()}
           placeholder="Write a reply..."
           style={{
             fontSize: "14px",
@@ -289,7 +413,7 @@ const FeedbackPopup = ({ popupData, onClose, onResolve }) => {
           }}
         />
         <button
-          onClick={() => onReply(threadData._id, reply)}
+          onClick={() => handleReply()}
           style={{
             width: "1.85em",
             height: "1.85em",

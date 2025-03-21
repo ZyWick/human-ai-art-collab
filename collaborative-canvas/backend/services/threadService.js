@@ -7,33 +7,19 @@ const Thread = require("../models/thread.model");
  * Create a new thread and update Image/Keyword/Board parentThreads array.
  */
 const createThread = async ({ value, userId, username, imageId, keywordId, boardId, parentId, position }) => {
-  try {
-    console.log({ value, userId, username, imageId, keywordId, boardId, parentId, position });
+  const newThread = new Thread({
+    value,
+    userId,
+    username,
+    boardId,
+    imageId: imageId || null,
+    keywordId: keywordId || null,
+    parentId: parentId || null,
+    position: position || { x: null, y: null }
+  });
 
-    const newThread = new Thread({
-      value,
-      userId,
-      username,
-      parentId: parentId || null,
-      position: position || null,
-    });
-
-    await newThread.save();
-
-    // Update Image, Keyword, or Board to store reference to this thread
-    if (parentId) {
-      await Thread.findByIdAndUpdate(parentId, { $push: { children: newThread._id } });
-    } else {
-    const updateOps = { $push: { parentThreads: newThread._id } };
-    if (imageId) await Image.findByIdAndUpdate(imageId, updateOps);
-    if (keywordId) await Keyword.findByIdAndUpdate(keywordId, updateOps);
-    if (boardId) await Board.findByIdAndUpdate(boardId, updateOps);
-    }
-
-    return newThread;
-  } catch (error) {
-    throw new Error(`Error creating thread: ${error.message}`);
-  }
+  const savedThread = await newThread.save();
+  return savedThread;
 };
 
 /**
@@ -99,7 +85,17 @@ const deleteThreadAndChildren = async (parentId) => {
   }
 };
 
+const updateThreadWithChanges = async (update) => {
+    const updatedThread = await Thread.findByIdAndUpdate(
+      update.id, // MongoDB `_id`
+      { $set: update.changes }, // Fields to update
+      { new: true } // Return the updated document
+    );
+    return updatedThread;
+};
+
 module.exports = {
+  updateThreadWithChanges,
   createThread,
   getThreadsByParentEntity,
   deleteThreadAndChildren,

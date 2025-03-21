@@ -1,77 +1,52 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Label, Tag, Text, Group, Rect } from "react-konva";
+import { Label, Tag, Text, Group } from "react-konva";
 import { calculateNewKeywordPosition } from "../../util/keywordMovement";
-import {updateBoardNoteKeywords} from '../../redux/roomSlice'
 import { selectBoardById } from "../../redux/boardsSlice";
 import { removeKeywordFromSelected } from "../../redux/selectionSlice";
-import { deleteKeyword } from "../../util/api";
-import { useSocket } from '../../context/SocketContext'
-import { useAuth } from "../../context/AuthContext";
+import { useSocket } from "../../context/SocketContext";
+import { updateKeyword } from "../../redux/keywordsSlice";
+import { selectImageById } from "../../redux/imagesSlice";
+import { setSelectedKeyword } from "../../redux/selectionSlice";
+
 import colorMapping from "../../config/keywordTypes";
 import ThreadBubble from "./ThreadBubble";
+import VotingButtons from "../widgets/VotingButtons";
+import { selectParentThreadsByKeyword } from "../../redux/threadsSlice";
 
 const KeywordComponent = ({
   data,
-  imageBounds,
   stageRef,
-  updateKeyword,
-  updateImageKeyword,
   handleElementClick,
-  onReply,
   handleThreadClick,
   setTooltipData,
   handleThreadHover,
 }) => {
   const keywordRef = useRef(null);
-  const {
-    x: imageX,
-    y: imageY,
-    width: imageWidth,
-    height: imageHeight,
-  } = imageBounds;
   const dispatch = useDispatch();
-  const socket = useSocket()
-  const { user } = useAuth();
-  const [isClicked, setIsCLicked] = useState(false);
-  const [textWidth, setTextWidth] = useState(0);
+  const socket = useSocket();
+
   const isAddingComments = useSelector((state) => state.room.isAddingComments);
-  const [hovered, setHovered] = useState(false)
-  const keywordThreads = data.parentThreads;
-
-  const isVotedByUser = data.votes?.includes(user.id)
-  const votesNumber = data.votes?.length
-  const kwBoard = useSelector((state) =>
-    selectBoardById(state, data.boardId)
+  const [hovered, setHovered] = useState(false);
+    const keywordThreads = useSelector(selectParentThreadsByKeyword(data._id));
+  
+  const selectedKeywordId = useSelector(
+    (state) => state.selection.selectedKeywordId
   );
-  const isVoting = kwBoard.isVoting
-  useEffect(() => {
-  if (keywordRef.current) {
-    setTextWidth(keywordRef.current.getClientRect().width);
-  }
-}, [keywordRef])
 
-  const handleVoteClick = (e) =>{
-    e.cancelBubble = true;
-    const userId = user.id
-    const updatedVotes = data.votes?.includes(userId)
-        ? data.votes.filter(id => id !== userId) // Remove user.id if it's already there
-        : [...(data.votes || []), userId]; // Add user.id if it's not there
+  const kwBoard = useSelector((state) => selectBoardById(state, data.boardId));
+  const isVoting = kwBoard.isVoting;
+  const image = useSelector((state) => selectImageById(state, data.imageId));
 
-    const updatedKeyword = { ...data, votes: updatedVotes };
-    const isNote = !data.imageId
-
-    isNote
-      ? dispatch(updateBoardNoteKeywords(updatedKeyword))
-      : updateKeyword(updatedKeyword);
-
-    socket.emit("updateKeywordVotes", {keywordId: data._id, userId, isNote});
- }
+  const imageX = image?.x ?? 0;
+  const imageY = image?.y ?? 0;
+  const imageWidth = image?.width ?? 100; // Default width
+  const imageHeight = image?.height ?? 100; // Default height
 
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (stageRef.current && e.target === stageRef.current) {
-        setIsCLicked(false);
+        dispatch(setSelectedKeyword(null));
       }
     };
 
@@ -87,17 +62,16 @@ const KeywordComponent = ({
         stage.off("tap", handleClickOutside);
       }
     };
-  }, [stageRef]);
+  }, [stageRef, dispatch]);
 
-    const handleClick = (e) => {
-      if(isAddingComments) {
-        handleElementClick(e, {keywordId: data._id} )
-      }else {
-        toggleSelected(e);
-        setIsCLicked(true);
-      }
+  const handleClick = (e) => {
+    if (isAddingComments) {
+      handleElementClick(e, { keywordId: data._id });
+    } else {
+      toggleSelected(e);
+      dispatch(setSelectedKeyword(data._id));
     }
-
+  };
 
   // TODO: Move on Transform. Buggy
   // useEffect(() => {
@@ -133,65 +107,68 @@ const KeywordComponent = ({
     keyword: data.keyword,
   };
 
-
   const handleKeywordDrag = (e, action) => {
     e.cancelBubble = true;
-    const isNote = !data.imageId
-    
-    const newOffset = isNote
-      ? { offsetX: e.target.x(), offsetY: e.target.y() }
-      : {
-          offsetX: e.target.x() - imageX,
-          offsetY: e.target.y() - imageY,
-        };
-  
-    let newKeyword = { ...data, ...newOffset };
-  
-    if (!isNote && action === "updateKeyword") {
-      newKeyword = {
-        ...newKeyword,
-        ...calculateNewKeywordPosition(
-          newOffset.offsetX,
-          newOffset.offsetY,
-          e.target.width(),
-          e.target.height(),
-          imageWidth,
-          imageHeight
-        ),
-      };
+    const isNote = !data.imageId;
+    const target = e.target;
+
+    let newOffset = {
+      offsetX: target.x() - (isNote ? 0 : imageX),
+      offsetY: target.y() - (isNote ? 0 : imageY),
+    };
+
+    if (!isNote && action === "updateKeywordOffset") {
+      newOffset = calculateNewKeywordPosition(
+        newOffset.offsetX,
+        newOffset.offsetY,
+        target.width(),
+        target.height(),
+        imageWidth,
+        imageHeight
+      );
     }
 
-    isNote ? dispatch(updateBoardNoteKeywords(newKeyword)) : updateKeyword(newKeyword);
-    socket.emit(isNote ? action + "Note" : action, newKeyword);
+    const update = {
+      id: data._id,
+      changes: newOffset,
+    };
+
+    dispatch(updateKeyword(update));
+    socket.emit(action, update);
   };
-  
+
   const toggleSelected = (e) => {
     e.cancelBubble = true;
-    const updatedKeyword = { ...data, isSelected: !data.isSelected };
-    const isNote = !data.imageId
-    
-    isNote
-      ? dispatch(updateBoardNoteKeywords(updatedKeyword))
-      : updateKeyword(updatedKeyword);
-
+    const update = { id: data._id, changes: { isSelected: !data.isSelected } };
+    dispatch(updateKeyword(update));
     socket.emit("toggleSelectedKeyword", data._id);
-    socket.emit(isNote ? "updateKeywordNote" : "updateKeyword", updatedKeyword);
+    socket.emit("updateKeywordSelected", update);
   };
 
   useEffect(() => {
     const deleteKeywordButton = async () => {
       try {
         if (!data.imageId) {
-          socket.emit("deleteNoteKeyword", data._id);
-          await deleteKeyword(data._id);
+          socket.emit("deleteKeyword", {
+            imageId: data.imageId,
+            keywordId: data._id,
+          });
+          // await deleteKeyword(data._id);
         } else {
-          let { offsetX, offsetY, ...newKeyword1 } = data;
-          const newKeyword2 = { ...newKeyword1, isSelected: false };
-          
-          dispatch(removeKeywordFromSelected(data._id))
-          updateImageKeyword(newKeyword2)
+          dispatch(removeKeywordFromSelected(data._id));
+          socket.emit("removeKeywordFromSelected", data._id);
+
+          dispatch(
+            updateKeyword({
+              id: data._id,
+              changes: {
+                offsetX: undefined,
+                offsetY: undefined,
+                isSelected: false,
+              },
+            })
+          );
           socket.emit("removeKeywordFromBoard", data._id);
-          socket.emit("removeKeywordFromSelected",data._id)
         }
       } catch (e) {
         console.log(e);
@@ -199,6 +176,9 @@ const KeywordComponent = ({
     };
 
     const handleKeyDown = (event) => {
+      const isClicked = selectedKeywordId
+        ? selectedKeywordId === data._id
+        : false;
       if ((event.key === "Delete" || event.key === "Backspace") && isClicked) {
         deleteKeywordButton();
       }
@@ -208,54 +188,50 @@ const KeywordComponent = ({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isClicked, dispatch, data._id, data, socket, updateImageKeyword]);
-  
-  
+  }, [selectedKeywordId, dispatch, data._id, data, socket]);
+
   return data.offsetX !== undefined && data.offsetY !== undefined ? (
     <>
-    <KeywordLabel
-      id={data._id}
-      labelkey={labelEntity.id}
-      xpos={data.offsetX + imageX}
-      ypos={data.offsetY + imageY}
-      isSelected={data.isSelected}
-      type={labelEntity.type}
-      text={
-        labelEntity.type === "Arrangement"
-          ? labelEntity.type
-          : labelEntity.type + ": " + labelEntity.keyword
-      }
-      draggable={true}
-      onDragMove={(e) => handleKeywordDrag(e, "keywordMoving")}
-      onDragEnd={(e) => handleKeywordDrag(e, "updateKeyword")}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={(e) => handleClick(e)}
-      keywordRef={keywordRef}
-      textWidth={textWidth}
-      votesNumber={votesNumber}
-      isVotedByUser={isVotedByUser}
-      isVoting={isVoting}
-      handleVoteClick={handleVoteClick}
-      hovered={hovered}
-    />
-    {keywordThreads && 
-        keywordThreads.map((thread, i) => (
-          <ThreadBubble
-            key={thread._id}
-            thread={thread}
-            position={{x: data.offsetX + imageX + textWidth - 15 - 35 * i, 
-                        y: data.offsetY + imageY - 35}}
-                        onMouseEnter={(event) => handleThreadHover(event, thread)}
-                        onMouseLeave={() => setTooltipData(null)}
-                        onClick={(event) => handleThreadClick(event, thread, {type: "keywordId", _id: data._id, isNote: !data.imageId})}
-          />
-        ))}
+      <KeywordLabel
+        id={data._id}
+        labelkey={labelEntity.id}
+        xpos={data.offsetX + imageX}
+        ypos={data.offsetY + imageY}
+        isSelected={data.isSelected}
+        type={labelEntity.type}
+        text={
+          labelEntity.type === "Arrangement"
+            ? labelEntity.type
+            : labelEntity.type + ": " + labelEntity.keyword
+        }
+        draggable={true}
+        onDragMove={(e) => handleKeywordDrag(e, "keywordMoving")}
+        onDragEnd={(e) => handleKeywordDrag(e, "updateKeywordOffset")}
+        onMouseEnter={(e) => {
+          const container = e.target.getStage().container();
+          container.style.cursor = "pointer";
+          setHovered(true);
+        }}
+        onMouseLeave={(e) => {
+          const container = e.target.getStage().container();
+          container.style.cursor = "default";
+          setHovered(false);
+        }}
+        onClick={(e) => handleClick(e)}
+        keywordRef={keywordRef}
+        isVoting={isVoting}
+        hovered={hovered}
+        votes={data.votes}
+        downvotes={data.downvotes}
+        imageId={data.imageId}
+        keywordThreads={keywordThreads}
+        handleThreadHover={handleThreadHover}
+        handleThreadClick={handleThreadClick}
+        setTooltipData={setTooltipData}
+      />
     </>
   ) : null;
 };
-
-
 
 export const KeywordLabel = ({
   id,
@@ -272,73 +248,87 @@ export const KeywordLabel = ({
   onMouseEnter,
   onMouseLeave,
   keywordRef,
-  textWidth,
-  votesNumber,
-  isVotedByUser,
+  votes,
+  downvotes,
   isVoting,
-  handleVoteClick,
-  hovered
+  hovered,
+  imageId,
+  keywordThreads,
+  handleThreadHover,
+  handleThreadClick,
+  setTooltipData
 }) => {
-  return (<Group>
-    <Label
-      id={id}
-      x={xpos}
-      y={ypos}
-      key={labelkey}
-      onClick={onClick}
-      draggable={draggable}
-      onDragMove={onDragMove}
-      onDragEnd={onDragEnd}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      handleVoteClick={handleVoteClick}
-    >
-      <Tag
-        name="label-tag"
-        pointerDirection="left"
-        fill={isSelected ? colorMapping[type] : "transparent"}
-        strokeWidth={1}
-        stroke={colorMapping[type]}
-        cornerRadius={4}
-        ref={keywordRef}
-        shadowColor={hovered ? colorMapping[type] : "transparent"}
-        shadowBlur={hovered ? 5 : 0}
-        shadowOpacity={hovered ? 2 : 0}
-      />
-      <Text
-        text={text}
-        name="label-text"
-        fontSize={14}
-        fontFamily={"Noto Sans"}
-        lineHeight={1}
-        padding={8}
-        fill={isSelected ? "white" : colorMapping[type]}
-      />
-      
-    </Label>
-    {isVoting &&
-    <Group x={textWidth + xpos + 5} y={ypos -10} 
-      onClick={(e) => handleVoteClick(e)} 
-      cursor="pointer">
-        <Rect
-          width={35}
-          height={20}
-          fill={isVotedByUser ? colorMapping[type] : "transparent"}
-          cornerRadius={5}
-          shadowBlur={1}
+  const textRef = useRef();
+  const [textWidth, setTextWidth] = useState(0);
+
+  useEffect(() => {
+    if (textRef.current) {
+      setTextWidth(textRef.current.width()); // Get actual text width
+    }
+  }, [text]);
+  
+
+  return (
+    <Group>
+      <Label
+        id={id}
+        x={xpos}
+        y={ypos}
+        key={labelkey}
+        onClick={onClick}
+        draggable={draggable}
+        onDragMove={onDragMove}
+        onDragEnd={onDragEnd}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
+        <Tag
+          name="label-tag"
+          pointerDirection="left"
+          fill={isSelected ? colorMapping[type] : "transparent"}
+          strokeWidth={1}
           stroke={colorMapping[type]}
-          strokeWidth={0.5}
+          cornerRadius={4}
+          ref={keywordRef}
+          shadowColor={hovered ? colorMapping[type] : "transparent"}
+          shadowBlur={hovered ? 5 : 0}
+          shadowOpacity={hovered ? 2 : 0}
         />
         <Text
-          text={`👍${votesNumber}`}
-          fontSize={10}
-          fill={isVotedByUser ? "white" : colorMapping[type]}
-          align="center"
-          width={35}
-          height={20}
-          verticalAlign="middle"
+          ref={textRef}
+          text={text}
+          name="label-text"
+          fontSize={14}
+          fontFamily={"Noto Sans"}
+          lineHeight={1}
+          padding={8}
+          fill={isSelected ? "white" : colorMapping[type]}
         />
-      </Group>}
+      </Label>
+      {keywordThreads &&
+        keywordThreads.map((thread, i) => (
+          <ThreadBubble
+            key={thread._id}
+            thread={thread}
+            position={{
+              x: xpos + textWidth - 15 - 35 * i,
+              y: ypos - 35,
+            }}
+            onMouseEnter={(event) => handleThreadHover(event, thread)}
+            onMouseLeave={() => setTooltipData(null)}
+            onClick={(event) => handleThreadClick(event, thread._id)}
+          />
+        ))}
+      {isVoting && (
+        <VotingButtons
+          _id={id}
+          kwVotes={votes}
+          kwDownvotes={downvotes}
+          type={type}
+          xpos={xpos + textWidth + 10}
+          ypos={ypos - 10}
+        />
+      )}
     </Group>
   );
 };

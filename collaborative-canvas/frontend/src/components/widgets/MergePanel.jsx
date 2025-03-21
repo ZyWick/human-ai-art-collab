@@ -40,8 +40,8 @@ const MergePanel = () => {
     metadataArray.map(({ keyword, type }) => ({ keyword, type }));
 
   const generateImage = () => {
-    if (selectedKeywords?.length > 0)
-    socket.emit("generateNewImage", {boardId: currentBoardId, keywords:  filterdata(selectedKeywords)});
+    if (selectedBoardKeywords?.length > 0)
+    socket.emit("generateNewImage", {boardId: currentBoardId, keywords:  filterdata(selectedBoardKeywords)});
   };
 
     const toggleSelected = (keyword) => {

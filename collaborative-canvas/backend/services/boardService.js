@@ -52,12 +52,7 @@ const addIteration = async (boardId, newIteration) =>
     { $push: { iterations: newIteration } }, // Push new iteration to the array
     { new: true, runValidators: true } // Returns the updated document
   );
-  );
 
-
-
-
-const cloneBoard = async(boardId) => {
 const cloneBoard = async (boardId) => {
   const board = await Board.findById(boardId).lean();
   if (!board) throw new Error("Board not found");

@@ -32,8 +32,6 @@ const Layout = () => {
         const roomPromise = newBoard.roomId ? getRoom(newBoard.roomId) : null;
         const newRoomData = await roomPromise;
   
-        console.log(newThreads)
-        // Process images
         const processedImages = newBoard.images.map(image => ({
           ...image,
           keywords: image.keywords.map(keyword => keyword._id.toString()) // Store only IDs
@@ -74,16 +72,16 @@ const Layout = () => {
     <>
       <Header />
       <div className="layout-container">
-        {/* <div className="sidebar-overlay left">
+        <div className="sidebar-overlay left">
           <Dashboard />          
         </div>  
           <Toolbar />
         <div className="moodboard-container">
           <Moodboard />
         </div>
-        {/* <div className="sidebar-overlay right">
+         <div className="sidebar-overlay right">
           <OutputHub />
-        </div> */}
+        </div>
       </div>
     </>
   );

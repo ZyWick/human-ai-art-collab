@@ -47,15 +47,12 @@ const ThreadSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-<<<<<<< HEAD
-=======
 // Indexing for faster queries
 ThreadSchema.index({ boardId: 1 });
 ThreadSchema.index({ imageId: 1 });
 ThreadSchema.index({ keywordId: 1 });
 ThreadSchema.index({ parentId: 1 });
 
->>>>>>> main
 const Thread = mongoose.model("Thread", ThreadSchema);
 
 module.exports = Thread;

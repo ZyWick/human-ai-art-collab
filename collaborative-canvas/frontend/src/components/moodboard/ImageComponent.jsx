@@ -97,15 +97,8 @@ const ImageComponent = ({
           draggable
           x={imgData.x}
           y={imgData.y}
-          onClick={(e) => {
-            e.cancelBubble = true;
-            dispatch(setSelectedImage(imgData._id));
-          }}
-          onTap={(e) => {
-            e.cancelBubble = true;
-            dispatch(setSelectedImage(imgData._id));
-            console.log(imgData._id);
-          }}
+          onClick={handleClick}
+          onTap={handleClick}
           onDragMove={(e) => handleDrag(e, "imageMoving")}
           onDragEnd={(e) => handleDrag(e, "updateImage")}
           onTransform={(e) => handleTransform("imageTransforming", e)}

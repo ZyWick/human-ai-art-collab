@@ -2,6 +2,7 @@ const imageService = require('./imageService');
 const keywordService = require('./keywordService');
 const boardService = require('./boardService')
 const roomService = require('./roomService')
+const threadService = require('./threadService')
 const { getImageDimensions } = require('../utils/imageProcessor');
 
 const rooms = {};

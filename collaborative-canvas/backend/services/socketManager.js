@@ -73,7 +73,6 @@ module.exports = (io, users) => {
 
         await imageService.deleteImage(_id);
         io.to(user.roomId).emit("deleteImage", {_id, keywords});
-        io.to(user.roomId).emit("deleteImage", {_id, keywords});
       } catch (error) {
         console.error("Error deleting image:", error);
         socket.emit("error", { message: "Failed to delete image" });

@@ -229,6 +229,7 @@ const Moodboard = () => {
             margin: "0",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
             zIndex: 5,
+            zIndex: 5,
             maxWidth: "250px",
             wordWrap: "break-word",
             lineHeight: "1.3", // Reduced line spacing

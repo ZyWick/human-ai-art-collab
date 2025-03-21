@@ -75,14 +75,14 @@ const Header = () => {
       ref={headerRef}
       style={{
         maxWidth: "100%",
-        height: "2em",
+        height: "1.85em",
         display: "flex",
         paddingInline: "2em",
         alignItems: "center",
         whiteSpace: "nowrap",
         overflow: "hidden",
         backgroundColor: "#d5e1e1",
-        borderBottom: "0.5px ridge rgb(216, 216, 216)",
+        // borderBottom: "0.5px ridge rgb(216, 216, 216)",
       }}
     >
       {/* Back Button */}

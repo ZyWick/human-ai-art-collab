@@ -38,6 +38,14 @@ const keywordSchema = new mongoose.Schema(
       ref: 'User',
       default: [], // Default to an empty array
     },
+    downvotes: {
+      type: [mongoose.Schema.Types.ObjectId], // Array of user IDs
+      ref: 'User',
+      default: [], // Default to an empty array
+    },
+    parentThreads: [
+          { type: mongoose.Schema.Types.ObjectId, ref: "Thread", default: [] },
+        ],
   },
   {
     timestamps: true, // Automatically adds createdAt and updatedAt fields

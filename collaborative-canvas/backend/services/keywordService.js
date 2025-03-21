@@ -1,6 +1,6 @@
-const Keyword = require('../models/keyword.model');
-const Image = require('../models/image.model')
-const Board = require('../models/board.model')
+const Keyword = require("../models/keyword.model");
+const Image = require("../models/image.model");
+const Board = require("../models/board.model");
 
 /**
  * Manually create a new keyword.
@@ -10,12 +10,25 @@ const Board = require('../models/board.model')
 const createKeyword = async (data) => {
   const keyword = await Keyword.create(data);
   if (keyword.imageId)
-   await Image.findByIdAndUpdate(keyword.imageId, { $push: { keywords: keyword._id } });
+    await Image.findByIdAndUpdate(keyword.imageId, {
+      $push: { keywords: keyword._id },
+    });
   else {
-    let res = await Board.findByIdAndUpdate(keyword.boardId, { $push: { keywords: keyword._id } });
+    let res = await Board.findByIdAndUpdate(keyword.boardId, {
+      $push: { keywords: keyword._id },
+    });
   }
   return keyword;
-  };
+};
+
+const updateKeywordWithChanges = async (update) => {
+    const updatedKeyword = await Keyword.findByIdAndUpdate(
+      update.id, // MongoDB `_id`
+      { $set: update.changes }, // Fields to update
+      { new: true } // Return the updated document
+    );
+    return updatedKeyword;
+};
 
 /**
  * Update a keyword's x, y, or isSelected fields.
@@ -23,37 +36,64 @@ const createKeyword = async (data) => {
  * @param {Object} updateData - Fields to update.
  * @returns {Promise<Object|null>} The updated keyword document or null if not found.
  */
-const updateKeyword = async (keywordId, updateData) => 
-  await Keyword.findByIdAndUpdate(keywordId, updateData, { new: true, runValidators: true });
+const updateKeyword = async (keywordId, updateData) => {
+  const updatedKeyword = await Keyword.findByIdAndUpdate(
+    keywordId,
+    updateData,
+    {
+      new: true,
+      runValidators: true,
+    }
+  )
 
-const getKeyword = async (keywordId) =>
-   await Keyword.findById(keywordId);
+  return updatedKeyword;
+};
+
+const getKeyword = async (keywordId) => await Keyword.findById(keywordId);
 
 const removeKeywordFromBoard = async (keywordId) =>
-  await Keyword.updateOne(
-    { _id: keywordId },
+  await Keyword.findByIdAndUpdate(
+    keywordId,
     {
       $unset: { offsetX: "", offsetY: "" }, // Remove offset values
       $set: { isSelected: false }, // Set isSelected to false
-    }
+    },
+    { new: true } // ✅ Return the updated document
   );
 
-const updateKeywordVotes =async(keywordId, userId) => {
-  const keyword = await Keyword.findById(keywordId);
-  if (!keyword) {
-    throw new Error("Keyword not found");
-}
-const updateOperation = keyword.votes?.includes(userId)
-            ? { $pull: { votes: userId } }  // Remove the vote if it exists
-            : { $addToSet: { votes: userId } }; // Add the vote if it doesn't exist
-console.log(updateOperation)
-        const updatedKeyword = await Keyword.findByIdAndUpdate(
-            keywordId,
-            updateOperation,
-            { new: true } // Return the updated document
-        );
-        return updatedKeyword;
-}
+const updateKeywordVotes = async (keywordId, userId, action) => {
+  try {
+    const keyword = await Keyword.findById(keywordId);
+    if (!keyword) return null;
+
+    if (action === "upvote") {
+      keyword.votes = keyword.votes.map((id) => id.toString()).includes(userId)
+        ? keyword.votes.filter((id) => id.toString() !== userId) // Remove vote
+        : [...keyword.votes, userId]; // Add vote
+      keyword.downvotes = keyword.downvotes.filter(
+        (id) => id.toString() !== userId
+      ); // Remove any downvote
+    } else if (action === "downvote") {
+      keyword.downvotes = keyword.downvotes
+        .map((id) => id.toString())
+        .includes(userId)
+        ? keyword.downvotes.filter((id) => id.toString() !== userId) // Remove downvote
+        : [...keyword.downvotes, userId]; // Add downvote
+      keyword.votes = keyword.votes.filter((id) => id.toString() !== userId); // Remove any upvote
+    } else if (action === "remove") {
+      keyword.votes = keyword.votes.filter((id) => id.toString() !== userId); // Remove from upvotes
+      keyword.downvotes = keyword.downvotes.filter(
+        (id) => id.toString() !== userId
+      ); // Remove from downvotes
+    }
+
+    await keyword.save();
+    return keyword;
+  } catch (error) {
+    console.error("Error updating votes:", error);
+    return null;
+  }
+};
 
 /**
  * Toggle the isSelected field of a keyword.
@@ -63,7 +103,8 @@ console.log(updateOperation)
 const toggleKeywordSelection = async (keywordId) => {
   const keyword = await Keyword.findById(keywordId);
   if (!keyword) throw new Error("Keyword not found");
-  return await keyword.updateOne({ isSelected: !keyword.isSelected }, { new: true });
+  return await keyword
+    .updateOne({ isSelected: !keyword.isSelected }, { new: true })
 };
 
 /**
@@ -76,26 +117,30 @@ const deleteKeyword = async (keywordId) => {
   const boardId = keyword.boardId;
   const imageId = keyword.imageId;
 
-  if (imageId) await Image.findByIdAndUpdate(imageId, { $pull: { keywords: keywordId } });
-  if (boardId) await Board.findByIdAndUpdate(boardId, { $pull: { keywords: keywordId } });
+  if (imageId)
+    await Image.findByIdAndUpdate(imageId, { $pull: { keywords: keywordId } });
+  if (boardId)
+    await Board.findByIdAndUpdate(boardId, { $pull: { keywords: keywordId } });
   await Keyword.findByIdAndDelete(keywordId);
-}
+};
 
 const resetVotesForBoard = async (boardId) => {
-    const result = await Keyword.updateMany(
-      { boardId: boardId }, // Filter: Only keywords with this boardId
-      { $set: { votes: [] } } // Reset votes to an empty array
-    );
-    return result;
+  const result = await Keyword.updateMany(
+    { boardId: boardId }, // Filter: Only keywords with this boardId
+    { $set: { votes: [], downvotes: [] } } // Reset both votes and downvotes
+  );
+
+  return result;
 };
 
 module.exports = {
   getKeyword,
   createKeyword,
-  updateKeyword,
+  // updateKeyword,
   removeKeywordFromBoard,
   toggleKeywordSelection,
   deleteKeyword,
   updateKeywordVotes,
   resetVotesForBoard,
+  updateKeywordWithChanges,
 };

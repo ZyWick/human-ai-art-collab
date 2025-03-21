@@ -45,14 +45,12 @@ const generateKeywordsForImage = async (image, extractedKeywords) => {
  */
 const createImage = async (data, extractedKeywords) => {
   const image = await Image.create(data);
-
     const keywordsData = await generateKeywordsForImage(image, extractedKeywords);
     if (keywordsData.length) {
       const insertedKeywords = await Keyword.insertMany(keywordsData);
       image.keywords = insertedKeywords.map(k => k._id);
       await image.save();
     }
-  
   await Board.findByIdAndUpdate(image.boardId, { $push: { images: image._id } });
   return image.populate('keywords');
 };

@@ -4,6 +4,8 @@ import imagesReducer from "./imagesSlice";
 // store.js
 import boardsReducer from './boardsSlice'
 import selectionReducer from './selectionSlice'
+import keywordsReducer from './keywordsSlice'
+import threadsReducer from './threadsSlice'
 
 const store = configureStore({
   reducer: {
@@ -11,6 +13,8 @@ const store = configureStore({
     room: roomReducer,
     boards: boardsReducer,
     images: imagesReducer,
+    keywords: keywordsReducer,
+    threads: threadsReducer,
   },
 });
 

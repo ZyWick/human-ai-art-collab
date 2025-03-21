@@ -3,6 +3,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   selectedImageId: null,      // Only one image can be selected at a time
+  selectedKeywordId: null,
   selectedKeywordIds: []      // An array to store multiple selected keyword IDs
 };
 
@@ -12,6 +13,9 @@ const selectionSlice = createSlice({
   reducers: {
     setSelectedImage(state, action) {
       state.selectedImageId = action.payload;
+    },
+    setSelectedKeyword(state, action) {
+      state.selectedKeywordId = action.payload;
     },
     clearSelectedImage(state) {
       state.selectedImageId = null;
@@ -40,6 +44,7 @@ const selectionSlice = createSlice({
 
 export const {
   setSelectedImage,
+  setSelectedKeyword,
   clearSelectedImage,
   toggleSelectedKeyword,
   setSelectedKeywords,

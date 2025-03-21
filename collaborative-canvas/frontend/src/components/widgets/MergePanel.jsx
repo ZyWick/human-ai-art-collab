@@ -3,47 +3,42 @@ import { useDispatch, useSelector } from "react-redux";
 import { KeywordButton } from "./KeywordButton";
 import { useSocket } from '../../context/SocketContext'
 import { selectBoardById } from "../../redux/boardsSlice";
-import { updateBoardNoteKeywords } from "../../redux/roomSlice";
+import { updateKeyword } from "../../redux/keywordsSlice";
+import { selectAllKeywords } from "../../redux/keywordsSlice";
 
 const MergePanel = () => {
   const selectedKeywordIds = useSelector(
     (state) => state.selection.selectedKeywordIds
   );
-  const images = useSelector((state) => state.images);
-  const noteKeywords = useSelector((state) => state.room.boardNoteKeywords);
+  
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
   const keywordRefs = useRef({});
   const socket = useSocket();
   const dispatch = useDispatch();
+  const keywords = useSelector(selectAllKeywords)  
 
-  const imageKeywords = images
-    .flatMap((image) => image.keywords)
-    .filter(
+  const selectedBoardKeywords = keywords.filter(
       (keyword) =>
         keyword.offsetX !== undefined && keyword.offsetY !== undefined
-    );
-
-  const allKeywords = [...imageKeywords, ...noteKeywords];
-  const selectedKeywords = allKeywords.filter((keyword) =>
+    ).filter((keyword) =>
     selectedKeywordIds.includes(keyword._id)
   );
+  
   const currBoard = useSelector((state) =>
     selectBoardById(state, currentBoardId)
   );
   const generatedImages = currBoard?.generatedImages;
   const generateImage = () => {
-    socket.emit("generateNewImage", currentBoardId);
+    if (selectedBoardKeywords?.length > 0)
+    socket.emit("generateNewImage", {boardId: currentBoardId, keywords:  filterdata(selectedBoardKeywords)});
   };
 
     const toggleSelected = (keyword) => {
-      const updatedKeyword = { ...keyword, isSelected: !keyword.isSelected };
-      const isNote = !keyword.imageId
-      
-      if (isNote) dispatch(updateBoardNoteKeywords(updatedKeyword))
-        // : updateKeyword(updatedKeyword);
-  
+      const update = { id: keyword._id, changes: { isSelected: !keyword.isSelected } };
+      dispatch(updateKeyword(update));
       socket.emit("toggleSelectedKeyword", keyword._id);
-      socket.emit(isNote ? "updateKeywordNote" : "updateKeyword", updatedKeyword);
+      socket.emit("updateKeywordSelected", update);
+
     };
 
   return (
@@ -60,8 +55,8 @@ const MergePanel = () => {
           gap: "0.2em",
         }}
       >
-        {selectedKeywords && selectedKeywords.length > 0 ? (
-          selectedKeywords.map((keyword) => (
+        {selectedBoardKeywords && selectedBoardKeywords.length > 0 ? (
+          selectedBoardKeywords.map((keyword) => (
             <KeywordButton
               key={keyword._id}
               ref={(el) => {

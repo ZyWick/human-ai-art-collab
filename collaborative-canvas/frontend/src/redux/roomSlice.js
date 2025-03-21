@@ -10,32 +10,24 @@ const roomReducer = createSlice({
     users: [],
     roomChat: [],
     designDetails: {},
+    isAddingComments: false,
+    boardThreads: [],
   },
   reducers: {
     setRoomId: (state, action) => {
       state.roomId = action.payload;
+    },
+    setIsAddingComments: (state, action) => {
+      state.isAddingComments = action.payload;
+    },
+    setBoardThreads:  (state, action) => {
+      state.boardThreads = action.payload;
     },
     setRoomName: (state, action) => {
       state.roomName = action.payload;
     },
     setCurrentBoardId: (state, action) => {
       state.currentBoardId = action.payload;
-    },
-    setBoardNoteKeywords: (state, action) => {
-      state.boardNoteKeywords = action.payload;
-    },
-    updateBoardNoteKeywords: (state, action) => {
-      state.boardNoteKeywords = state.boardNoteKeywords.map((kw) =>
-        kw._id === action.payload._id ? action.payload : kw
-      );
-    },
-    addBoardNoteKeyword: (state, action) => {
-      state.boardNoteKeywords.push(action.payload);
-    },
-    deleteBoardNoteKeywords: (state, action) => {
-      state.boardNoteKeywords = state.boardNoteKeywords.filter(
-        (kw) => kw._id !== action.payload
-      );
     },
     setUsers: (state, action) => {
       state.users = action.payload;
@@ -65,15 +57,13 @@ export const {
   setRoomId,
   setRoomName,
   setCurrentBoardId,
-  setBoardNoteKeywords,
-  updateBoardNoteKeywords,
-  addBoardNoteKeyword,
-  deleteBoardNoteKeywords,
   setUsers,
   setDesignDetails,
   updateDesignDetails,
   setRoomChat,
   addRoomChatMessage,
-  clearAllNoteKeywordVotes
+  clearAllNoteKeywordVotes,
+  setIsAddingComments,
+  setBoardThreads
 } = roomReducer.actions;
 export default roomReducer.reducer;

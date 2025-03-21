@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const imageSchema = new mongoose.Schema(
   {
     boardId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Board',
+      ref: "Board",
       required: true,
     },
     url: {
@@ -28,28 +28,35 @@ const imageSchema = new mongoose.Schema(
       required: true,
     },
     keywords: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Keyword',
-        },
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Keyword",
+      },
     ],
-    feedback:[
-          {
-            userId: { type: String},
-            username: { type: String, required: true },
-            boardId: {type: mongoose.Schema.Types.ObjectId, ref: 'Board', required: true},
-            message: { type: String }, // Regular text message
-            keywordType: {type: String},
-            keyword: { type: String},
-            timestamp: { type: Date, default: Date.now },
-          }
-        ]
+    parentThreads: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "Thread", default: [] },
+    ],
+    feedback: [
+      {
+        userId: { type: String },
+        username: { type: String, required: true },
+        boardId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Board",
+          required: true,
+        },
+        message: { type: String }, // Regular text message
+        keywordType: { type: String },
+        keyword: { type: String },
+        timestamp: { type: Date, default: Date.now },
+      },
+    ],
   },
-  { timestamps: true, }
+  { timestamps: true }
 );
 
 imageSchema.index({ boardId: 1 });
 
-const Image = mongoose.model('Image', imageSchema);
+const Image = mongoose.model("Image", imageSchema);
 
 module.exports = Image;

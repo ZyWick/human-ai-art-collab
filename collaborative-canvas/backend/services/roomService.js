@@ -65,14 +65,14 @@ const joinRoom = async (joinCode) => {
 
 const getRoom = async (roomId) => {
   const room = await Room.findById(roomId)
-    .populate({path: 'boards'})
     .populate({
-      path: 'roomChat.boardId',
-      model: 'Board' // Explicitly define the model name
+      path: "boards",
     })
+    .lean();
 
   return room;
 };
+
 
 /**
  * Updates the designDetails of a specific room.

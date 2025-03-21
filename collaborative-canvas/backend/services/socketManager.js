@@ -67,11 +67,13 @@ module.exports = (io, users) => {
     });
 
     socket.on("deleteImage", async ({_id, keywords}) => {
+    socket.on("deleteImage", async ({_id, keywords}) => {
       try {
         const user = users[socket.id];
         if (!user) return;
 
         await imageService.deleteImage(_id);
+        io.to(user.roomId).emit("deleteImage", {_id, keywords});
         io.to(user.roomId).emit("deleteImage", {_id, keywords});
       } catch (error) {
         console.error("Error deleting image:", error);

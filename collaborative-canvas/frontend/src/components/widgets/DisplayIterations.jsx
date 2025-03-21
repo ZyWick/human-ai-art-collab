@@ -2,27 +2,31 @@ import { useMemo } from "react";
 import { useSelector } from "react-redux";
 import { selectAllBoards } from "../../redux/boardsSlice";
 import "../../assets/styles/BoardsList.css";
+import { KeywordButton } from "./KeywordButton";
 
-const DisplayAllBoardImages = () => {
-  const boardData = useSelector(selectAllBoards);
-
-  const sortedBoards = useMemo(() => {
-    return [...boardData].sort((a, b) => {
-      if (a.isStarred !== b.isStarred) return b.isStarred - a.isStarred;
-      return new Date(b.updatedAt) - new Date(a.updatedAt);
-    });
-  }, [boardData]);
-
+const DisplayAllBoardImages = ({currBoard}) => {
+  
   return (
     <div className="all-boards-container">
-      {sortedBoards.map((board) => (
-        <div key={board.id} className="board-row">
-          <h3 className="board-title">{board.name}</h3>
+      {currBoard?.iterations?.slice().reverse().map((iter) => (
+        <div key={iter._id} className="board-row">
+          {/* <h3 className="board-title">{board.name}</h3> */}
+          <div style={{backgroundColor: "#F5F5F5", width: "100%", display: "flex"}}>
           <div className="image-container-all">
-            {board.generatedImages.map((image, index) => (
-              <img key={index} className="image-preview row-image" alt="" src={image} />
+            {iter.generatedImages.map((image, index) => (
+              <img key={index} className="row-image" alt="" src={image} />
             ))}
-          </div>
+          </div></div>
+          <div style={{display: "flex", flexWrap: "wrap", gap:"0.5em"}}>
+         {iter.keywords && iter.keywords.length > 0 && 
+          iter.keywords.map((keyword) => (
+            <KeywordButton
+              key={keyword._id}
+              text={keyword.keyword}
+              type={keyword.type}
+              isSelected={true}
+            />
+          ))}</div>
         </div>
       ))}
     </div>

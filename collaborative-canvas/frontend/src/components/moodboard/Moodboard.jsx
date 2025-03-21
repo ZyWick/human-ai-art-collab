@@ -11,9 +11,6 @@ import useWindowSize from "../../hook/useWindowSize";
 import ImageComponent from "./ImageComponent";
 import KeywordComponent from "./KeywordComponent";
 import ThreadInput from "../widgets/ThreadInput";
-import { useAuth } from "../../context/AuthContext";
-import { useSocket } from "../../context/SocketContext";
-import { selectBoardById } from "../../redux/boardsSlice";
 import ThreadBubble from "./ThreadBubble";
 import FeedbackPopup from "./FeedbackPopup";
 
@@ -25,83 +22,100 @@ const Moodboard = () => {
   const { user } = useAuth();
 
   const images = useSelector((state) => state.images);
-  const noteKeywords = useSelector((state) => state.room.boardNoteKeywords);
+  const keywords = useSelector(selectAllKeywords);
   const isAddingComments = useSelector((state) => state.room.isAddingComments);
-  const [inputData, setInputData] = useState(null);
-  const { user } = useAuth();
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
-  const socket = useSocket();
-  const boardThreads = useSelector((state) => state.room.boardThreads);
-  const tooltipRef = useRef(null);
-  const [tooltipData, setTooltipData] = useState({
-    position: { x: 0, y: 0 },
-    data: null,
-  });
+  const boardThreads = useSelector(selectBoardThreads);
+  
   const [popupData, setPopupData] = useState(null); // Click popup
+  const [inputData, setInputData] = useState(null);
+  const [tooltipData, setTooltipData] = useState(null);
+  const [adjustedPosition, setAdjustedPosition] = useState({
+    x: -9999,
+    y: -9999,
+  });
 
-  const handleElementClick = (event, id) => {
-    event.cancelBubble = true; // Prevent stage click from triggering
-    const stage = event.target.getStage();
-    const pointer = stage.getPointerPosition();
-    const maxX = window.innerWidth - 240 - 10;
-    const minY = 40;
+  const timeAgo = useCallback((date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    if (seconds == 0) return `Just now`;
+    if (seconds < 60) return `${seconds} seconds ago`;
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+    return `${Math.floor(hours / 24)} day${hours > 1 ? "s" : ""} ago`;
+  }, []);
 
-    setInputData({
-      userId: user.id,
-      username: user.username,
-      position: {
-        x: Math.min(pointer.x, maxX),
-        y: Math.max(pointer.y, minY),
-      },
-      imageId: id.imageId,
-      keywordId: id.keywordId,
-      value: "",
-    });
-  };
+  const handleElementClick = useCallback(
+    (event, id) => {
+      event.cancelBubble = true;
+      const stage = event.target.getStage();
+      const pointer = stage.getPointerPosition();
+      const maxX = window.innerWidth - 250;
+      const minY = 40;
 
-  const handleStageClick = (event) => {
-    const stage = event.target.getStage();
-    const pointer = stage.getPointerPosition();
+      setInputData({
+        userId: user.id,
+        username: user.username,
+        pointerPosition: {x: pointer.x, y: pointer.y},
+        position: {
+          x: Math.min(pointer.x, maxX),
+          y: Math.max(pointer.y, minY),
+        },
+        imageId: id.imageId,
+        keywordId: id.keywordId,
+        boardId: currentBoardId,
+        value: "",
+      });
+    },
+    [user]
+  );
 
-    setInputData({
-      userId: user.id,
-      username: user.username,
-      position: {
-        x: pointer.x,
-        y: pointer.y,
-      },
-      boardId: currentBoardId,
-      value: "",
-    });
-  };
+  const handleStageClick = useCallback(
+    (event) => {
+      if (!isAddingComments) return;
 
-  const handleSubmit = () => {
+      const stage = event.target.getStage();
+      const pointer = stage.getPointerPosition();
+    
+      // Convert pointer position to transformed stage coordinates
+      const transform = stage.getAbsoluteTransform().copy();
+      transform.invert(); // Get the inverse transformation
+      const position = transform.point(pointer);
+
+      setInputData({
+        userId: user.id,
+        username: user.username,
+        pointerPosition: {x: pointer.x, y: pointer.y},
+        position: { x: position.x, y: position.y },
+        boardId: currentBoardId,
+        value: "",
+      });
+    },
+    [isAddingComments, user, currentBoardId]
+  );
+
+  const handleSubmit = useCallback(() => {
     if (inputData?.value.trim()) {
       socket.emit("createThread", inputData);
     }
     setInputData(null);
-  };
+  }, [inputData, socket]);
 
   const handleWheel = useCallback((e) => {
     e.evt.preventDefault();
-
     const stage = stageRef.current;
     const scaleBy = 1.05;
     const oldScale = stage.scaleX();
-
     const pointer = stage.getPointerPosition();
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     };
-
-    // Adjust scale based on wheel direction
     const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
   
     stage.scale({ x: newScale, y: newScale });
-
-    // Keep the zoom centered around the mouse pointer
-    const newPos = {
+    stage.position({
       x: pointer.x - mousePointTo.x * newScale,
       y: pointer.y - mousePointTo.y * newScale,
     });

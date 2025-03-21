@@ -150,10 +150,8 @@ const cloneBoard = async (boardId) => {
     $push: { boards: clonedBoard._id },
   });
 
-return clonedBoard;
-
-  
-}
+  return clonedBoard;
+};
 
 const getBoard = async (boardId) => {
   const board = await Board.findById(boardId)

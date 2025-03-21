@@ -30,7 +30,7 @@ const MergePanel = () => {
   const generatedImages = currBoard?.generatedImages;
   const generateImage = () => {
     if (selectedBoardKeywords?.length > 0)
-    socket.emit("generateNewImage", {boardId: currentBoardId, keywords:  filterdata(selectedBoardKeywords)});
+    socket.emit("generateNewImage", {boardId: currentBoardId, keywords:  (selectedBoardKeywords)});
   };
 
     const toggleSelected = (keyword) => {

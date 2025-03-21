@@ -67,7 +67,6 @@ module.exports = (io, users) => {
     });
 
     socket.on("deleteImage", async ({_id, keywords}) => {
-    socket.on("deleteImage", async ({_id, keywords}) => {
       try {
         const user = users[socket.id];
         if (!user) return;

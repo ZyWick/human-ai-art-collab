@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useSocket } from '../../context/SocketContext'
 import { processImage, segmentImage } from "../../util/processImage";
 import { uploadImageApi } from "../../util/api";
+import { setSelectedImage } from "../../redux/selectionSlice";
 import "../../assets/styles/UploadButton.css";
 
 const UploadButton = () => {
   const [imageUrl, setImageUrl] = useState("");
   const socket = useSocket();
+  const dispatch = useDispatch()
   const boardId = useSelector((state) => state.room.currentBoardId);
 
   const uploadImage = async (newImage) => {
@@ -29,7 +31,8 @@ const UploadButton = () => {
     formData.append("x", window.innerWidth * (0.5 + Math.random() * 0.5));
     formData.append("y", window.innerHeight * (0.5 + Math.random() * 0.5));
 
-    await uploadImageApi(formData, socket.id, boardId);
+    const result = await uploadImageApi(formData, socket.id, boardId);
+    dispatch(setSelectedImage(result._doc._id))
   };
 
   const uploadImageUrl = async () => {

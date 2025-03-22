@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
+import { timeAgo } from "../../util/time";
 import {
   selectPopulatedThreadById,
   updateThread,
@@ -112,17 +113,6 @@ const FeedbackPopup = ({ popupData, onClose }) => {
     });
     setReply("");
   };
-
-  const timeAgo = useCallback((date) => {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    if (seconds == 0) return `Just now`;
-    if (seconds < 60) return `${seconds} seconds ago`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-    return `${Math.floor(hours / 24)} day${hours > 1 ? "s" : ""} ago`;
-  }, []);
 
   return (
     <div

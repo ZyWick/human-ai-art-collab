@@ -21,7 +21,7 @@ const Sidebar = () => {
 
   const boardId = useSelector((state) => state.room.currentBoardId);
   const socket = useSocket();
-  console.log(designDetails)
+  
   const isDesignDetailsEmpty = Object.entries(designDetails)
     .filter(([key]) => key !== "others")
     .some(([, value]) => !value?.trim());

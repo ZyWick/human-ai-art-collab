@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import { selectAllKeywords } from "../../redux/keywordsSlice";
 import { selectBoardThreads } from "../../redux/threadsSlice";
+import { timeAgo } from "../../util/time";
 
 import ImageComponent from "./ImageComponent";
 import KeywordComponent from "./KeywordComponent";
@@ -33,17 +34,6 @@ const Moodboard = () => {
     x: -9999,
     y: -9999,
   });
-
-  const timeAgo = useCallback((date) => {
-    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
-    if (seconds == 0) return `Just now`;
-    if (seconds < 60) return `${seconds} seconds ago`;
-    const minutes = Math.floor(seconds / 60);
-    if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
-    return `${Math.floor(hours / 24)} day${hours > 1 ? "s" : ""} ago`;
-  }, []);
 
   const handleElementClick = useCallback(
     (event, id) => {

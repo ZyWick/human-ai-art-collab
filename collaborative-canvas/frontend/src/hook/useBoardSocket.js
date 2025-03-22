@@ -104,7 +104,6 @@ const useBoardSocket = () => {
     });
 
     socket.on("addThread", (newThread) => {
-      console.log(newThread)
       dispatch(addThread(newThread))
     })
 

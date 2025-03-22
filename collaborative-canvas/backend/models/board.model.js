@@ -1,42 +1,41 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const boardSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
+    name: { 
+      type: String, 
       required: true,
-      index: true,
+      index: true
     },
     roomId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Room",
+      ref: 'Room',
       required: true,
     },
     images: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Image",
+        ref: 'Image',
       },
     ],
     keywords: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Keyword",
+        ref: 'Keyword',
       },
     ],
     parentThreads: [
-      { type: mongoose.Schema.Types.ObjectId, ref: "Thread", default: [] },
-    ],
+          { type: mongoose.Schema.Types.ObjectId, ref: "Thread", default: [] },
+        ],
     iterations: [
       {
         generatedImages: [{ type: String, required: true }], // Array of image URLs
-        keywords: [
-          {
-            keyword: { type: String, required: true },
-            type: { type: String, required: true },
-          },
-        ],
-        timestamps: true, // Correct placement of timestamps
+        keywords: [ {
+          keyword: { type: String, required: true },
+          type: { type: String, required: true }
+        },
+        { timestamps: true }
+      ]
       },
     ],
     isStarred: {
@@ -48,11 +47,11 @@ const boardSchema = new mongoose.Schema(
       default: false,
     },
   },
-  { timestamps: true } // This applies timestamps to the Board schema
+  { timestamps: true }
 );
 
 boardSchema.index({ roomId: 1 });
 
-const Board = mongoose.model("Board", boardSchema);
+const Board = mongoose.model('Board', boardSchema);
 
 module.exports = Board;

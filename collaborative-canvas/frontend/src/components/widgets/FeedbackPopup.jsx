@@ -72,8 +72,16 @@ const FeedbackPopup = ({ popupData, onClose }) => {
 
   const handleMouseMove = useCallback(
     (e) => {
-      if (!dragging) return;
-      setPosition({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+      if (!dragging || !popupRef.current) return;
+
+      const { offsetWidth, offsetHeight } = popupRef.current;
+      const maxX = window.innerWidth - offsetWidth;
+      const maxY = window.innerHeight - offsetHeight;
+
+      setPosition({
+        x: Math.max(0, Math.min(e.clientX - offset.x, maxX)),
+        y: Math.max(0, Math.min(e.clientY - offset.y, maxY)),
+      });
     },
     [dragging, offset]
   );

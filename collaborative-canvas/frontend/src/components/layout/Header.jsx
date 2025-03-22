@@ -2,11 +2,11 @@ import React, { useRef, useState, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate
 
-import UserAvatars from "../widgets/UserAvatars";
 import { selectBoardById } from "../../redux/boardsSlice";
-import { useSocket } from '../../context/SocketContext'
+import { useSocket } from "../../context/SocketContext";
 import { setRoomName } from "../../redux/roomSlice";
 import { updateBoard } from "../../redux/boardsSlice";
+import "../../assets/styles/UserAvatars.css";
 
 const Header = () => {
   const headerRef = useRef();
@@ -14,7 +14,7 @@ const Header = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate(); // Hook for navigation
   const { joinCode } = useParams();
-  const { roomName,  roomId, currentBoardId } = useSelector(
+  const { roomName, roomId, currentBoardId } = useSelector(
     (state) => state.room
   );
   const currBoard = useSelector((state) =>
@@ -51,7 +51,10 @@ const Header = () => {
       socket.emit("updateRoomName", { roomId, roomName: newName });
     } else if (field === "board" && newName !== boardName) {
       dispatch(updateBoard({ id: currentBoardId, changes: { name: newName } }));
-      socket.emit("updateBoardName", { boardId: currentBoardId, boardName: newName });
+      socket.emit("updateBoardName", {
+        boardId: currentBoardId,
+        boardName: newName,
+      });
     }
   };
 
@@ -69,6 +72,37 @@ const Header = () => {
   const handleBack = () => {
     navigate("/home"); // Navigate back to the home page
   };
+
+  const usernames = useSelector((state) => state.room.users);
+  const containerRef = useRef(null);
+  const [visibleUsers, setVisibleUsers] = useState([]);
+  const [hiddenUsers, setHiddenUsers] = useState([]);
+
+  useEffect(() => {
+    const resizeHandler = () => {
+      if (!headerRef.current || !containerRef.current) return;
+
+      const { width: headerWidth, height: headerHeight } =
+        headerRef.current.getBoundingClientRect();
+      const totalAvatarWidth =
+        headerHeight * 0.8 +
+        containerRef.current.getBoundingClientRect().width * 0.03;
+      const fitCount = Math.floor(
+        (headerWidth * 0.3 -
+          (usernames.length * totalAvatarWidth > headerWidth * 0.3
+            ? totalAvatarWidth
+            : 0)) /
+          totalAvatarWidth
+      );
+
+      setVisibleUsers(usernames.slice(0, fitCount));
+      setHiddenUsers(usernames.slice(fitCount));
+    };
+
+    resizeHandler();
+    window.addEventListener("resize", resizeHandler);
+    return () => window.removeEventListener("resize", resizeHandler);
+  }, [usernames, headerRef, containerRef]);
 
   return (
     <div
@@ -99,11 +133,11 @@ const Header = () => {
           cursor: "pointer",
         }}
       >
-         <img
-            src="/icons/home-svgrepo-com.svg"
-            alt="Home"
-            style={{ width: "24px", height: "24px" }}
-          />
+        <img
+          src="/icons/home-svgrepo-com.svg"
+          alt="Home"
+          style={{ width: "24px", height: "24px" }}
+        />
       </button>
 
       <div
@@ -200,7 +234,19 @@ const Header = () => {
           )}
         </div>
       </div>
-      <UserAvatars headerRef={headerRef} />
+      <div className="avatars-container" ref={containerRef}>
+        {visibleUsers.length > 0 &&
+          visibleUsers.map((user, index) => (
+            <div key={index} className="avatar" title={user}>
+              {user[0]}
+            </div>
+          ))}
+        {hiddenUsers.length > 0 && (
+          <div className="avatar more" title={hiddenUsers.join(", ")}>
+            +{hiddenUsers.length}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

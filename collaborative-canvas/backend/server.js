@@ -95,7 +95,6 @@ app.post("/upload", upload.array("images", 10), async (req, res) => {
 
       let image = await imageService.createImage(newImage, keywords)
       io.to(user.roomId).emit("newImage", image);
-      
       res.json({ message: "Upload successful", ...result, ...image });
   } catch (error) {
     res.status(500).json({ error: error.message });

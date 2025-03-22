@@ -4,15 +4,14 @@ import { useSelector } from "react-redux";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import { selectAllKeywords } from "../../redux/keywordsSlice";
-import { selectBoardById } from "../../redux/boardsSlice";
 import { selectBoardThreads } from "../../redux/threadsSlice";
 
-import useWindowSize from "../../hook/useWindowSize";
 import ImageComponent from "./ImageComponent";
 import KeywordComponent from "./KeywordComponent";
-import ThreadInput from "../widgets/ThreadInput";
 import ThreadBubble from "./ThreadBubble";
-import FeedbackPopup from "./FeedbackPopup";
+import ThreadInput from "../widgets/ThreadInput";
+import FeedbackPopup from "../widgets/FeedbackPopup";
+import useWindowSize from "../../hook/useWindowSize";
 
 const Moodboard = () => {
   const stageRef = useRef(null);

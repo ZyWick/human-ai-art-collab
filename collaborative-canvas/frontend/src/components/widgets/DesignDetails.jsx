@@ -7,23 +7,18 @@ import "../../assets/styles/dashboard.css";
 const fields = [
   {
     key: "objective",
-    label: "Objective",
-    placeholder: "What experience do we want to create?",
+    label: "Project Overview",
+    placeholder: "Briefly describe the project.",
   },
   {
     key: "targetAudience",
     label: "Target Audience",
-    placeholder: "Who and what are they looking for?",
+    placeholder: "Who is this for, and what are their needs?",
   },
   {
-    key: "outcomes",
-    label: "Key Outcomes",
-    placeholder: "Define measurable success or the fun",
-  },
-  {
-    key: "whatSetsUsApart",
-    label: "What makes us unique",
-    placeholder: "What elements set our design apart?",
+    key: "requirements",
+    label: "Key Requirements",
+    placeholder: "List essential features, elements, or guidelines.",
   },
   {
     key: "constraints",
@@ -45,8 +40,10 @@ const DesignDetails = ({chatRef}) => {
   const textAreaRefs = useRef({}); // Store refs for dynamic resizing
 
   const handleBlur = (field, value) => {
-    dispatch(updateDesignDetails({ [field]: value.trim() || "" }));
-    socket.emit("updateDesignDetailsDone", { [field]: value.trim() || "" });
+    if (!value) return;
+    const newValue = typeof value === "string" ? value.trim() : ""; 
+    dispatch(updateDesignDetails({ [field]: newValue }));
+    socket.emit("updateDesignDetailsDone", { [field]: newValue});
     setEditingField(null);
   };
 

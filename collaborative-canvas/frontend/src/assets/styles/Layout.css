@@ -10,8 +10,8 @@
 
 .sidebar-overlay {
   flex: 0 0 auto; /* Keeps fixed width */
-  width: 20%;
-  min-width: 294px;
+  width: 17%;
+  min-width: 264px;
   max-width: 610px;
   max-height: calc(100vh - 2em);
   height: 100vh; /* Full height */

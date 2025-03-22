@@ -54,9 +54,7 @@ const deleteRoom = async (roomId) => {
 const joinRoom = async (joinCode) => {
   const room = await Room.findOne({ joinCode })
   .populate({
-    path: 'boards',
-    select: { name: 1, roomId: 1, images: 1, keywords: 1, isStarred: 1, isVoting: 1, createdAt: 1, updatedAt: 1, iterations: { $slice: -1 } } 
-  })
+    path: 'boards' })
   .lean(); 
 
   if (!room) throw new Error('Room not found');
@@ -82,11 +80,12 @@ const getRoom = async (roomId) => {
  */
 const updateDesignDetailsDb = async (roomId, designUpdates) => {
   const [[field, value]] = Object.entries(designUpdates);
-    const  updatedRoom = await Room.updateOne(
-      { _id: roomId },
-      { $set: { [`designDetails.${field}`]: value } }
-    );
-    return updatedRoom;
+  const updatedRoom = await Room.findOneAndUpdate(
+    { _id: roomId },
+    { $set: { [`designDetails.${field}`]: value } },
+    { new: true, lean: true } // `new: true` returns the updated document
+  );
+    return updatedRoom.designDetails;
 };
 
 /**

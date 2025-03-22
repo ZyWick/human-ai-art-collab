@@ -1,6 +1,7 @@
 const Keyword = require("../models/keyword.model");
 const Image = require("../models/image.model");
 const Board = require("../models/board.model");
+const Thread = require('../models/thread.model')
 
 /**
  * Manually create a new keyword.
@@ -113,16 +114,19 @@ const toggleKeywordSelection = async (keywordId) => {
  * @returns {Promise<Object|null>} The deleted keyword document or null if not found.
  */
 const deleteKeyword = async (keywordId) => {
-  const keyword = await Keyword.findById(keywordId);
-  const boardId = keyword.boardId;
-  const imageId = keyword.imageId;
+  const keyword = await Keyword.findByIdAndDelete(keywordId);
+  if (!keyword) return null;
 
-  if (imageId)
-    await Image.findByIdAndUpdate(imageId, { $pull: { keywords: keywordId } });
-  if (boardId)
-    await Board.findByIdAndUpdate(boardId, { $pull: { keywords: keywordId } });
-  await Keyword.findByIdAndDelete(keywordId);
+  const { boardId, imageId } = keyword;
+  await Promise.all([
+    imageId ? Image.findByIdAndUpdate(imageId, { $pull: { keywords: keywordId } }) : null,
+    boardId ? Board.findByIdAndUpdate(boardId, { $pull: { keywords: keywordId } }) : null,
+    Thread.deleteMany({ keywordId }),
+  ]);
+
+  return keyword;
 };
+
 
 const resetVotesForBoard = async (boardId) => {
   const result = await Keyword.updateMany(

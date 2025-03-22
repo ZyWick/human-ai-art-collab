@@ -13,7 +13,7 @@ const Sidebar = () => {
     (state) => state.selection.selectedImageId
   );
   const selectedImage = useSelector((state) =>
-    selectImageById(state, selectedImageId)
+    selectedImageId ? selectImageById(state, selectedImageId) : null
   );
   const designDetails = useSelector((state) => state.room.designDetails);
   const chatRef = useRef(null);
@@ -21,6 +21,7 @@ const Sidebar = () => {
 
   const boardId = useSelector((state) => state.room.currentBoardId);
   const socket = useSocket();
+  console.log(designDetails)
   const isDesignDetailsEmpty = Object.entries(designDetails)
     .filter(([key]) => key !== "others")
     .some(([, value]) => !value?.trim());
@@ -54,7 +55,7 @@ const Sidebar = () => {
         />
       ) : (
         <p style={{ fontSize: "0.75em", marginBottom: "0" }}>
-          Complete design details to add images
+          Please complete design brief to add images
         </p>
       )}
       {!isUploadingImg &&

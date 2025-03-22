@@ -4,7 +4,7 @@ import { useSocket } from "../../context/SocketContext";
 import { selectBoardById, updateBoard } from "../../redux/boardsSlice";
 import { clearAllVotes } from "../../redux/keywordsSlice";
 import { setIsAddingComments } from "../../redux/roomSlice";
-import DisplayIterations from "../widgets/DisplayIterations";
+import IterationsPopup from "../widgets/IterationsPopup";
 import "../../assets/styles/toolbar.css";
 
 const Toolbar = () => {
@@ -40,12 +40,14 @@ const Toolbar = () => {
   return (
     <>
       {showAllIterations && (
-        <div className="outside-widget boardsDisplay scrollable-container">
-          <DisplayIterations currBoard={currBoard} />
-        </div>
+      <IterationsPopup currBoard={currBoard} setShowAllIterations={setShowAllIterations}/>
+    
       )}
 
-      <div className="toolbar">
+      <div className="toolbar" style={{
+         boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.25)",
+         
+      }}>
         {/* Adding Comments */}
         <div className="toolbar-group">
           <button 

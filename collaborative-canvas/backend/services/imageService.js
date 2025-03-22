@@ -1,8 +1,8 @@
 const Image = require('../models/image.model');
 const Keyword = require('../models/keyword.model');
 const Board = require('../models/board.model');
+const Thread = require('../models/thread.model')
 const { deleteS3Image } = require('./s3service');
-const { getCaption } = require('../utils/imageCaptioning')
 
 /**
  * Generates keywords for an image (Placeholder, replace with actual implementation).
@@ -12,31 +12,38 @@ const { getCaption } = require('../utils/imageCaptioning')
 const generateKeywordsForImage = async (image, extractedKeywords) => {
   const keywordObjects = [];
 
-  if(extractedKeywords)
-  Object.entries(extractedKeywords).forEach(([category, keywords]) => {
-    keywords.forEach(keyword => {
-      keywordObjects.push({
-        boardId: image.boardId,
-        imageId: image._id,      // Optional image reference
-        isSelected: false,      // Default value
-        isCustom: false,        // Default value
-        type: category,         // e.g., "Subject Matter", "Action & Pose", "Theme & Mood"
-        keyword: keyword        // The keyword from the array
-      });
+  if (extractedKeywords && typeof extractedKeywords === "object") {
+    Object.entries(extractedKeywords).forEach(([category, keywords]) => {
+      if (Array.isArray(keywords) && keywords.length) {
+        keywords.forEach(keyword => {
+          if (keyword) { // Ensure keyword is valid
+            keywordObjects.push({
+              boardId: image.boardId,
+              imageId: image._id,
+              isSelected: false,
+              isCustom: false,
+              type: category,
+              keyword: keyword.trim() // Remove extra spaces
+            });
+          }
+        });
+      }
     });
-  });
+  }
 
+  // Always include "Arrangement" keyword, even if extractedKeywords is empty
   keywordObjects.push({
     boardId: image.boardId,
-    imageId: image._id,      // Optional image reference
-    isSelected: false,      // Default value
-    isCustom: false,        // Default value
-    type: "Arrangement",         // e.g., "Subject Matter", "Action & Pose", "Theme & Mood"
-    keyword: "Arrangement"       // The keyword from the array
+    imageId: image._id,
+    isSelected: false,
+    isCustom: false,
+    type: "Arrangement",
+    keyword: "Arrangement"
   });
 
-  return keywordObjects
-}
+  return keywordObjects;
+};
+
   
 /**
  * Creates a new image and generates associated keywords.
@@ -46,8 +53,9 @@ const generateKeywordsForImage = async (image, extractedKeywords) => {
 const createImage = async (data, extractedKeywords) => {
   const image = await Image.create(data);
     const keywordsData = await generateKeywordsForImage(image, extractedKeywords);
+    let insertedKeywords = [];
     if (keywordsData.length) {
-      const insertedKeywords = await Keyword.insertMany(keywordsData);
+      insertedKeywords = await Keyword.insertMany(keywordsData);
       image.keywords = insertedKeywords.map(k => k._id);
       await image.save();
     }
@@ -71,15 +79,21 @@ const updateImage = async(imageId, updateData) =>
  * @returns {Promise<Object>} The deleted image document or null if not found.
  */
 const deleteImage = async (imageId) => {
-  const image = await Image.findById(imageId);
+  // Find and delete the image in one step
+  const image = await Image.findByIdAndDelete(imageId);
   if (!image) return null;
 
-  await Keyword.deleteMany({ imageId });
-  if (image.boardId) await Board.findByIdAndUpdate(image.boardId, { $pull: { images: imageId } });
+  // Delete related keywords and threads in parallel
+  await Promise.all([
+    Keyword.deleteMany({ imageId }),
+    Thread.deleteMany({ imageId }),
+    image.boardId ? Board.findByIdAndUpdate(image.boardId, { $pull: { images: imageId } }) : null,
+    image.url ? deleteS3Image(image.url) : null
+  ]);
 
-  if (image.url) await deleteS3Image(image.url);
-  return await Image.findByIdAndDelete(imageId);
+  return image;
 };
+
 
 const addFeedback = async (imageId, feedbackData) => {
   const updatedImage = await Image.findByIdAndUpdate(

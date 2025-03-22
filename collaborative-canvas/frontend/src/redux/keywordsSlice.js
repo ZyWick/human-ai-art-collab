@@ -12,6 +12,7 @@ const keywordsSlice = createSlice({
   name: "keywords",
   initialState: keywordsAdapter.getInitialState(),
   reducers: {
+    setKeywords: keywordsAdapter.setAll,
     addKeyword: keywordsAdapter.addOne,
     addKeywords: keywordsAdapter.addMany,
     updateKeyword: keywordsAdapter.updateOne,
@@ -77,6 +78,7 @@ const keywordsSlice = createSlice({
 });
 
 export const {
+  setKeywords,
   clearAllVotes,
   addKeyword,
   addKeywords,

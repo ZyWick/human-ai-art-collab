@@ -13,9 +13,9 @@ import { setImages } from "../../redux/imagesSlice";
 import { setSelectedKeywords, setSelectedImage } from "../../redux/selectionSlice";
 import { setBoards } from "../../redux/boardsSlice";
 import { getRoom, getBoard } from "../../util/api";
-import { addKeywordsFromImages, addKeywords } from "../../redux/keywordsSlice";
+import { setKeywords } from "../../redux/keywordsSlice";
 import { resetKeywords } from "../../redux/keywordsSlice";
-import { addThreads } from "../../redux/threadsSlice";
+import { setThreads } from "../../redux/threadsSlice";
 
 const Layout = () => {
   useBoardSocket();
@@ -28,36 +28,18 @@ const Layout = () => {
   
       try {
         // Fetch board and room data in parallel
-        const {board: newBoard, threads: newThreads} = await getBoard(currentBoardId);
-        const roomPromise = newBoard.roomId ? getRoom(newBoard.roomId) : null;
-        const newRoomData = await roomPromise;
-  
-        const processedImages = newBoard.images.map(image => ({
-          ...image,
-          keywords: image.keywords.map(keyword => keyword._id.toString()) // Store only IDs
-        }));
-  
-        // Collect selected keyword IDs
-        const selectedKeywordIds = [
-          ...newBoard.images.flatMap(image =>
-            image.keywords?.filter(k => k.isSelected && k.offsetX !== undefined && k.offsetY !== undefined)
-              .map(k => k._id) || []
-          ),
-          ...newBoard.keywords?.filter(k => k.isSelected).map(k => k._id) || []
-        ];
-  
-        // Batch dispatch calls
+        const {board: newBoard, threads: newThreads,
+          images: newImages, keywords: newKeywords
+        } = await getBoard(currentBoardId);
+        const newRoomData = newBoard.roomId ? await getRoom(newBoard.roomId) : null;
+        const selectedKeywordIds = newKeywords?.filter(k => k.isSelected).map(k => k._id) || [];
+
         dispatch(setSelectedImage(null));
         dispatch(setSelectedKeywords(selectedKeywordIds));
-        dispatch(setImages(processedImages));
-        dispatch(resetKeywords());
-        dispatch(addKeywords(newBoard.keywords));
-        dispatch(addKeywordsFromImages(newBoard.images));
-        dispatch(addThreads(newThreads));
-  
-        if (newRoomData) {
-          dispatch(setBoards(newRoomData.boards));
-        }
+        dispatch(setImages(newImages));
+        dispatch(setKeywords(newKeywords));
+        dispatch(setThreads(newThreads));
+        if (newRoomData) dispatch(setBoards(newRoomData.boards));
   
       } catch (error) {
         console.error("Failed to fetch board:", error);

@@ -11,7 +11,7 @@ import { setSelectedKeyword } from "../../redux/selectionSlice";
 
 import colorMapping from "../../config/keywordTypes";
 import ThreadBubble from "./ThreadBubble";
-import VotingButtons from "../widgets/VotingButtons";
+import VotingButtons from "./VotingButtons";
 import { selectParentThreadsByKeyword } from "../../redux/threadsSlice";
 
 const KeywordComponent = ({

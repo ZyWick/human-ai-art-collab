@@ -59,8 +59,8 @@ module.exports = (io, users) => {
         imageData.width = width;
         imageData.height = height;
 
-        const image = await imageService.createImage(imageData);
-        io.to(user.roomId).emit("newImage", image);
+        const result = await imageService.createImage(imageData);
+        io.to(user.roomId).emit("newImage", result.image);
       } catch (error) {
         console.error("Error adding image:", error);
         socket.emit("error", { message: "Failed to add image" });
@@ -115,29 +115,7 @@ module.exports = (io, users) => {
         const user = users[socket.id];
         if (!user) return;
         const newImage = await imageService.updateImage(updatedImage._id, updatedImage);
-        const populatedImage = await newImage.populate([
-          {
-            path: "parentThreads",
-            model: "Thread",
-            populate: { 
-              path: "children", 
-              model: "Thread" 
-            }, // Populate child threads for images' parentThreads
-          },
-          {
-            path: "keywords",
-            populate: {
-              path: "parentThreads",
-              model: "Thread",
-              populate: { 
-                path: "children", 
-                model: "Thread" 
-              }, // Populate child threads for keywords' parentThreads
-            },
-          }
-        ]);
-        
-        io.to(user.roomId).emit("updateImage", populatedImage);
+        io.to(user.roomId).emit("updateImage", newImage);
       } catch (error) {
         console.error("Error updating image:", error);
         socket.emit("error", { message: "Failed to update image position" });

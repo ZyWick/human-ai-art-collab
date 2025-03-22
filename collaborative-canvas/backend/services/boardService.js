@@ -154,22 +154,20 @@ const cloneBoard = async (boardId) => {
 };
 
 const getBoard = async (boardId) => {
-  const board = await Board.findById(boardId)
-  .populate([
-    {
-      path: "images",
-      populate: {
-        path: "keywords",
-      },
-    },
-    {
-      path: "keywords",
-    },
-  ])
-  .lean();
-  
-  const threads = await Thread.find({ boardId }).sort({ createdAt: 1 }).lean();
-  return { board, threads };
+  // Fetch board details first
+  const board = await Board.findById(boardId).lean();
+  if (!board) {
+    throw new Error("Board not found");
+  }
+
+  // Fetch images, keywords, and threads in parallel
+  const [images, keywords, threads] = await Promise.all([
+    Image.find({ boardId }).lean(),
+    Keyword.find({ boardId }).lean(),
+    Thread.find({ boardId }).sort({ createdAt: 1 }).lean(),
+  ]);
+
+  return { board, images, keywords, threads };
 };
 
 

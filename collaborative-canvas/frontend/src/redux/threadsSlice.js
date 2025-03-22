@@ -9,6 +9,7 @@ const threadsSlice = createSlice({
   name: "threads",
   initialState: threadsAdapter.getInitialState(),
   reducers: {
+    setThreads: threadsAdapter.setAll,
     addThread: threadsAdapter.addOne, // Add a single thread
     addThreads: threadsAdapter.addMany, // Add multiple threads
     updateThread: threadsAdapter.updateOne, // Update a thread
@@ -16,7 +17,7 @@ const threadsSlice = createSlice({
   },
 });
 
-export const { addThread, addThreads, updateThread, removeThread } = threadsSlice.actions;
+export const { setThreads, addThread, addThreads, updateThread, removeThread } = threadsSlice.actions;
 export default threadsSlice.reducer;
 
 // Selectors

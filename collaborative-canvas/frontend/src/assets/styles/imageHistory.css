@@ -1,0 +1,35 @@
+.image-container-all {
+    display: flex;
+    gap: 10px; /* Space between images */
+    flex-wrap: wrap;
+    margin-top: 0;
+    min-width: 600px;
+    flex-wrap: nowrap; 
+    white-space: nowrap;
+  }
+
+  .board-row {
+    display: flex;
+    flex-direction: column; /* Stack board name above images */
+    align-items: flex-start; /* Align title to the left */
+    gap: 10px;
+    width: 100%;
+    margin-right: 20px;
+  }
+  
+  .the-row-image{
+    max-width: 18.5%;
+    flex-shrink: 0;
+    margin-block: 0;
+    width: 100%;
+    object-fit: contain;
+    max-height: 15vh;
+  }
+
+  .row-image:hover {
+    transform: scale(1.05);
+}
+.the-scrollable-container {
+    overflow-y: auto;
+    overflow-x: hidden;
+}

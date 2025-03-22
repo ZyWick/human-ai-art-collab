@@ -57,7 +57,7 @@ const Moodboard = () => {
         value: "",
       });
     },
-    [user]
+    [user, currentBoardId]
   );
 
   const handleStageClick = useCallback(
@@ -217,7 +217,6 @@ const Moodboard = () => {
             padding: "6px 10px",
             margin: "0",
             boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.2)",
-            zIndex: 5,
             zIndex: 5,
             maxWidth: "250px",
             wordWrap: "break-word",

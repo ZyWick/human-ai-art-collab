@@ -8,13 +8,11 @@ import "../../assets/styles/Layout.css";
 import Toolbar from './Toolbar'
 
 import useBoardSocket from "../../hook/useBoardSocket";
-import { setRoomChat, setBoardThreads } from "../../redux/roomSlice";
 import { setImages } from "../../redux/imagesSlice";
 import { setSelectedKeywords, setSelectedImage } from "../../redux/selectionSlice";
 import { setBoards } from "../../redux/boardsSlice";
 import { getRoom, getBoard } from "../../util/api";
 import { setKeywords } from "../../redux/keywordsSlice";
-import { resetKeywords } from "../../redux/keywordsSlice";
 import { setThreads } from "../../redux/threadsSlice";
 
 const Layout = () => {

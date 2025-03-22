@@ -23,17 +23,20 @@ const BoardsPanel = () => {
     [boardData]
   );
 
-  const addNewBoard = () => {
+  const addNewBoard = useCallback(() => {
     const newBoard = {
       name: "Untitled Board",
       roomId: currentRoomId,
       images: [],
       keywords: [],
-      generatedImages: [],
+      parentThreads: [],
+      iterations: [],
       isStarred: false,
+      isVoting: false,
     };
     socket.emit("newBoard", newBoard);
-  };
+  }, [socket, currentRoomId]);
+  
 
   const saveCopy = () => {
     socket.emit("cloneBoard", currentBoardId);

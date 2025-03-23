@@ -150,8 +150,8 @@ module.exports = (io, users) => {
         boardKeywordsCache.set(boardId, newKeywordsSet);
 
         let result = []
-        result = await recommendKeywords(keywords)
-        if (result.length > 0) io.to(user.roomId).emit("recommendFromBoardKw", {boardId, keywords: result});
+        // result = await recommendKeywords(keywords)
+        if (result && result.length > 0) io.to(user.roomId).emit("recommendFromBoardKw", {boardId, keywords: result});
       } catch (error) {
           console.error("Error adding keyword:", error);
           socket.emit("error", { message: "Failed to add note keyword" });
@@ -175,7 +175,7 @@ module.exports = (io, users) => {
         //process kw
         let result = []
         result = await recommendKeywords(keywords)
-        if (result.length > 0) io.to(user.roomId).emit("recommendFromSelectedKw", {boardId, keywords: result});
+        if (result && result.length > 0) io.to(user.roomId).emit("recommendFromSelectedKw", {boardId, keywords: result});
       } catch (error) {
           console.error("Error adding keyword:", error);
           socket.emit("error", { message: "Failed to add note keyword" });
@@ -327,7 +327,7 @@ module.exports = (io, users) => {
         const user = users[socket.id];
         if (!user) return;
         const newBoard = await boardService.toggleStarredBoard(boardId);
-        io.to(user.roomId).emit("starBoard", newBoard);
+        io.to(user.roomId).emit("starBoard", {boardId: newBoard._id, isStarred: newBoard.isStarred});
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });
@@ -339,7 +339,7 @@ module.exports = (io, users) => {
         const user = users[socket.id];
         if (!user) return;
         const newBoard = await boardService.toggleVoting(boardId);
-        io.to(user.roomId).emit("toggleVoting", newBoard);
+        io.to(user.roomId).emit("toggleVoting", {boardId: newBoard._id, isVoting: newBoard.isVoting});
       } catch (error) {
         console.error("Error updating keyword:", error);
         socket.emit("error", { message: "Failed to update keyword position" });
@@ -375,7 +375,6 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        console.log(update)
         const updatedThread = await threadService.updateThreadWithChanges(update);
         io.to(user.roomId).emit("markThreadResolved", {_id: updatedThread._id, 
           isResolved: updatedThread.isResolved});

@@ -16,6 +16,7 @@ export async function extractKeywords (captions) {
 
 export async function recommendKeywords (keywords) {
     try {
+        // filter arrangement
     const inputText = `${recommendKeywordsPrompt}\n\n Here are the original keywords:\n ${keywords.map(c => `- ${c.type}: ${c.keyword}`).join("\n")}`;
     const result = await LLMmodel.generateContent(inputText);
     console.log(result.response.text())

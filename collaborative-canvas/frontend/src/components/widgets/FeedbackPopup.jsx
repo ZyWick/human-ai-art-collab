@@ -1,12 +1,9 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import { timeAgo } from "../../util/time";
-import {
-  selectPopulatedThreadById,
-  updateThread,
-} from "../../redux/threadsSlice";
+import { selectPopulatedThreadById, updateThread } from "../../redux/threadsSlice";
 
 const FeedbackPopup = ({ popupData, onClose }) => {
   const [reply, setReply] = useState("");
@@ -29,30 +26,21 @@ const FeedbackPopup = ({ popupData, onClose }) => {
   };
 
   const handleSave = () => {
-    const update = {
-      id: editingId,
-      changes: { value: editText },
-    };
-
+    const update = { id: editingId, changes: { value: editText } };
     dispatch(updateThread(update));
     socket.emit("editThreadValue", update);
-    setEditingId(null); // Exit edit mode
+    setEditingId(null);
   };
 
-  const onResolve = () => {
-    const update = {
-      id: threadData._id,
-      changes: { isResolved: true },
-    };
-
+  const onResolve = useCallback(() => {
+    const update = { id: threadData._id, changes: { isResolved: true } };
     dispatch(updateThread(update));
     socket.emit("markThreadResolved", update);
-  };
+  }, [dispatch, socket, threadData]);
 
   useEffect(() => {
     if (repliesContainerRef.current) {
-      repliesContainerRef.current.scrollTop =
-        repliesContainerRef.current.scrollHeight;
+      repliesContainerRef.current.scrollTop = repliesContainerRef.current.scrollHeight;
     }
   }, [threadData.children]);
 

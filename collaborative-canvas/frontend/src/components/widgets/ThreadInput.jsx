@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 
 const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
   const inputRef = useRef(null);
 
-  // Auto-focus input when it appears
+  
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -14,10 +14,11 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
       onSubmit();
     }
   };
-  const maxX = window.innerWidth - 240 - 10 - 15;
-  const minY = 40;
-  const adjustedPosition = {x: Math.min(position.x, maxX),
-  y: Math.max(position.y, minY),}
+
+  const adjustedPosition = useMemo(() => ({
+    x: Math.min(position.x, window.innerWidth - 265),
+    y: Math.max(position.y, 40),
+  }), [position]);
   
 
   return (

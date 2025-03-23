@@ -1,19 +1,18 @@
-import React, { } from "react";
+import React from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useSocket } from "../../context/SocketContext";
 import { KeywordButton } from "./KeywordButton";
-import { useSocket } from '../../context/SocketContext'
 import { selectBoardById } from "../../redux/boardsSlice";
-import { updateKeyword } from "../../redux/keywordsSlice";
-import { selectAllKeywords } from "../../redux/keywordsSlice";
+import { updateKeyword, selectAllKeywords } from "../../redux/keywordsSlice";
 
 const MergePanel = () => {
+  const socket = useSocket();
+  const dispatch = useDispatch();
+
   const selectedKeywordIds = useSelector(
     (state) => state.selection.selectedKeywordIds
   );
-  
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
-  const socket = useSocket();
-  const dispatch = useDispatch();
   const keywords = useSelector(selectAllKeywords)  
 
   const selectedBoardKeywords = keywords.filter(
@@ -29,7 +28,6 @@ const MergePanel = () => {
 
   const itLength = currBoard?.iterations?.length ?? 0; // Ensure it's a number
   let currGenerated = undefined; // Declare variable outside if-block
-  
   if (itLength > 0) {
     const latestIteration = currBoard?.iterations[itLength - 1];
     currGenerated = latestIteration?.generatedImages; // Assign inside the block

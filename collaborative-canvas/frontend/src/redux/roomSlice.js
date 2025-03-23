@@ -6,12 +6,9 @@ const roomReducer = createSlice({
     roomId: null,
     roomName: null,
     currentBoardId: null,
-    boardNoteKeywords: [],
     users: [],
-    roomChat: [],
     designDetails: {},
     isAddingComments: false,
-    boardThreads: [],
   },
   reducers: {
     setRoomId: (state, action) => {
@@ -19,9 +16,6 @@ const roomReducer = createSlice({
     },
     setIsAddingComments: (state, action) => {
       state.isAddingComments = action.payload;
-    },
-    setBoardThreads:  (state, action) => {
-      state.boardThreads = action.payload;
     },
     setRoomName: (state, action) => {
       state.roomName = action.payload;
@@ -38,18 +32,6 @@ const roomReducer = createSlice({
     updateDesignDetails: (state, action) => {
       state.designDetails = { ...state.designDetails, ...action.payload};
     },
-    setRoomChat: (state, action) => {
-      state.roomChat = action.payload;
-    },
-    addRoomChatMessage: (state, action) => {
-      state.roomChat.push(action.payload);
-    },
-    clearAllNoteKeywordVotes: (state) => {
-      state.boardNoteKeywords = state.boardNoteKeywords.map(keyword => ({
-        ...keyword,
-        votes: [] // Clear votes for all keywords
-      }));
-    }
   },
 });
 
@@ -60,10 +42,6 @@ export const {
   setUsers,
   setDesignDetails,
   updateDesignDetails,
-  setRoomChat,
-  addRoomChatMessage,
-  clearAllNoteKeywordVotes,
   setIsAddingComments,
-  setBoardThreads
 } = roomReducer.actions;
 export default roomReducer.reducer;

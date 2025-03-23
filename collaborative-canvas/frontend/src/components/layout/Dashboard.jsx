@@ -16,11 +16,10 @@ const Sidebar = () => {
     selectedImageId ? selectImageById(state, selectedImageId) : null
   );
   const designDetails = useSelector((state) => state.room.designDetails);
-  const chatRef = useRef(null);
-  const [isUploadingImg, setIsUploadingImg] = useState(false);
-
   const boardId = useSelector((state) => state.room.currentBoardId);
   const socket = useSocket();
+
+  const [isUploadingImg, setIsUploadingImg] = useState(false);
   
   const isDesignDetailsEmpty = Object.entries(designDetails)
     .filter(([key]) => key !== "others")
@@ -79,7 +78,7 @@ const Sidebar = () => {
               marginTop: "1em",
             }}
           >
-            <DesignDetails chatRef={chatRef} />
+            <DesignDetails />
           </div>
         ))}
       <NoteKeywordInput addKeywordSelection={addKeywordSelection} />

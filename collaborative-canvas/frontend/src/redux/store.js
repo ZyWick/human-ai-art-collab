@@ -6,6 +6,7 @@ import boardsReducer from './boardsSlice'
 import selectionReducer from './selectionSlice'
 import keywordsReducer from './keywordsSlice'
 import threadsReducer from './threadsSlice'
+import logger from "redux-logger";
 
 const store = configureStore({
   reducer: {
@@ -16,6 +17,8 @@ const store = configureStore({
     keywords: keywordsReducer,
     threads: threadsReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(logger)
 });
 
 export default store;

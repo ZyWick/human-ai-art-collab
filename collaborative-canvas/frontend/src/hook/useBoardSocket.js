@@ -151,20 +151,20 @@ const useBoardSocket = () => {
       dispatch(updateDesignDetails(designDetails));
     });
 
-    socket.on("starBoard", (board) => {
+    socket.on("starBoard", ({boardId, isStarred}) => {
       dispatch(
         updateBoard({
-          id: board._id,
-          changes: { isStarred: board.isStarred },
+          id: boardId,
+          changes: { isStarred: isStarred },
         })
       );
     });
 
-    socket.on("toggleVoting", (board) => {
+    socket.on("toggleVoting", ({boardId, isVoting}) => {
       dispatch(
         updateBoard({
-          id: board._id,
-          changes: { isVoting: board.isVoting },
+          id: boardId,
+          changes: { isVoting: isVoting},
         })
       );
     });
@@ -200,7 +200,7 @@ const useBoardSocket = () => {
       dispatch(
         updateKeyword({
           id: _id,
-          changes: { offsetX: undefined, offsetY: undefined },
+          changes: { offsetX: undefined, offsetY: undefined,  isSelected: false, },
         })
       );
     });
@@ -229,15 +229,13 @@ const useBoardSocket = () => {
     socket.on("clearKeywordVotes", (boardId) => {
       if (boardId === currentBoardId) {
         dispatch(clearAllVotes());
-        console.log("done")
       }
     });
 
     socket.on("newKeyword", (newKw) => {
       if (newKw.boardId === currentBoardId) {
         dispatch(addKeyword(newKw));
-        console.log(newKw)
-        dispatch(
+        if(newKw.imageId) dispatch(
           addKeywordToImage({ imageId: newKw.imageId, keywordId: newKw._id })
         );
       }

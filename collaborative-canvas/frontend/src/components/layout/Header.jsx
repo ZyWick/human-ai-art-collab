@@ -9,52 +9,45 @@ import { updateBoard } from "../../redux/boardsSlice";
 import "../../assets/styles/UserAvatars.css";
 
 const Header = () => {
+  const containerRef = useRef();
   const headerRef = useRef();
   const socket = useSocket();
   const dispatch = useDispatch();
   const navigate = useNavigate(); // Hook for navigation
   const { joinCode } = useParams();
-  const { roomName, roomId, currentBoardId } = useSelector(
+  const { roomName, roomId, currentBoardId, users: usernames } = useSelector(
     (state) => state.room
   );
   const currBoard = useSelector((state) =>
     selectBoardById(state, currentBoardId)
   );
-  const boardName = currBoard?.name;
+  
   const [editing, setEditing] = useState({ room: false, board: false });
-  const [tempName, setTempName] = useState({
-    room: roomName,
-    board: boardName,
-  });
+  const [tempName, setTempName] = useState({ room: roomName, board: currBoard?.name });
   const [copied, setCopied] = useState(false);
+  const [visibleUsers, setVisibleUsers] = useState([]);
+  const [hiddenUsers, setHiddenUsers] = useState([]);
 
   useEffect(() => {
-    setTempName({ board: boardName, room: roomName });
-  }, [currentBoardId, boardName, roomName]);
+    setTempName({ room: roomName, board: currBoard?.name });
+  }, [roomName, currBoard]);
 
-  const handleEdit = (field) => {
-    setEditing((prev) => ({ ...prev, [field]: true }));
-  };
 
-  const handleBlur = (field) => {
-    setEditing((prev) => ({ ...prev, [field]: false }));
-
-    let newName = tempName[field].trim();
-    if (!newName) {
-      newName = field === "room" ? "Untitled Room" : "Untitled Board";
-    }
-
-    setTempName((prev) => ({ ...prev, [field]: newName }));
-
-    if (field === "room" && newName !== roomName) {
-      dispatch(setRoomName(newName));
-      socket.emit("updateRoomName", { roomId, roomName: newName });
-    } else if (field === "board" && newName !== boardName) {
-      dispatch(updateBoard({ id: currentBoardId, changes: { name: newName } }));
-      socket.emit("updateBoardName", {
-        boardId: currentBoardId,
-        boardName: newName,
-      });
+  const handleEdit = field => setEditing(prev => ({ ...prev, [field]: true }));
+  
+  const handleBlur = field => {
+    setEditing(prev => ({ ...prev, [field]: false }));
+    let newName = tempName[field].trim() || (field === "room" ? "Untitled Room" : "Untitled Board");
+    
+    setTempName(prev => ({ ...prev, [field]: newName }));
+    if (newName !== (field === "room" ? roomName : currBoard?.name)) {
+      if (field === "room") {
+        dispatch(setRoomName(newName));
+        socket.emit("updateRoomName", { roomId, roomName: newName });
+      } else {
+        dispatch(updateBoard({ id: currentBoardId, changes: { name: newName } }));
+        socket.emit("updateBoardName", { boardId: currentBoardId, boardName: newName });
+      }
     }
   };
 
@@ -72,11 +65,6 @@ const Header = () => {
   const handleBack = () => {
     navigate("/home"); // Navigate back to the home page
   };
-
-  const usernames = useSelector((state) => state.room.users);
-  const containerRef = useRef(null);
-  const [visibleUsers, setVisibleUsers] = useState([]);
-  const [hiddenUsers, setHiddenUsers] = useState([]);
 
   useEffect(() => {
     const resizeHandler = () => {
@@ -229,7 +217,7 @@ const Header = () => {
               style={{ cursor: "pointer", margin: "0" }}
               onClick={() => handleEdit("board")}
             >
-              {boardName}
+              {currBoard?.name}
             </h3>
           )}
         </div>

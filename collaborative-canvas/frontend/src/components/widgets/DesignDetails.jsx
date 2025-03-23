@@ -5,39 +5,19 @@ import { updateDesignDetails } from "../../redux/roomSlice";
 import "../../assets/styles/dashboard.css";
 
 const fields = [
-  {
-    key: "objective",
-    label: "Project Overview",
-    placeholder: "Briefly describe the project.",
-  },
-  {
-    key: "targetAudience",
-    label: "Target Audience",
-    placeholder: "Who is this for, and what are their needs?",
-  },
-  {
-    key: "requirements",
-    label: "Key Requirements",
-    placeholder: "List essential features, elements, or guidelines.",
-  },
-  {
-    key: "constraints",
-    label: "Constraints",
-    placeholder: "What resources should we consider?",
-  },
-  {
-    key: "others",
-    label: "Other Specifications",
-    placeholder: "Any additional considerations?",
-  },
+  { key: "objective", label: "Project Overview", placeholder: "Briefly describe the project." },
+  { key: "targetAudience", label: "Target Audience", placeholder: "Who is this for, and what are their needs?" },
+  { key: "requirements", label: "Key Requirements", placeholder: "List essential features, elements, or guidelines." },
+  { key: "constraints", label: "Constraints", placeholder: "What resources should we consider?" },
+  { key: "others", label: "Other Specifications", placeholder: "Any additional considerations?" },
 ];
 
-const DesignDetails = ({chatRef}) => {
+const DesignDetails = () => {
   const socket = useSocket();
   const dispatch = useDispatch();
   const designDetails = useSelector((state) => state.room.designDetails);
   const [editingField, setEditingField] = useState(null);
-  const textAreaRefs = useRef({}); // Store refs for dynamic resizing
+  const textAreaRefs = useRef({}); 
 
   const handleBlur = (field, value) => {
     if (!value) return;
@@ -60,15 +40,6 @@ const DesignDetails = ({chatRef}) => {
       textArea.style.height = `${textArea.scrollHeight}px`; // Adjust height dynamically
     }
   };
-
-  useEffect(() => {
-    Object.values(textAreaRefs.current).forEach((textArea) => {
-      if (textArea) {
-        textArea.style.height = "auto"; // Reset height
-        textArea.style.height = `${textArea.scrollHeight}px`; // Adjust to fit content
-      }
-    });
-  }, [chatRef])
 
   return (
     <div

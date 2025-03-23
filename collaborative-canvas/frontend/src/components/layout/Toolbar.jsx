@@ -56,7 +56,7 @@ const Toolbar = () => {
     }
   }, [socket, boardId, selectedKeywords, filterdata]);
 
-  const { boardRecommendedKeywords, selectedRecommendedKeywords } = currBoard;
+  const { boardRecommendedKeywords = [], selectedRecommendedKeywords = [] } = currBoard || {};
 
   const addKeywordSelection = useCallback(
     (type, newKeywordText) => {

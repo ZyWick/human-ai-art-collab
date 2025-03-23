@@ -13,18 +13,12 @@ const BoardsPanel = () => {
   const boardData = useSelector(selectAllBoards);
   const [hoveredBoardId, setHoveredBoardId] = useState(null);
 
-  const sortedBoards = useMemo(
-    () =>
-      [...boardData].sort(
-        (a, b) =>
-          b.isStarred - a.isStarred ||
-          new Date(b.updatedAt) - new Date(a.updatedAt)
-      ),
-    [boardData]
-  );
+  const sortedBoards = useMemo(() =>
+    [...boardData].sort((a, b) => b.isStarred - a.isStarred || new Date(b.updatedAt) - new Date(a.updatedAt)),
+  [boardData]);
 
   const addNewBoard = useCallback(() => {
-    const newBoard = {
+    socket.emit("newBoard", {
       name: "Untitled Board",
       roomId: currentRoomId,
       images: [],
@@ -33,39 +27,22 @@ const BoardsPanel = () => {
       iterations: [],
       isStarred: false,
       isVoting: false,
-    };
-    socket.emit("newBoard", newBoard);
+    });
   }, [socket, currentRoomId]);
   
 
-  const saveCopy = () => {
-    socket.emit("cloneBoard", currentBoardId);
-  };
+  const saveCopy = () => socket.emit("cloneBoard", currentBoardId);
+  const loadBoard = useCallback((boardId) => dispatch(setCurrentBoardId(boardId)), [dispatch]);
 
-  const loadBoard = useCallback(
-    (boardId) => {
-      dispatch(setCurrentBoardId(boardId));
-    },
-    [dispatch]
-  );
+  const starBoard = useCallback((boardId, isStarred) => {
+    dispatch(updateBoard({ id: boardId, changes: { isStarred: !isStarred } }));
+    socket.emit("starBoard", boardId);
+  }, [dispatch, socket]);
 
-  const starBoard = useCallback(
-    (boardId, isStarred) => {
-      dispatch(
-        updateBoard({ id: boardId, changes: { isStarred: !isStarred } })
-      );
-      socket.emit("starBoard", boardId);
-    },
-    [dispatch, socket]
-  );
-
-  const deleteBoard = useCallback(
-    (boardId, roomId) => {
-      if (sortedBoards.length === 1) addNewBoard();
-      socket.emit("deleteBoard", boardId, roomId);
-    },
-    [socket, sortedBoards.length, addNewBoard]
-  );
+  const deleteBoard = useCallback((boardId, roomId) => {
+    if (sortedBoards.length === 1) addNewBoard();
+    socket.emit("deleteBoard", boardId, roomId);
+  }, [socket, sortedBoards.length, addNewBoard]);
 
   return (
     <>

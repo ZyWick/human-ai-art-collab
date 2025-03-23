@@ -5,16 +5,14 @@ import {
   setRoomName,
   setCurrentBoardId,
   setDesignDetails,
-  setRoomChat
 } from "../redux/roomSlice";
 import { setBoards } from "../redux/boardsSlice";
 
 const initiateRoom = (roomData, dispatch, navigate) => {
     if (!roomData) return;
   
-    const { _id, name, boards, roomChat, designDetails } = roomData;
+    const { _id, name, boards,  designDetails } = roomData;
     dispatch(setRoomId(_id));
-    dispatch(setRoomChat(roomChat));
     dispatch(setRoomName(name));
     dispatch(setBoards(boards));
     dispatch(setCurrentBoardId(boards?.[boards.length - 1]?._id));

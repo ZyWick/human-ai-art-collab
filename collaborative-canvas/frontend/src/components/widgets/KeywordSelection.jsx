@@ -1,50 +1,49 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSocket } from '../../context/SocketContext';
 import { KeywordButton, KeywordInput } from "./KeywordButton";
 import { calculateNewKeywordPosition } from "../../util/keywordMovement";
 import "../../assets/styles/keywordSelection.css";
-import { selectKeywordsByImage } from "../../redux/keywordsSlice";
-import { updateKeyword } from "../../redux/keywordsSlice";
+import { selectKeywordsByImage, updateKeyword } from "../../redux/keywordsSlice";
 
 const KeywordSelection = ({selectedImage}) => {
   const keywordRefs = useRef({});
   const socket = useSocket();
-  const dispatch =useDispatch();
-   const [likedElementTypes, setLikedElementTypes] = useState({});
-  const [groupedKeywords, setGroupedKeywords] = useState({});
+  const dispatch = useDispatch();
+
+  const [likedElementTypes, setLikedElementTypes] = useState({});
+  // const [groupedKeywords, setGroupedKeywords] = useState({});
   const imageKeywords = useSelector((state) => selectKeywordsByImage(state, selectedImage));
-
-  useEffect(() => {
+  
+  const groupedKeywords = useMemo(() => {
     const requiredTypes = ["Action & pose", "Subject matter", "Theme & mood"];
-    if (imageKeywords) {
-      const grouped = imageKeywords.reduce((acc, keyword) => {
-        acc[keyword.type] = acc[keyword.type] || [];
-        acc[keyword.type].push(keyword);
-        return acc;
-      }, {});
-      requiredTypes.forEach((type) => {
-        if (!grouped[type]) {
-          grouped[type] = [];
-        }
-      });
+    const grouped = (imageKeywords || []).reduce((acc, keyword) => {
+      acc[keyword.type] = acc[keyword.type] || [];
+      acc[keyword.type].push(keyword);
+      return acc;
+    }, {});
 
-      setGroupedKeywords(grouped);
-    }
+    requiredTypes.forEach((type) => {
+      if (!grouped[type]) grouped[type] = [];
+    });
+
+    return grouped;
   }, [imageKeywords]);
 
   useEffect(() => {
-    if (!imageKeywords) return;
+    console.log("Updated imageKeywords:", imageKeywords);
+  }, [imageKeywords]);
   
+
+  useEffect(() => {
+    if (!imageKeywords) return;
     setLikedElementTypes((prev) => {
       const updatedLikes = { ...prev };
-  
       imageKeywords.forEach((keyword) => {
         if (keyword.offsetX !== undefined && keyword.offsetY !== undefined) {
           updatedLikes[keyword.type] = true;
         }
       });
-  
       return updatedLikes;
     });
   }, [imageKeywords]);
@@ -55,37 +54,42 @@ const KeywordSelection = ({selectedImage}) => {
 
   const getRandomPoint = (w, h) => {
     const angle = Math.random() * 2 * Math.PI;
-    const max = Math.max(w, h);
-    const radius = Math.random() * (max - Math.max(w, h)) + Math.max(w, h);
+    const radius = Math.random() * Math.max(w, h);
     return { x: w / 2 + radius * Math.cos(angle), y: h / 2 + radius * Math.sin(angle) };
   };
 
-  const toggleOnBoard = keyword => {
-    let newKeyword = { ...keyword };
-    if ((keyword.offsetX !== undefined && keyword.offsetY !== undefined)) {
+  const toggleOnBoard = (keyword) => {
+    if (keyword.offsetX !== undefined && keyword.offsetY !== undefined) {
       socket.emit("removeKeywordFromBoard", keyword._id);
-    } else {
-      const bbox = keywordRefs.current[keyword._id]?.getBoundingClientRect();
-      const { x, y } = getRandomPoint(selectedImage.width, selectedImage.height);
-      const { offsetX, offsetY } = calculateNewKeywordPosition(x, y, bbox.width, bbox.height, selectedImage.width, selectedImage.height);
-      const update = { id: newKeyword._id, changes: { offsetX: offsetX, offsetY: offsetY } }
-      dispatch(updateKeyword(update));
-      socket.emit("updateKeywordOffset", update);
+      return;
     }
-    setGroupedKeywords(prev => ({
-      ...prev,
-      [newKeyword.type]: prev[newKeyword.type].map(kw => kw._id === newKeyword._id ? newKeyword : kw)
-    }));
+
+    const bbox = keywordRefs.current[keyword._id]?.getBoundingClientRect();
+    const { x, y } = getRandomPoint(selectedImage.width, selectedImage.height);
+    const { offsetX, offsetY } = calculateNewKeywordPosition(
+      x, y, bbox?.width || 50, bbox?.height || 20, 
+      selectedImage.width, selectedImage.height
+    );
+
+    const update = { id: keyword._id, changes: { offsetX, offsetY } };
+    dispatch(updateKeyword(update));
+    socket.emit("updateKeywordOffset", update);
   };
 
-  const deleteCustom = async keyword => {
-    socket.emit("deleteKeyword", {imageId: selectedImage._id, keywordId: keyword._id});
+  const deleteCustom = (keyword) => {
+    socket.emit("deleteKeyword", { imageId: selectedImage._id, keywordId: keyword._id });
   };
 
   const addKeywordSelection = (type, newKeywordText) => {
-    const newKeyword = { boardId: selectedImage.boardId, imageId: selectedImage._id, isCustom: true, type, keyword: newKeywordText };
-    socket.emit("newKeyword", newKeyword);
+    socket.emit("newKeyword", { 
+      boardId: selectedImage.boardId, 
+      imageId: selectedImage._id, 
+      isCustom: true, 
+      type, 
+      keyword: newKeywordText 
+    });
   };
+
   return (
     <>
       

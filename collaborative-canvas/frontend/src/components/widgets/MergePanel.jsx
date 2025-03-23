@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { KeywordButton } from "./KeywordButton";
 import { useSocket } from '../../context/SocketContext'
@@ -12,7 +12,6 @@ const MergePanel = () => {
   );
   
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
-  const keywordRefs = useRef({});
   const socket = useSocket();
   const dispatch = useDispatch();
   const keywords = useSelector(selectAllKeywords)  
@@ -70,9 +69,6 @@ const MergePanel = () => {
           selectedBoardKeywords.map((keyword) => (
             <KeywordButton
               key={keyword._id}
-              ref={(el) => {
-                if (el) keywordRefs.current[keyword._id] = el;
-              }}
               text={keyword.keyword}
               type={keyword.type}
               isSelected={true}

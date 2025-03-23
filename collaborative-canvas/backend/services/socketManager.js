@@ -4,6 +4,7 @@ const boardService = require('./boardService')
 const roomService = require('./roomService')
 const threadService = require('./threadService')
 const { getImageDimensions } = require('../utils/imageProcessor');
+const { recommendKeywords } = require('../utils/llm')
 
 const rooms = {};
 
@@ -15,7 +16,7 @@ module.exports = (io, users) => {
       try {
         socket.join(roomId);
         users[socket.id] = { username, roomId };
-
+        
         if (!rooms[roomId]) rooms[roomId] = [];
         rooms[roomId].push({ id: socket.id, username });
         const currUsers = rooms[roomId].map(user => user.username)
@@ -133,6 +134,54 @@ module.exports = (io, users) => {
           socket.emit("error", { message: "Failed to add note keyword" });
       }
     })
+
+    const boardKeywordsCache = new Map();
+    socket.on("recommendFromBoardKw", async({boardId, keywords}) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+        
+        const newKeywordsSet = new Set(keywords.map(k => `${k.keyword}|${k.type}`));
+        const prevKeywordsSet = boardKeywordsCache.get(boardId);
+        if (prevKeywordsSet && newKeywordsSet.size === prevKeywordsSet.size &&
+            [...newKeywordsSet].every(kw => prevKeywordsSet.has(kw))) {
+            return;
+        }
+        boardKeywordsCache.set(boardId, newKeywordsSet);
+
+        let result = []
+        result = await recommendKeywords(keywords)
+        if (result.length > 0) io.to(user.roomId).emit("recommendFromBoardKw", {boardId, keywords: result});
+      } catch (error) {
+          console.error("Error adding keyword:", error);
+          socket.emit("error", { message: "Failed to add note keyword" });
+      }
+    })
+
+    const selectedKeywordsCache = new Map();
+    socket.on("recommendFromSelectedKw", async({boardId, keywords}) => {
+      try {
+        const user = users[socket.id];
+        if (!user) return;
+
+        const newKeywordsSet = new Set(keywords.map(k => `${k.keyword}|${k.type}`));
+        const prevKeywordsSet = selectedKeywordsCache.get(boardId);
+        if (prevKeywordsSet && newKeywordsSet.size === prevKeywordsSet.size &&
+            [...newKeywordsSet].every(kw => prevKeywordsSet.has(kw))) {
+            return;
+        }
+        selectedKeywordsCache.set(boardId, newKeywordsSet);
+
+        //process kw
+        let result = []
+        result = await recommendKeywords(keywords)
+        if (result.length > 0) io.to(user.roomId).emit("recommendFromSelectedKw", {boardId, keywords: result});
+      } catch (error) {
+          console.error("Error adding keyword:", error);
+          socket.emit("error", { message: "Failed to add note keyword" });
+      }
+    })
+
     socket.on("deleteKeyword", async ({imageId, keywordId}) => {
       try {
         const user = users[socket.id];
@@ -428,7 +477,7 @@ module.exports = (io, users) => {
 
         delete users[socket.id];
         socket.leave(roomId);
-        console.log(`User ${username} left room ${roomId}`);
+        // console.log(`User ${username} left room ${roomId}`);
       } catch (error) {
         console.error("Error leaving room:", error);
       }

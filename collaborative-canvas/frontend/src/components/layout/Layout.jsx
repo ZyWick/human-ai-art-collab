@@ -19,7 +19,7 @@ const Layout = () => {
   useBoardSocket();
   const dispatch = useDispatch();
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
-
+  
   useEffect(() => {
     const fetchBoard = async () => {
       if (!currentBoardId) return;

@@ -65,7 +65,7 @@ const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
     () => currBoard?.iterations?.slice().reverse() || [],
     [currBoard]
   );
-
+  
   return (
     <div
       ref={popupRef}

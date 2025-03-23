@@ -32,6 +32,7 @@ const KeywordButton = forwardRef(
       justifyContent: "center",
       height: "100%",
       transition: "background-color 0.3s, color 0.3s",
+      ...style,
     };
 
     return (

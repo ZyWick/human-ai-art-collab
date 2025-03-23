@@ -42,6 +42,7 @@ const useBoardSocket = () => {
   const { roomId, currentBoardId } = useSelector((state) => state.room);
 
   const { user } = useAuth();
+
   const username = user.username;
   const boards = useSelector(selectAllBoards);
 
@@ -99,6 +100,24 @@ const useBoardSocket = () => {
         updateBoard({
           id: boardId,
           changes: { iterations: newIterations },
+        })
+      );
+    });
+
+    socket.on("recommendFromSelectedKw", ({ boardId, keywords }) => {
+      dispatch(
+        updateBoard({
+          id: boardId,
+          changes: { selectedRecommendedKeywords: keywords },
+        })
+      );
+    });
+
+    socket.on("recommendFromBoardKw", ({ boardId, keywords }) => {
+      dispatch(
+        updateBoard({
+          id: boardId,
+          changes: { boardRecommendedKeywords: keywords },
         })
       );
     });
@@ -217,6 +236,7 @@ const useBoardSocket = () => {
     socket.on("newKeyword", (newKw) => {
       if (newKw.boardId === currentBoardId) {
         dispatch(addKeyword(newKw));
+        console.log(newKw)
         dispatch(
           addKeywordToImage({ imageId: newKw.imageId, keywordId: newKw._id })
         );
@@ -272,6 +292,8 @@ const useBoardSocket = () => {
       socket.off("deleteKeyword");
       socket.off("removeKeywordFromSelected");
       socket.off("toggleSelectedKeyword");
+      socket.off("recommendFromSelectedKw");
+      socket.off("recommendFromBoardKw");
     };
   }, [socket, username, roomId, dispatch, currentBoardId, boards]);
 };

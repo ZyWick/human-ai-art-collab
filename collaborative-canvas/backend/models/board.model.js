@@ -34,9 +34,9 @@ const boardSchema = new mongoose.Schema(
           keyword: { type: String, required: true },
           type: { type: String, required: true }
         },
-        { timestamps: true }
       ]
       },
+      { timestamps: true }
     ],
     isStarred: {
       type: Boolean,

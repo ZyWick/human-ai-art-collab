@@ -143,7 +143,7 @@ const KeywordComponent = ({
     dispatch(updateKeyword(update));
     socket.emit("toggleSelectedKeyword", data._id);
     socket.emit("updateKeywordSelected", update);
-  };
+};
 
   useEffect(() => {
     const deleteKeywordButton = async () => {

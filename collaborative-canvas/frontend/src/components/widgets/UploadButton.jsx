@@ -6,7 +6,7 @@ import { uploadImageApi } from "../../util/api";
 import { setSelectedImage } from "../../redux/selectionSlice";
 import "../../assets/styles/UploadButton.css";
 
-const UploadButton = () => {
+const UploadButton = ({stageRef}) => {
   const [imageUrl, setImageUrl] = useState("");
   const socket = useSocket();
   const dispatch = useDispatch()
@@ -14,10 +14,24 @@ const UploadButton = () => {
 
   const uploadImage = async (newImage) => {
     if (!newImage) return alert("Please select a file!");
+    if (!stageRef.current) return;    
 
     const { file: processedFile, width, height } = await processImage(newImage);
     const segments = await segmentImage(processedFile);
     const formData = new FormData();
+    
+    const stage = stageRef.current.getStage();
+    const stageWidth = stage.width();
+    const stageHeight = stage.height();
+
+    // Generate random coordinates within the stage
+    const randomX = stageWidth * (0.4 + Math.random() * 0.4);
+    const randomY = stageHeight * (0.4+ Math.random() * 0.4);
+    
+    // Convert pointer position to transformed stage coordinates
+    const transform = stage.getAbsoluteTransform().copy();
+    transform.invert();
+    const transformedPos = transform.point({ x: randomX, y: randomY });
 
   segments.forEach((segment) => {
     if (segment.blob instanceof Blob) {
@@ -28,8 +42,8 @@ const UploadButton = () => {
   });
     formData.append("width", width);
     formData.append("height", height);
-    formData.append("x", window.innerWidth * (0.5 + Math.random() * 0.5));
-    formData.append("y", window.innerHeight * (0.5 + Math.random() * 0.5));
+    formData.append("x", transformedPos.x);
+    formData.append("y", transformedPos.y);
 
     const result = await uploadImageApi(formData, socket.id, boardId);
     dispatch(setSelectedImage(result._doc._id))

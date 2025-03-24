@@ -14,8 +14,7 @@ import ThreadInput from "../widgets/ThreadInput";
 import FeedbackPopup from "../widgets/FeedbackPopup";
 import useWindowSize from "../../hook/useWindowSize";
 
-const Moodboard = () => {
-  const stageRef = useRef(null);
+const Moodboard = ({stageRef}) => {
   const tooltipRef = useRef(null);
   const windowSize = useWindowSize();
   const socket = useSocket();
@@ -109,7 +108,7 @@ const Moodboard = () => {
       y: pointer.y - mousePointTo.y * newScale,
     });
     stage.batchDraw();
-  }, []);
+  }, [stageRef]);
 
   useEffect(() => {
     if (!tooltipRef.current || !tooltipData) return;

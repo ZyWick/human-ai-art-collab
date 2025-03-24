@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import DesignDetails from "../widgets/DesignDetails";
 import UploadButton from "../widgets/UploadButton";
@@ -8,7 +8,7 @@ import { selectImageById } from "../../redux/imagesSlice";
 import { NoteKeywordInput } from "../widgets/KeywordButton";
 import { useSocket } from "../../context/SocketContext";
 
-const Sidebar = () => {
+const Sidebar = ({stageRef}) => {
   const selectedImageId = useSelector(
     (state) => state.selection.selectedImageId
   );
@@ -49,6 +49,7 @@ const Sidebar = () => {
     >
       {!isDesignDetailsEmpty ? (
         <UploadButton
+          stageRef={stageRef}
           isUploadingImg={isUploadingImg}
           setIsUploadingImg={setIsUploadingImg}
         />

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import Dashboard from "./Dashboard";
 import OutputHub from "./OutputHub";
@@ -19,7 +19,8 @@ const Layout = () => {
   useBoardSocket();
   const dispatch = useDispatch();
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
-  
+  const stageRef = useRef(null);
+
   useEffect(() => {
     const fetchBoard = async () => {
       if (!currentBoardId) return;
@@ -53,11 +54,11 @@ const Layout = () => {
       <Header />
       <div className="layout-container">
         <div className="sidebar-overlay left">
-          <Dashboard />          
+          <Dashboard stageRef={stageRef}/>          
         </div>  
           <Toolbar />
         <div className="moodboard-container">
-          <Moodboard />
+          <Moodboard stageRef={stageRef}/>
         </div>
          <div className="sidebar-overlay right">
           <OutputHub />

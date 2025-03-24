@@ -1,6 +1,6 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
-import FrontPage from "./pages/FrontPage";
+// import FrontPage from "./pages/FrontPage";
 import HomePage from "./pages/HomePage";
 import RoomPage from "./pages/RoomPage";
 import Register from "./components/auth/Register";
@@ -11,7 +11,7 @@ import PrivateRoute from "./context/AuthRoutes";
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<FrontPage />} />
+      <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/home" element={<PrivateRoute><HomePage /></PrivateRoute>} />

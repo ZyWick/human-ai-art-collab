@@ -71,14 +71,32 @@ app.post("/upload", upload.array("images", 10), async (req, res) => {
           return res.status(400).json({ error: "Expected 10 images (1 full + 9 segments)" });
       }
       const fullImage = req.files[0]
-      const imageCaptions = await Promise.all(
-        req.files.map(async (segment) => {
-          const caption = await getCaption(segment.buffer);
-          return caption ;
-        })
-      );
 
-      const keywords = await extractKeywords(imageCaptions)
+      let imageCaptions = [];
+      try {
+        imageCaptions = await Promise.all(
+          req.files.map(async (segment) => {
+            try {
+              return await getCaption(segment.buffer);
+            } catch (captionError) {
+              console.error("Caption generation failed:", captionError);
+              return null; // Continue even if a caption fails
+            }
+          })
+        );
+      } catch (error) {
+        console.error("Caption processing error:", error);
+        imageCaptions = []; // Fallback to an empty array
+      }
+  
+      let keywords = [];
+      try {
+        keywords = await extractKeywords(imageCaptions.filter(c => c !== null)); // Filter out failed captions
+      } catch (keywordError) {
+        console.error("Keyword extraction failed:", keywordError);
+        keywords = []; // Continue without keywords
+      }
+
       const result = await uploadS3Image(fullImage);
       const user = users[req.headers["socket-id"]];
       const { width, height, x, y } = req.body; 

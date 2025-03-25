@@ -47,41 +47,14 @@ const Sidebar = ({stageRef}) => {
         alignItems: "center",
       }}
     >
-      {!isDesignDetailsEmpty ? (
         <UploadButton
           stageRef={stageRef}
           isUploadingImg={isUploadingImg}
           setIsUploadingImg={setIsUploadingImg}
         />
-      ) : (
-        <p style={{ fontSize: "0.75em", marginBottom: "0" }}>
-          Please complete design brief to add images
-        </p>
-      )}
-      {!isUploadingImg &&
-        (selectedImage ? (
+        {selectedImage && (
           <KeywordSelection selectedImage={selectedImage} />
-        ) : (
-          <div
-            style={{
-              width: "90%",
-              height: "100%",
-              maxHeight: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              alignItems: "center",
-              backgroundColor: "#F5F5F5",
-              overflowY: "auto",
-              borderRadius: "8px",
-              boxShadow: "inset 0px 2px 4px rgba(0, 0, 0, 0.1)",
-              padding: "1em",
-              marginTop: "1em",
-            }}
-          >
-            <DesignDetails />
-          </div>
-        ))}
+        ) }
       <NoteKeywordInput addKeywordSelection={addKeywordSelection} />
     </div>
   );

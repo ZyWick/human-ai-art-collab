@@ -37,7 +37,7 @@ const Layout = () => {
         dispatch(setSelectedKeywords(selectedKeywordIds));
         dispatch(setImages(newImages));
         dispatch(setKeywords(newKeywords));
-        dispatch(setThreads(newThreads));
+        // dispatch(setThreads(newThreads));
         if (newRoomData) dispatch(setBoards(newRoomData.boards));
   
       } catch (error) {

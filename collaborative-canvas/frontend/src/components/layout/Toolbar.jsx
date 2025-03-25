@@ -109,28 +109,6 @@ const Toolbar = () => {
 
       <div className="toolbar" style={{ boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.25)" }}>
         {/* Toolbar Controls */}
-        <div className="toolbar-group" style={{ display: "flex", flexDirection: "column", width: "100px", gap: "8px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-            <button onClick={handleToggleComments} title="Add Comment" className={isAddingComments ? "active" : ""}>
-              🗨️
-            </button>
-            <button
-              onClick={handleToggleIterations}
-              title={showAllIterations ? "Hide Iterations" : "Show Iterations"}
-              className={showAllIterations ? "active" : ""}
-            >
-              {showAllIterations ? "📂" : "📌"}
-            </button>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", paddingLeft: "0.5em", paddingRight: "0.75em", width: "100%" }}>
-            <button onClick={handleToggleVoting} title="Vote" className={isVoting ? "active" : ""}>
-              👍
-            </button>
-            <button className="resetVotesIcon" onClick={handleResetVotes} title="Reset Votes">
-              ↻
-            </button>
-          </div>
-        </div>
 
         <div className="toolbar-group" style={{ maxHeight: "100%", minWidth: "240px", gap: "0.3em", flexDirection: "column"}}>
           <span style={{fontSize: "0.7em", color: "grey"}}>related to your keywords</span>

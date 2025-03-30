@@ -30,9 +30,9 @@ const KeywordSelection = ({selectedImage}) => {
     return grouped;
   }, [imageKeywords]);
 
-  useEffect(() => {
-    console.log("Updated imageKeywords:", imageKeywords);
-  }, [imageKeywords]);
+  // useEffect(() => {
+  //   console.log("Updated imageKeywords:", imageKeywords);
+  // }, [imageKeywords]);
   
 
   useEffect(() => {

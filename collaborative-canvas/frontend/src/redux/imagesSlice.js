@@ -1,72 +1,39 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { createSelector } from '@reduxjs/toolkit';
+import { createSlice, createEntityAdapter } from "@reduxjs/toolkit";
 
+const imagesAdapter = createEntityAdapter({
+    selectId: (image) => image._id.toString(), // Ensures ID is treated as a string
+});
+
+const initialState = imagesAdapter.getInitialState();
 
 const imagesSlice = createSlice({
   name: "images",
-  initialState: [],
+  initialState,
   reducers: {
-    setImages: (state, action) => action.payload,
-    addImage: (state, action) => [...state, action.payload],
-    removeImage: (state, action) =>
-      state.filter((img) => img._id !== action.payload),
-    updateImage: (state, action) => {
-      return state.map((img) =>
-        img._id === action.payload._id ? { ...img, ...action.payload } : img
-      );
-    },
+    setImages: imagesAdapter.setAll,
+    addImage: imagesAdapter.addOne,
+    removeImage: imagesAdapter.removeOne,
+    updateImage: imagesAdapter.updateOne,
     addKeywordToImage: (state, action) => {
       const { imageId, keywordId } = action.payload;
-      const image = state.find((img) => img._id === imageId);
+      const image = state.entities[imageId];
       if (image && !image.keywords.includes(keywordId)) {
-        image.keywords.push(keywordId); // ✅ Add only if not already present
+        image.keywords.push(keywordId);
       }
     },
     removeKeywordFromImage: (state, action) => {
       const { imageId, keywordId } = action.payload;
-      const image = state.find((img) => img._id === imageId);
+      const image = state.entities[imageId];
       if (image) {
-        image.keywords = image.keywords.filter(id => id !== keywordId); // ✅ Remove keywordId
+        image.keywords = image.keywords.filter(id => id !== keywordId);
       }
     },
-    addThreadToImage: (state, action) => {
-      const { imageId, newThread } = action.payload;
-    
-      return state.map((image) => {
-        if (image._id !== imageId) return image; // Skip unrelated images
-    
-        // If `newThread` is a root thread (no parentId), add it to parentThreads
-        if (!newThread.parentId) {
-          return {
-            ...image,
-            parentThreads: [...(image.parentThreads || []), newThread],
-          };
-        }
-    
-        // If `newThread` is a child thread, add it to the correct parent's children
-        return {
-          ...image,
-          parentThreads: (image.parentThreads || []).map((thread) =>
-            thread._id === newThread.parentId
-              ? {
-                  ...thread,
-                  children: [...(thread.children || []), newThread], // Ensure `children` exists
-                }
-              : thread
-          ),
-        };
-      });
-    },    
   },
 });
 
-const selectImages = (state) => state.images;
-
-export const selectImageById = createSelector(
-  [selectImages, (state, imageId) => imageId],
-  (images, imageId) => images.find((image) => image._id === imageId)
+export const { selectAll: selectAllImages, selectById: selectImageById } = imagesAdapter.getSelectors(
+  (state) => state.images
 );
 
-export const { addThreadToImage, addKeywordToImage, removeKeywordFromImage, setImages, addImage, removeImage, updateImage} =
-imagesSlice.actions;
+export const { setImages, addImage, removeImage, updateImage, addKeywordToImage, removeKeywordFromImage } = imagesSlice.actions;
 export default imagesSlice.reducer;

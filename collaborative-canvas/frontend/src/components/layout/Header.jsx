@@ -45,8 +45,9 @@ const Header = () => {
         dispatch(setRoomName(newName));
         socket.emit("updateRoomName", { roomId, roomName: newName });
       } else {
-        dispatch(updateBoard({ id: currentBoardId, changes: { name: newName } }));
-        socket.emit("updateBoardName", { boardId: currentBoardId, boardName: newName });
+        const update = { id: currentBoardId, changes: { name: newName } };
+        dispatch(updateBoard(update));
+        socket.emit("updateBoard", update);
       }
     }
   };
@@ -65,7 +66,7 @@ const Header = () => {
   const handleBack = () => {
     navigate("/home"); // Navigate back to the home page
   };
-
+  
   useEffect(() => {
     const resizeHandler = () => {
       if (!headerRef.current || !containerRef.current) return;

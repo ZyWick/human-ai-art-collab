@@ -6,7 +6,15 @@ import boardsReducer from './boardsSlice'
 import selectionReducer from './selectionSlice'
 import keywordsReducer from './keywordsSlice'
 import threadsReducer from './threadsSlice'
-import logger from "redux-logger";
+// import customLoggerMiddleware from "../util/customLoggerMiddleware";
+// import { keywordLoggerMiddleware } from "../util/customLoggerMiddleware";
+
+const loggerMiddleware = (store) => (next) => (action) => {
+  if (action.meta?.id) {
+    console.log(`[ACTION] ${action.type} by ${action.meta.name} (${action.meta.id})`);
+  }
+  return next(action);
+};
 
 const store = configureStore({
   reducer: {
@@ -18,7 +26,7 @@ const store = configureStore({
     threads: threadsReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(logger)
+    getDefaultMiddleware().concat(loggerMiddleware)
 });
 
 export default store;

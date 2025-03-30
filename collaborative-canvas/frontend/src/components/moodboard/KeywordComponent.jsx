@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Label, Tag, Text, Group } from "react-konva";
 import { calculateNewKeywordPosition } from "../../util/keywordMovement";
 import { selectBoardById } from "../../redux/boardsSlice";
-import { removeKeywordFromSelected } from "../../redux/selectionSlice";
+import { addSelectedKeyword, removeSelectedKeyword } from "../../redux/selectionSlice";
 import { useSocket } from "../../context/SocketContext";
 import { updateKeyword } from "../../redux/keywordsSlice";
 import { selectImageById } from "../../redux/imagesSlice";
@@ -139,9 +139,10 @@ const KeywordComponent = ({
 
   const toggleSelected = (e) => {
     e.cancelBubble = true;
-    const update = { id: data._id, changes: { isSelected: !data.isSelected } };
+    const newIsSelected = !data.isSelected 
+    const update = { id: data._id, changes: { isSelected: newIsSelected } };
     dispatch(updateKeyword(update));
-    socket.emit("toggleSelectedKeyword", data._id);
+    dispatch(newIsSelected ? addSelectedKeyword(data._id) : removeSelectedKeyword(data._id));
     socket.emit("updateKeywordSelected", update);
 };
 
@@ -155,9 +156,7 @@ const KeywordComponent = ({
           });
           // await deleteKeyword(data._id);
         } else {
-          dispatch(removeKeywordFromSelected(data._id));
-          socket.emit("removeKeywordFromSelected", data._id);
-
+          dispatch(removeSelectedKeyword(data._id)); 
           dispatch(
             updateKeyword({
               id: data._id,

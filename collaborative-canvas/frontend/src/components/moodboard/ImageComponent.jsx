@@ -50,9 +50,12 @@ const ImageComponent = ({
 
 
   const handleDrag = (e, action) => {
-    const newImage = { ...imgData, x: e.target.x(), y: e.target.y() };
-    dispatch(updateImage(newImage));
-    socket.emit(action, newImage);
+    const update = {
+      id: imgData._id,
+      changes: {x: e.target.x(), y: e.target.y()},
+    };
+    dispatch(updateImage(update));
+    socket.emit(action, update);
   };
 
   const handleTransform = (action, event) => {
@@ -61,18 +64,20 @@ const ImageComponent = ({
 
     const newWidth = imgData.width * node.scaleX();
     const newHeight = imgData.height * node.scaleY();
-    const newImage = {
-      ...imgData,
-      width: newWidth,
-      height: newHeight,
-      x: node.x(),
-      y: node.y(),
-    };
     node.scaleX(1);
     node.scaleY(1);
 
-    dispatch(updateImage(newImage));
-    socket.emit(action, newImage);
+    const update = {
+      id: imgData._id,
+      changes: {      
+        width: newWidth,
+        height: newHeight,
+        x: node.x(),
+        y: node.y()},
+    };
+
+    dispatch(updateImage(update));
+    socket.emit(action, update);
   };
 
   return image ? (

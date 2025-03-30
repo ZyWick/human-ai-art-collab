@@ -6,6 +6,7 @@ import { useSocket } from "../../context/SocketContext";
 import { selectAllKeywords } from "../../redux/keywordsSlice";
 import { selectBoardThreads } from "../../redux/threadsSlice";
 import { timeAgo } from "../../util/time";
+import { selectAllImages } from "../../redux/imagesSlice";
 
 import ImageComponent from "./ImageComponent";
 import KeywordComponent from "./KeywordComponent";
@@ -20,7 +21,7 @@ const Moodboard = ({stageRef}) => {
   const socket = useSocket();
   const { user } = useAuth();
 
-  const images = useSelector((state) => state.images);
+  const images = useSelector(selectAllImages);
   const keywords = useSelector(selectAllKeywords);
   const isAddingComments = useSelector((state) => state.room.isAddingComments);
   const currentBoardId = useSelector((state) => state.room.currentBoardId);

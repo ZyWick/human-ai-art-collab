@@ -36,44 +36,6 @@ const keywordsSlice = createSlice({
         }
       });
     },    
-    resetKeywords: (state) => {
-      keywordsAdapter.removeAll(state);
-    },
-    
-    addChildToThread: (state, action) => {
-      const { boardId, parentId, newThread } = action.payload;
-
-      return state.map((kw) => {
-        if (kw.boardId === boardId) {
-          return {
-            ...kw,
-            parentThreads: kw.parentThreads.map((thread) => {
-              if (thread._id === parentId) {
-                return {
-                  ...thread,
-                  children: [...thread.children, newThread],
-                };
-              }
-              return thread;
-            }),
-          };
-        }
-        return kw;
-      });
-    },
-    addThreadToKeyword: (state, action) => {
-      const { boardId, newThread } = action.payload;
-
-      return state.map((kw) => {
-        if (kw.boardId === boardId) {
-          return {
-            ...kw,
-            parentThreads: [...kw.parentThreads, newThread],
-          };
-        }
-        return kw;
-      });
-    },
   },
 });
 
@@ -86,7 +48,6 @@ export const {
   removeKeyword,
   removeKeywords,
   addKeywordsFromImages,
-  resetKeywords
 } = keywordsSlice.actions;
 
 export const keywordsSelectors = keywordsAdapter.getSelectors(

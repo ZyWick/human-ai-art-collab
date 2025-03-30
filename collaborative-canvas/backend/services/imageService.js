@@ -72,6 +72,14 @@ const createImage = async (data, extractedKeywords) => {
 const updateImage = async(imageId, updateData) => 
   await Image.findByIdAndUpdate(imageId, updateData, { new: true, runValidators: true });
 
+const updateImageWithChanges = async (update) => {
+  const updatedKeyword = await Image.findByIdAndUpdate(
+    update.id, // MongoDB `_id`
+    { $set: update.changes }, // Fields to update
+    { new: true } // Return the updated document
+  );
+  return updatedKeyword;
+};
 
 /**
  * Deletes an image and its associated keywords.
@@ -104,4 +112,4 @@ const addFeedback = async (imageId, feedbackData) => {
   return updatedImage ? updatedImage.feedback[0] : null;
 };
 
-module.exports = { createImage, updateImage, deleteImage, addFeedback };
+module.exports = { createImage, updateImage, updateImageWithChanges, deleteImage, addFeedback };

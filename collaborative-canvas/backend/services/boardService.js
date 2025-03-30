@@ -193,7 +193,17 @@ const toggleVoting = async (boardId) => {
   );
 };
 
+const updateBoardWithChanges = async (update) => {
+  const updatedKeyword = await Board.findByIdAndUpdate(
+    update.id, // MongoDB `_id`
+    { $set: update.changes }, // Fields to update
+    { new: true } // Return the updated document
+  );
+  return updatedKeyword;
+};
+
 module.exports = {
+  updateBoardWithChanges,
   getBoard,
   createBoard,
   updateBoardName,

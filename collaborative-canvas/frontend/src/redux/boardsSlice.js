@@ -17,23 +17,19 @@ const boardsSlice = createSlice({
     addBoard: boardsAdapter.addOne,
     updateBoard: boardsAdapter.updateOne,
     removeBoard: boardsAdapter.removeOne,
-    removeBoardById: (state, action) => {
-      boardsAdapter.removeOne(state, action.payload); // action.payload should be the board ID
-    },
-    addThreadToBoard: (state, action) => {
-      const { boardId, newThread } = action.payload;
-      console.log("asd")
-      console.log({ boardId, newThread })
-      const board = state.entities[boardId];
-
-      if (board) {
-        board.parentThreads = [...(board.parentThreads || []), newThread];
-      }
-    },
+    updateBoardIterations: (state, action) => {
+      const { id, iteration } = action.payload; // id = board ID, iteration = new object to push
+      console.log({id, iteration})
+      const existingBoard = state.entities[id];
+      if (existingBoard && !existingBoard.iterations.includes(iteration)) {
+        existingBoard.iterations.push(iteration);
+      }      
+    }
+    
   },
 });
 
-export const { addThreadToBoard, setBoards, addBoard, updateBoard, removeBoard, removeBoardById  } = boardsSlice.actions;
+export const { setBoards, addBoard, updateBoard, updateBoardIterations, removeBoard  } = boardsSlice.actions;
 
 // Selectors
 export const {

@@ -4,6 +4,7 @@ import { useSocket } from "../../context/SocketContext";
 import { KeywordButton } from "./KeywordButton";
 import { selectBoardById } from "../../redux/boardsSlice";
 import { updateKeyword, selectAllKeywords } from "../../redux/keywordsSlice";
+import { addSelectedKeyword, removeSelectedKeyword } from "../../redux/selectionSlice";
 
 const MergePanel = () => {
   const socket = useSocket();
@@ -42,11 +43,11 @@ const MergePanel = () => {
   };
 
     const toggleSelected = (keyword) => {
-      const update = { id: keyword._id, changes: { isSelected: !keyword.isSelected } };
+      const newIsSelected = !keyword.isSelected 
+      const update = { id: keyword._id, changes: { isSelected: newIsSelected } };
       dispatch(updateKeyword(update));
-      socket.emit("toggleSelectedKeyword", keyword._id);
+      dispatch(newIsSelected ? addSelectedKeyword(keyword._id) : removeSelectedKeyword(keyword._id));
       socket.emit("updateKeywordSelected", update);
-
     };
 
   return (

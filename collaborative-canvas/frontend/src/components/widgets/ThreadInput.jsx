@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useMemo } from "react";
 const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
   const inputRef = useRef(null);
 
-  
   useEffect(() => {
     inputRef.current?.focus();
   }, []);

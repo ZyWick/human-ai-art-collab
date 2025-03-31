@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from "../../context/SocketContext";
 import {
   selectBoardById,
@@ -17,7 +18,7 @@ import "../../assets/styles/toolbar.css";
 
 const Toolbar = () => {
   const socket = useSocket();
-  const dispatch = useDispatch();
+  const dispatch = useDispatchWithMeta();
 
   const [showAllIterations, setShowAllIterations] = useState(false);
 
@@ -72,17 +73,17 @@ const Toolbar = () => {
   );
 
   const handleResetVotes = useCallback(() => {
-    dispatch(clearAllVotes());
+    dispatch(clearAllVotes, {});
     socket.emit("clearKeywordVotes", boardId);
   }, [dispatch, socket, boardId]);
   
   const handleToggleVoting = useCallback(() => {
-    dispatch(updateBoard({ id: boardId, changes: { isVoting: !isVoting } }));
+    dispatch(updateBoard, { id: boardId, changes: { isVoting: !isVoting } });
     socket.emit("toggleVoting", boardId);
   }, [dispatch, socket, boardId, isVoting]);
   
   const handleToggleComments = useCallback(() => {
-    dispatch(setIsAddingComments(!isAddingComments));
+    dispatch(setIsAddingComments, !isAddingComments);
   }, [dispatch, isAddingComments]);
 
   const handleToggleIterations = useCallback(() => {
@@ -97,7 +98,7 @@ const Toolbar = () => {
           ? boardRecommendedKeywords.filter((k) => k.type !== type || k.keyword !== keyword)
           : selectedRecommendedKeywords.filter((k) => k.type !== type || k.keyword !== keyword);
 
-      dispatch(updateBoard({ id: boardId, changes: { [`${from}RecommendedKeywords`]: updatedKeywords } }));
+      dispatch(updateBoard, { id: boardId, changes: { [`${from}RecommendedKeywords`]: updatedKeywords } });
     },
     [dispatch, boardId, addKeywordSelection, boardRecommendedKeywords, selectedRecommendedKeywords]
   );

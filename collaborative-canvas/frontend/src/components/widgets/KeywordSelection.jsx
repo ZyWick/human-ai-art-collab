@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from '../../context/SocketContext';
 import { KeywordButton, KeywordInput } from "./KeywordButton";
 import { calculateNewKeywordPosition } from "../../util/keywordMovement";
@@ -9,7 +10,7 @@ import { selectKeywordsByImage, updateKeyword } from "../../redux/keywordsSlice"
 const KeywordSelection = ({selectedImage}) => {
   const keywordRefs = useRef({});
   const socket = useSocket();
-  const dispatch = useDispatch();
+  const dispatch = useDispatchWithMeta();
 
   const [likedElementTypes, setLikedElementTypes] = useState({});
   // const [groupedKeywords, setGroupedKeywords] = useState({});
@@ -72,7 +73,7 @@ const KeywordSelection = ({selectedImage}) => {
     );
 
     const update = { id: keyword._id, changes: { offsetX, offsetY } };
-    dispatch(updateKeyword(update));
+    dispatch(updateKeyword, update);
     socket.emit("updateKeywordOffset", update);
   };
 

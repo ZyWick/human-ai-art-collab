@@ -14,8 +14,10 @@ import {
   setCurrentBoardId,
   setRoomName,
   updateDesignDetails,
+  updateDesignDetailsFull
 } from "../redux/roomSlice";
 import {
+  addBoard,
   updateBoard,
   updateBoardIterations,
   removeBoard,
@@ -49,7 +51,7 @@ const useBoardSocket = () => {
         meta: userData,
       });
     },
-    [dispatch] // Dependencies should include dispatch if it's coming from a reducer
+    [dispatch] 
   );  
   
   useEffect(() => {
@@ -60,6 +62,10 @@ const useBoardSocket = () => {
     socket.on("updateRoomUsers", (usernames) => dispatch(setUsers(usernames)));
     socket.on("updateRoomName", ({newRoomName, user}) => dispatchWithMeta(setRoomName, newRoomName, user));
     socket.on("updateDesignDetails", ({designDetails, user}) => dispatchWithMeta(updateDesignDetails, designDetails, user));
+    socket.on("updateDesignDetailsDone", ({designDetails, user}) => {
+      dispatchWithMeta(updateDesignDetails, designDetails, user)
+      dispatchWithMeta(updateDesignDetailsFull, designDetails, user)
+      ;});
 
     socket.on("newImage", ({image, user}) => {
       if (image.boardId === currentBoardId) {
@@ -78,7 +84,7 @@ const useBoardSocket = () => {
       dispatchWithMeta(removeKeywords, keywords, user);
     });
 
-    socket.on("newBoard", ({newBoardId, user}) => dispatchWithMeta(setCurrentBoardId, newBoardId, user));
+    socket.on("newBoard", ({board, user}) => dispatchWithMeta(addBoard, board, user));
     socket.on("updateBoard", ({update, user}) => dispatchWithMeta(updateBoard, update, user));
     socket.on("updateBoardIterations", ({update, user}) => dispatchWithMeta(updateBoardIterations, update, user));
     
@@ -133,6 +139,8 @@ const useBoardSocket = () => {
         dispatchWithMeta(clearAllVotes, {}, user);
       }
     });
+
+    
 
     return () => {
       socket.emit("leave room", { username, roomId });

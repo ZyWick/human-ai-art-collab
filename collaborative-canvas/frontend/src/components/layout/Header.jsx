@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector} from "react-redux";
 import { useParams, useNavigate } from "react-router-dom"; // Import useNavigate
-
+import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { selectBoardById } from "../../redux/boardsSlice";
 import { useSocket } from "../../context/SocketContext";
 import { setRoomName } from "../../redux/roomSlice";
@@ -12,7 +12,7 @@ const Header = () => {
   const containerRef = useRef();
   const headerRef = useRef();
   const socket = useSocket();
-  const dispatch = useDispatch();
+  const dispatch = useDispatchWithMeta();
   const navigate = useNavigate(); // Hook for navigation
   const { joinCode } = useParams();
   const { roomName, roomId, currentBoardId, users: usernames } = useSelector(
@@ -42,11 +42,11 @@ const Header = () => {
     setTempName(prev => ({ ...prev, [field]: newName }));
     if (newName !== (field === "room" ? roomName : currBoard?.name)) {
       if (field === "room") {
-        dispatch(setRoomName(newName));
+        dispatch(setRoomName, newName);
         socket.emit("updateRoomName", { roomId, roomName: newName });
       } else {
         const update = { id: currentBoardId, changes: { name: newName } };
-        dispatch(updateBoard(update));
+        dispatch(updateBoard, update);
         socket.emit("updateBoard", update);
       }
     }

@@ -6,7 +6,7 @@ export const calculateNewKeywordPosition = (
   imageBoundsWidth,
   imageBoundsHeight
 ) => {
-  if (!imageBoundsWidth || !imageBoundsHeight) return { newX, newY };
+  if (!imageBoundsWidth || !imageBoundsHeight) return {offsetX: newX, offsetY: newY };
 
   let maxRadius = Math.max(imageBoundsWidth, imageBoundsHeight) * 1.5;
   let imageCenter = { x: imageBoundsWidth / 2, y: imageBoundsHeight / 2 };

@@ -97,7 +97,7 @@ const KeywordInput = ({ type, addKeywordSelection }) => {
 
 const NoteKeywordInput = ({ addKeywordSelection }) => {
   const [inputValue, setInputValue] = useState("");
-  const typeOptions = ["Subject matter", "Theme & mood", "Action & pose", "Arrangement"];
+  const typeOptions = ["Subject matter", "Theme & mood", "Action & pose"];
   const [selectedType, setSelectedType] = useState(typeOptions[0]);
 
   const handleAdd = () => {

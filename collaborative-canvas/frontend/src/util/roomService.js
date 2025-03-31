@@ -5,6 +5,7 @@ import {
   setRoomName,
   setCurrentBoardId,
   setDesignDetails,
+  setDesignDetailsFull,
 } from "../redux/roomSlice";
 import { setBoards } from "../redux/boardsSlice";
 
@@ -17,6 +18,7 @@ const initiateRoom = (roomData, dispatch, navigate) => {
     dispatch(setBoards(boards));
     dispatch(setCurrentBoardId(boards?.[boards.length - 1]?._id));
     dispatch(setDesignDetails(designDetails));
+    dispatch(setDesignDetailsFull(designDetails));
   
     navigate(`/room/${roomData.joinCode}`);
   };

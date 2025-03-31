@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useState, useRef } from "react";
+import { useSelector } from "react-redux";
+import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from '../../context/SocketContext'
-import { updateDesignDetails } from "../../redux/roomSlice";
+import { updateDesignDetails, updateDesignDetailsFull} from "../../redux/roomSlice";
 import "../../assets/styles/dashboard.css";
 
 const fields = [
@@ -14,7 +15,7 @@ const fields = [
 
 const DesignDetails = () => {
   const socket = useSocket();
-  const dispatch = useDispatch();
+  const dispatch = useDispatchWithMeta();
   const designDetails = useSelector((state) => state.room.designDetails);
   const [editingField, setEditingField] = useState(null);
   const textAreaRefs = useRef({}); 
@@ -22,13 +23,14 @@ const DesignDetails = () => {
   const handleBlur = (field, value) => {
     if (!value) return;
     const newValue = typeof value === "string" ? value.trim() : ""; 
-    dispatch(updateDesignDetails({ [field]: newValue }));
+    dispatch(updateDesignDetails, { [field]: newValue });
+    dispatch(updateDesignDetailsFull, { [field]: newValue });
     socket.emit("updateDesignDetailsDone", { [field]: newValue});
     setEditingField(null);
   };
 
   const handleInputChange = (e, key) => {
-    dispatch(updateDesignDetails({ [key]: e.target.value }));
+    dispatch(updateDesignDetails, { [key]: e.target.value });
     socket.emit("updateDesignDetails", { [key]: e.target.value });
     resizeTextArea(key);
   };

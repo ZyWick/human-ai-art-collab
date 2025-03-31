@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
+import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { Label, Tag, Text, Group } from "react-konva";
 import { calculateNewKeywordPosition } from "../../util/keywordMovement";
 import { selectBoardById } from "../../redux/boardsSlice";
@@ -23,7 +24,7 @@ const KeywordComponent = ({
   handleThreadHover,
 }) => {
   const keywordRef = useRef(null);
-  const dispatch = useDispatch();
+  const dispatch = useDispatchWithMeta();
   const socket = useSocket();
 
   const isAddingComments = useSelector((state) => state.room.isAddingComments);
@@ -46,7 +47,7 @@ const KeywordComponent = ({
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (stageRef.current && e.target === stageRef.current) {
-        dispatch(setSelectedKeyword(null));
+        dispatch(setSelectedKeyword,null);
       }
     };
 
@@ -69,7 +70,7 @@ const KeywordComponent = ({
       handleElementClick(e, { keywordId: data._id });
     } else {
       toggleSelected(e);
-      dispatch(setSelectedKeyword(data._id));
+      dispatch(setSelectedKeyword, data._id);
     }
   };
 
@@ -133,7 +134,7 @@ const KeywordComponent = ({
       changes: newOffset,
     };
 
-    dispatch(updateKeyword(update));
+    dispatch(updateKeyword, update);
     socket.emit(action, update);
   };
 
@@ -141,8 +142,8 @@ const KeywordComponent = ({
     e.cancelBubble = true;
     const newIsSelected = !data.isSelected 
     const update = { id: data._id, changes: { isSelected: newIsSelected } };
-    dispatch(updateKeyword(update));
-    dispatch(newIsSelected ? addSelectedKeyword(data._id) : removeSelectedKeyword(data._id));
+    dispatch(updateKeyword, update);
+    dispatch(newIsSelected ? addSelectedKeyword : removeSelectedKeyword, data._id);
     socket.emit("updateKeywordSelected", update);
 };
 
@@ -154,18 +155,17 @@ const KeywordComponent = ({
             imageId: data.imageId,
             keywordId: data._id,
           });
-          // await deleteKeyword(data._id);
         } else {
-          dispatch(removeSelectedKeyword(data._id)); 
+          dispatch(removeSelectedKeyword,data._id); 
           dispatch(
-            updateKeyword({
+            updateKeyword,{
               id: data._id,
               changes: {
                 offsetX: undefined,
                 offsetY: undefined,
                 isSelected: false,
               },
-            })
+            }
           );
           socket.emit("removeKeywordFromBoard", data._id);
         }

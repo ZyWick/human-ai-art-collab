@@ -6,6 +6,7 @@ export async function processImage(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = URL.createObjectURL(file);
+ 
     img.onload = () => {
       let { width, height } = img;
 

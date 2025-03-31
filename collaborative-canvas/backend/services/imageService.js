@@ -73,12 +73,12 @@ const updateImage = async(imageId, updateData) =>
   await Image.findByIdAndUpdate(imageId, updateData, { new: true, runValidators: true });
 
 const updateImageWithChanges = async (update) => {
-  const updatedKeyword = await Image.findByIdAndUpdate(
+  const updatedImage = await Image.findByIdAndUpdate(
     update.id, // MongoDB `_id`
     { $set: update.changes }, // Fields to update
     { new: true } // Return the updated document
   );
-  return updatedKeyword;
+  return updatedImage;
 };
 
 /**
@@ -103,13 +103,4 @@ const deleteImage = async (imageId) => {
 };
 
 
-const addFeedback = async (imageId, feedbackData) => {
-  const updatedImage = await Image.findByIdAndUpdate(
-    imageId,
-    { $push: { feedback: feedbackData } },
-    { new: true, projection: { feedback: { $slice: -1 } } } // Return only the last added feedback
-  );
-  return updatedImage ? updatedImage.feedback[0] : null;
-};
-
-module.exports = { createImage, updateImage, updateImageWithChanges, deleteImage, addFeedback };
+module.exports = { createImage, updateImage, updateImageWithChanges, deleteImage };

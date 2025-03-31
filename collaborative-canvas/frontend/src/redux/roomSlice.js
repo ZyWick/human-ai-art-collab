@@ -8,6 +8,7 @@ const roomReducer = createSlice({
     currentBoardId: null,
     users: [],
     designDetails: {},
+    designDetailsFull: {},
     isAddingComments: false,
   },
   reducers: {
@@ -29,8 +30,14 @@ const roomReducer = createSlice({
     setDesignDetails: (state, action) => {
       state.designDetails = action.payload;
     },
+    setDesignDetailsFull: (state, action) => {
+      state.designDetailsFull = action.payload;
+    },
     updateDesignDetails: (state, action) => {
       state.designDetails = { ...state.designDetails, ...action.payload};
+    },
+    updateDesignDetailsFull: (state, action) => {
+      state.designDetailsFull = { ...state.designDetails, ...action.payload};
     },
   },
 });
@@ -41,7 +48,9 @@ export const {
   setCurrentBoardId,
   setUsers,
   setDesignDetails,
+  setDesignDetailsFull,
   updateDesignDetails,
+  updateDesignDetailsFull,
   setIsAddingComments,
 } = roomReducer.actions;
 export default roomReducer.reducer;

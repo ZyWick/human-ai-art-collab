@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { useSelector } from "react-redux";
+import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import { timeAgo } from "../../util/time";
@@ -17,7 +18,7 @@ const FeedbackPopup = ({ popupData, onClose }) => {
   const repliesContainerRef = useRef(null);
   const { user } = useAuth();
   const socket = useSocket();
-  const dispatch = useDispatch();
+  const dispatch = useDispatchWithMeta();
   const threadData = useSelector(selectPopulatedThreadById(popupData.threadId));
 
   const handleEditClick = (child) => {
@@ -27,15 +28,15 @@ const FeedbackPopup = ({ popupData, onClose }) => {
 
   const handleSave = () => {
     const update = { id: editingId, changes: { value: editText } };
-    dispatch(updateThread(update));
-    socket.emit("editThreadValue", update);
+    dispatch(updateThread, update);
+    socket.emit("updateThread", update);
     setEditingId(null);
   };
 
   const onResolve = useCallback(() => {
     const update = { id: threadData._id, changes: { isResolved: true } };
-    dispatch(updateThread(update));
-    socket.emit("markThreadResolved", update);
+    dispatch(updateThread, update);
+    socket.emit("updateThread", update);
   }, [dispatch, socket, threadData]);
 
   useEffect(() => {

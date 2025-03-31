@@ -24,11 +24,11 @@ module.exports = (io, users) => {
       try {
         socket.join(roomId);
         users[socket.id] = { username, userId, roomId };
-        console.log(rooms[roomId])
+
         if (!rooms[roomId]) rooms[roomId] = [];
         rooms[roomId].push({ id: socket.id, username, userId });
         const currUsers = rooms[roomId].map(user => user.username)
-        console.log(currUsers)
+
         io.to(roomId).emit("updateRoomUsers", currUsers);
       } catch (error) {
         console.error("Error joining room:", error);
@@ -40,8 +40,8 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        const updatedRoom = await roomService.updateRoomName(roomId, roomName)
-        ioEmitWithUser("updateRoomName", user, {newRoomName: updatedRoom.name});
+        socketEmitWithUser("updateRoomName", user, {newRoomName: roomName});
+        await roomService.updateRoomName(roomId, roomName)
       } catch (error) {
         console.error("Error updating room name:", error);
         socket.emit("error", { message: "Failed to update room name" });
@@ -52,7 +52,7 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        ioEmitWithUser("updateDesignDetails", user,  {designDetails});
+        socketEmitWithUser("updateDesignDetails", user,  {designDetails});
       } catch (error) {
         console.error("Error updating design brief:", error);
         socket.emit("error", { message: "Failed to update design brief" });
@@ -63,8 +63,8 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        ioEmitWithUser("updateDesignDetails", user, {designDetails});
-        const newDesignDetails = await roomService.updateDesignDetailsDb(user.roomId, designDetails);
+        socketEmitWithUser("updateDesignDetailsDone", user, {designDetails});
+        await roomService.updateDesignDetailsDb(user.roomId, designDetails);
       } catch (error) {
         console.error("Error updating design brief:", error);
         socket.emit("error", { message: "Failed to update design brief" });
@@ -93,7 +93,6 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-
         await imageService.deleteImage(_id);
         ioEmitWithUser("deleteImage", user, {_id, keywords});
       } catch (error) {
@@ -124,27 +123,16 @@ module.exports = (io, users) => {
       }
     });
 
-    socket.on("updateImagePosition", async (update) => {
+    socket.on("updateImage", async (update) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        ioEmitWithUser("updateImage", user, {update});
-        await imageService.updateImageWithChanges(update);
+        socketEmitWithUser("updateImage", user, {update});
+        const updateimage = await imageService.updateImageWithChanges(update);
+        console.log("update", updateimage)
       } catch (error) {
         console.error("Error updating image position:", error);
         socket.emit("error", { message: "Failed to update image position" });
-      }
-    });
-
-    socket.on("updateImageDimension", async (update) => {
-      try {
-        const user = users[socket.id];
-        if (!user) return;
-        ioEmitWithUser("updateImage", user, {update});
-        await imageService.updateImageWithChanges(update);
-      } catch (error) {
-        console.error("Error updating image dimension:", error);
-        socket.emit("error", { message: "Failed to update image dimension" });
       }
     });
 
@@ -175,7 +163,7 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        ioEmitWithUser("updateKeyword", user, {update});
+        socketEmitWithUser("updateKeyword", user, {update});
         await keywordService.updateKeywordWithChanges( update);
       } catch (error) {
           console.error("Error updating keyword position:", error);
@@ -199,7 +187,7 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        ioEmitWithUser("removeKeywordOffset", user, {_id: updatedKeywordId});
+        socketEmitWithUser("removeKeywordOffset", user, {_id: updatedKeywordId});
         await keywordService.removeKeywordFromBoard(updatedKeywordId);
      } catch (error) {
         console.error("Error removing keyword from board:", error);
@@ -225,7 +213,7 @@ module.exports = (io, users) => {
         const user = users[socket.id];
         if (!user) return;
         await keywordService.resetVotesForBoard(boardId)
-        ioEmitWithUser("clearKeywordVotes", user, {boardId});
+        socketEmitWithUser("clearKeywordVotes", user, {boardId});
       } catch (error) {
         console.error("Error clearing keyword votes:", error);
         socket.emit("error", { message: "Failed to clear keyword votes" });
@@ -236,7 +224,7 @@ module.exports = (io, users) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        ioEmitWithUser("updateKeywordSelected", user, {update});
+        socketEmitWithUser("updateKeywordSelected", user, {update});
         await keywordService.updateKeywordWithChanges(update);
       } catch (error) {
         console.error("Error updating keyword selected:", error);
@@ -256,36 +244,23 @@ module.exports = (io, users) => {
       }
     })
 
-    socket.on("editThreadValue", async (update) => {
+    socket.on("updateThread", async (update) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        ioEmitWithUser("updateThread", user, {update});
+        socketEmitWithUser("updateThread", user, {update});
         await threadService.updateThreadWithChanges(update);
       } catch (error) {
         console.error("Error editing thread:", error);
         socket.emit("error", { message: "Failed to edit thread" });
       }
     });
-
-    socket.on("markThreadResolved", async (update) => {
-      try {
-        const user = users[socket.id];
-        if (!user) return;
-        ioEmitWithUser("updateThread", user, {update});
-        await threadService.updateThreadWithChanges(update);
-      } catch (error) {
-        console.error("Error resolving thread:", error);
-        socket.emit("error", { message: "Failed to resolve thread" });
-      }
-    });
-
     
     socket.on("updateBoard", async (update) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        ioEmitWithUser("updateBoard", user, {update});
+        socketEmitWithUser("updateBoard", user, {update});
         await boardService.updateBoardWithChanges(update)
       } catch (error) {
         console.error("Error updating board:", error);
@@ -411,7 +386,7 @@ module.exports = (io, users) => {
 
         //process kw
         let result = []
-        result = await recommendKeywords(keywords)
+        // result = await recommendKeywords(keywords)
         if (result && result.length > 0) 
           io.to(user.roomId).emit("updateBoard", {update: {id: boardId,
             changes: { selectedRecommendedKeywords: result }}});
@@ -426,7 +401,7 @@ module.exports = (io, users) => {
         const user = users[socket.id];
         if (!user) return;
         const newBoard = await boardService.createBoard(boardData);
-        ioEmitWithUser("newBoard", user, {newBoardId: newBoard._id});
+        ioEmitWithUser("newBoard", user, {board: newBoard});
       } catch (error) {
         console.error("Error creating new board:", error);
         socket.emit("error", { message: "Failed to create new board" });

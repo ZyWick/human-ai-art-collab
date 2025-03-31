@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback } from "react";
 import { useSocket } from "../../context/SocketContext";
 import { useDispatch, useSelector } from "react-redux";
 import { setCurrentBoardId } from "../../redux/roomSlice";
-import { updateBoard, selectAllBoards } from "../../redux/boardsSlice";
+import { selectAllBoards } from "../../redux/boardsSlice";
 import "../../assets/styles/BoardsList.css";
 
 const BoardsPanel = () => {
@@ -35,9 +35,8 @@ const BoardsPanel = () => {
   const loadBoard = useCallback((boardId) => dispatch(setCurrentBoardId(boardId)), [dispatch]);
 
   const starBoard = useCallback((boardId, isStarred) => {
-    dispatch(updateBoard({ id: boardId, changes: { isStarred: !isStarred } }));
     socket.emit("starBoard", boardId);
-  }, [dispatch, socket]);
+  }, [socket]);
 
   const deleteBoard = useCallback((boardId, roomId) => {
     if (sortedBoards.length === 1) addNewBoard();

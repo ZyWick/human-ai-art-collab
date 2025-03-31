@@ -1,106 +1,74 @@
-export const keywordLoggerMiddleware = (store) => (next) => (action) => {
-    if (action.type === "keywords/updateKeyword") {
-      const state = store.getState();
-      const { id, changes } = action.payload;
-      const keyword = state.keywords.entities[id];
-  
-      if (keyword) {
-        const hasVotesChanged =
-          changes.votes !== undefined && JSON.stringify(changes.votes) !== JSON.stringify(keyword.votes);
-        const hasDownvotesChanged =
-          changes.downvotes !== undefined && JSON.stringify(changes.downvotes) !== JSON.stringify(keyword.downvotes);
-  
-        if (hasVotesChanged || hasDownvotesChanged) {
-          const historyEntry = {
-            timestamp: new Date().toISOString(),
-            votes: hasVotesChanged ? changes.votes : keyword.votes,
-            downvotes: hasDownvotesChanged ? changes.downvotes : keyword.downvotes,
-          };
-  
-          const updatedAction = {
-            ...action,
-            payload: {
-              ...action.payload,
-              changes: {
-                ...changes,
-                history: keyword.history ? [...keyword.history, historyEntry] : [historyEntry],
-              },
-            },
-          };
-  
-          return next(updatedAction);
-        }
-      }
-    }
-  
-    return next(action);
-  };
+// Shared helper functions
+const getActionMeta = (meta) => (meta?.id ? ` by ${meta.name} (${meta.id})` : "");
 
-const customLoggerMiddleware = (store) => (next) => (action) => {
-    const prevState = store.getState();
-    const result = next(action); // Proceed with action
-    const nextState = store.getState();
-  
-    // Extract relevant parts of the state
-    const extractRelevantState = (state) => ({
-      keywords: {
-        isSelected: state.keywords.isSelected,
-        votes: state.keywords.votes,
-        downvotes: state.keywords.downvotes,
-      },
-      threads: {
-        value: state.threads.value,
-        isResolved: state.threads.isResolved,
-      },
-      room: state.room,
-      board: state.board,
-      selection: { selectedKeywordIds: state.selection.selectedKeywordIds },
-    });
-  
-    const prevRelevantState = extractRelevantState(prevState);
-    const nextRelevantState = extractRelevantState(nextState);
-  
-    // Find changes in state with previous values
-    const findStateChanges = (prev, next) => {
-      const changes = {};
-      Object.keys(next).forEach((key) => {
-        if (JSON.stringify(prev[key]) !== JSON.stringify(next[key])) {
-          changes[key] = { previous: prev[key], next: next[key] };
+const areArraysDifferent = (arr1, arr2) =>
+  !Array.isArray(arr1) || !Array.isArray(arr2) ? arr1 !== arr2 :
+  arr1.length !== arr2.length || arr1.some((val, i) => val !== arr2[i]);
+
+const logAction = (type, actionMeta, action, details) => {
+  console.group(`Action: ${type}${actionMeta}`);
+  console.info("Dispatching", action);
+  if (details) console.log(details.label, details.data);
+  console.groupEnd();
+};
+
+// Logger Middleware Generator
+const createLoggerMiddleware = (entity, trackedFields = []) => (store) => (next) => (action) => {
+  const { type, payload, meta } = action;
+  const actionMeta = getActionMeta(meta);
+
+  if (type.startsWith(`${entity}/`)) {
+    if ([`addKeyword`,`removeKeyword`, 
+      `addThread`,`removeThread`, 
+      `addImage`,`removeImage`, 
+      `addBoard`,`removeBoard`, 
+      "clearAllVotes", "updateBoardIterations"].some(suffix => type.endsWith(suffix))) {
+      logAction(type, actionMeta, action, 
+        [`addKeyword`, `addThread`,`addImage`, `addBoard`].some(suffix => type.endsWith(suffix)) ? { label: `New ${entity}:`, data: payload } : type.endsWith("updateBoardIterations") ? { label: `New Iteration:`, data: payload } : null);
+    } else if (["updateKeyword", "updateThread", "updateBoard"].some(suffix => type.endsWith(suffix))) {
+      const { id, changes } = payload;
+      const prevState = store.getState()[entity]?.entities?.[id];
+
+      if (prevState) {
+        const stateChanges = Object.entries(changes)
+          .filter(([key, value]) => trackedFields.includes(key) && areArraysDifferent(prevState[key], value))
+          .reduce((acc, [key, value]) => ({
+            ...acc,
+            [key]: { before: prevState[key], after: value },
+          }), {});
+
+        if (Object.keys(stateChanges).length) {
+          logAction(`${type} [${Object.keys(stateChanges).join(", ")}]`, actionMeta, action, { label: "State Changes:", data: stateChanges });
         }
-      });
-      return changes;
-    };
-  
-    const stateChanges = findStateChanges(prevRelevantState, nextRelevantState);
-  
-    // Track entity additions/removals
-    const entityActions = {
-      "boards/addBoard": "Board Added",
-      "boards/removeBoard": "Board Removed",
-      "keywords/addKeyword": "Keyword Added",
-      "keywords/removeKeyword": "Keyword Removed",
-      "images/addImage": "Image Added",
-      "images/removeImage": "Image Removed",
-      "threads/addThread": "Thread Added",
-    };
-  
-    const entityActionMessage = entityActions[action.type];
-  
-    if (Object.keys(stateChanges).length > 0 || entityActionMessage) {
-      console.group(`Action: ${action.type}`);
-      console.info("Dispatching", action);
-  
-      if (entityActionMessage) {
-        console.log(`🔹 ${entityActionMessage}`);
       }
-      
-      if(Object.keys(stateChanges).length > 0)
-      console.log("State Changes:", stateChanges);
-      console.groupEnd();
     }
-  
-    return result;
-  };
-  
-  export default customLoggerMiddleware;
-  
+  }
+  return next(action);
+};
+
+export const keywordLoggerMiddleware = createLoggerMiddleware("keywords", ["votes", "downvotes", "isSelected"]);
+export const imageLoggerMiddleware = createLoggerMiddleware("images");
+export const threadLoggerMiddleware = createLoggerMiddleware("threads", ["isResolved", "value"]);
+export const boardLoggerMiddleware = createLoggerMiddleware("boards", ["name", "isStarred", "isVoting"]);
+
+// Room Logger Middleware (custom handling due to different state structure)
+export const roomLoggerMiddleware = (store) => (next) => (action) => {
+  const { type, meta } = action;
+  const actionMeta = getActionMeta(meta);
+
+  if (!["socket/updateDesignDetailsFull", "socket/setRoomName"].includes(type)) return next(action);
+
+  const prevState = store.getState().room;
+  const result = next(action);
+  const nextState = store.getState().room;
+
+  if (!prevState || !nextState) return result;
+
+  const trackedFields = ["designDetailsFull", "roomName"];
+  const changes = trackedFields.reduce((acc, key) => (
+    prevState[key] !== nextState[key] ? { ...acc, [key]: { before: prevState[key], after: nextState[key] } } : acc
+  ), {});
+
+  if (Object.keys(changes).length) logAction(type, actionMeta, action, { label: "State Changes:", data: changes });
+  return result;
+};

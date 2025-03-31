@@ -19,7 +19,6 @@ const boardsSlice = createSlice({
     removeBoard: boardsAdapter.removeOne,
     updateBoardIterations: (state, action) => {
       const { id, iteration } = action.payload; // id = board ID, iteration = new object to push
-      console.log({id, iteration})
       const existingBoard = state.entities[id];
       if (existingBoard && !existingBoard.iterations.includes(iteration)) {
         existingBoard.iterations.push(iteration);

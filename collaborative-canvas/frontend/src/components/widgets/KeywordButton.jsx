@@ -13,7 +13,6 @@ const KeywordButton = forwardRef(
       borderRadius: "4px",
       overflow: "hidden",
       fontSize: "14px",
-      fontFamily: "Noto Sans",
       cursor: "pointer",
       transition: "background-color 0.3s, color 0.3s",
       ...style,
@@ -58,6 +57,14 @@ const KeywordButton = forwardRef(
               onDelete();
             }}
             style={{ ...buttonStyle, borderLeft: `1px solid ${isSelected ? "white" : colorMapping[type]}` }}
+            onMouseEnter={(e) => {
+              e.target.style.backgroundColor = colorMapping[type];
+              e.target.style.color = "white";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor = isSelected ? colorMapping[type] : "transparent";
+              e.target.style.color = isSelected ? "white" : colorMapping[type];
+            }}
           >
             ✖
           </button>
@@ -83,11 +90,19 @@ const KeywordInput = ({ type, addKeywordSelection }) => {
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        style={{ border: "none", padding: "8px", fontSize: "14px", fontFamily: "Noto Sans", outline: "none", maxWidth: "5em", flex: 1 }}
+        style={{ border: "none", padding: "8px", fontSize: "14px",  outline: "none", maxWidth: "5em", flex: 1 }}
       />
       <button
         onClick={handleAdd}
-        style={{ backgroundColor: "transparent", color: colorMapping[type], border: "none", borderLeft: `1px solid ${colorMapping[type]}`, padding: "8px 12px", fontSize: "14px", fontFamily: "Noto Sans", cursor: "pointer", transition: "background-color 0.3s" }}
+        style={{ backgroundColor: "transparent", color: colorMapping[type], border: "none", borderLeft: `1px solid ${colorMapping[type]}`, padding: "8px 12px", fontSize: "14px", cursor: "pointer", transition: "background-color 0.3s" }}
+        onMouseEnter={(e) => {
+          e.target.style.backgroundColor = colorMapping[type];
+          e.target.style.color = "white";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.backgroundColor = "transparent";
+          e.target.style.color = colorMapping[type];
+        }}
       >
         +
       </button>
@@ -129,7 +144,7 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
       <select
         value={selectedType}
         onChange={(e) => setSelectedType(e.target.value)}
-        style={{ width: "fit-content", border: "none", padding: "0.5em", marginRight: "0.4em", fontSize: "14px", fontFamily: "Noto Sans", outline: "none", backgroundColor: "white" }}
+        style={{ width: "fit-content", border: "none", padding: "0.5em", marginRight: "0.4em", fontSize: "14px",  outline: "none", backgroundColor: "white" }}
       >
         {typeOptions.map((option) => (
           <option key={option} value={option}>{option}</option>
@@ -139,11 +154,11 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        style={{ border: "none", padding: "8px", fontSize: "14px", fontFamily: "Noto Sans", borderLeft: "0.5px solid black", outline: "none", maxWidth: "5em", flex: 1 }}
+        style={{ border: "none", padding: "8px", fontSize: "14px",  borderLeft: "0.5px solid black", outline: "none", maxWidth: "5em", flex: 1 }}
       />
       <button
         onClick={handleAdd}
-        style={{ backgroundColor: "transparent", border: "none", borderLeft: "0.5px solid black", padding: "8px 12px", fontSize: "14px", fontFamily: "Noto Sans", cursor: "pointer", transition: "background-color 0.3s" }}
+        style={{ backgroundColor: "transparent", border: "none", borderLeft: "0.5px solid black", padding: "8px 12px", fontSize: "14px",  cursor: "pointer", transition: "background-color 0.3s" }}
       >
         +
       </button>

@@ -8,7 +8,6 @@ const colorMapping = {
   "Arrangement": "#EFAB44",
   "Theme & mood": "#ED4C45",
   "Theme & Mood":  "#ED4C45",
-  "Note": "#555555",
 };
 
 export default colorMapping;

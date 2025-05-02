@@ -34,6 +34,7 @@ const KeywordComponent = ({
   const selectedKeywordId = useSelector(
     (state) => state.selection.selectedKeywordId
   );
+  const isClicked = selectedKeywordId? selectedKeywordId === data._id : false;
 
   const kwBoard = useSelector((state) => selectBoardById(state, data.boardId));
   const isVoting = kwBoard.isVoting;
@@ -174,10 +175,9 @@ const KeywordComponent = ({
       }
     };
 
+
     const handleKeyDown = (event) => {
-      const isClicked = selectedKeywordId
-        ? selectedKeywordId === data._id
-        : false;
+      
       if ((event.key === "Delete" || event.key === "Backspace") && isClicked) {
         deleteKeywordButton();
       }
@@ -222,11 +222,11 @@ const KeywordComponent = ({
         hovered={hovered}
         votes={data.votes}
         downvotes={data.downvotes}
-        imageId={data.imageId}
         keywordThreads={keywordThreads}
         handleThreadHover={handleThreadHover}
         handleThreadClick={handleThreadClick}
         setTooltipData={setTooltipData}
+        isClicked={isClicked}
       />
     </>
   ) : null;
@@ -251,11 +251,11 @@ export const KeywordLabel = ({
   downvotes,
   isVoting,
   hovered,
-  imageId,
   keywordThreads,
   handleThreadHover,
   handleThreadClick,
-  setTooltipData
+  setTooltipData,
+  isClicked
 }) => {
   const textRef = useRef();
   const [textWidth, setTextWidth] = useState(0);
@@ -289,16 +289,15 @@ export const KeywordLabel = ({
           stroke={colorMapping[type]}
           cornerRadius={4}
           ref={keywordRef}
-          shadowColor={hovered ? colorMapping[type] : "transparent"}
-          shadowBlur={hovered ? 5 : 0}
-          shadowOpacity={hovered ? 2 : 0}
+          shadowColor={isClicked ? colorMapping[type] : hovered ? colorMapping[type] : "transparent"}
+          shadowBlur={isClicked ? 5 : hovered ? 3 : 0}
+          shadowOpacity={isClicked ? 2 : hovered ? 1 : 0}
         />
         <Text
           ref={textRef}
           text={text}
           name="label-text"
           fontSize={14}
-          fontFamily={"Noto Sans"}
           lineHeight={1}
           padding={8}
           fill={isSelected ? "white" : colorMapping[type]}

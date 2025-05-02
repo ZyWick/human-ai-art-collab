@@ -57,6 +57,14 @@ const BoardsPanel = () => {
           overflowY: "auto" /* Enables vertical scrolling */,
           scrollbarWidth: "none" /* Hide scrollbar for Firefox */,
           msOverflowStyle: "none" /* Hide scrollbar for IE/Edge */,
+          borderRadius: "8px",
+          boxShadow: [
+            "inset 0 4px 6px -4px rgba(0,0,0,0)",
+            "inset 0 -4px 6px -4px rgba(0,0,0,0.2)",
+            "inset 1px 0 2px -1px rgba(0,0,0,0.05)",
+            "inset -1px 0 2px -1px rgba(0,0,0,0.05)"
+            
+          ].join(", "),
         }}
         className="image-container"
       >
@@ -167,14 +175,14 @@ const BoardsPanel = () => {
         )}
       </div>
       <div style={{ width: "100%", marginTop: "auto", marginBottom: "4.5em" }}>
-        <hr
+        {/* <hr
           style={{
             border: "none",
             minHeight: "0.05em",
             backgroundColor: "darkgrey",
             width: "100%",
           }}
-        />
+        /> */}
         <div style={{ display: "flex" }}>
           <button
             style={{

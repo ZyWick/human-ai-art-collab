@@ -6,6 +6,8 @@ import { KeywordButton, KeywordInput } from "./KeywordButton";
 import { calculateNewKeywordPosition } from "../../util/keywordMovement";
 import "../../assets/styles/keywordSelection.css";
 import { selectKeywordsByImage, updateKeyword } from "../../redux/keywordsSlice";
+import { removeSelectedKeyword } from "../../redux/selectionSlice";
+
 
 const KeywordSelection = ({selectedImage}) => {
   const keywordRefs = useRef({});
@@ -61,6 +63,15 @@ const KeywordSelection = ({selectedImage}) => {
 
   const toggleOnBoard = (keyword) => {
     if (keyword.offsetX !== undefined && keyword.offsetY !== undefined) {
+      dispatch(removeSelectedKeyword, keyword._id); 
+      dispatch(updateKeyword, {
+        id: keyword._id,
+        changes: {
+          offsetX: undefined,
+          offsetY: undefined,
+          isSelected: false,
+        },
+      });
       socket.emit("removeKeywordFromBoard", keyword._id);
       return;
     }
@@ -95,7 +106,13 @@ const KeywordSelection = ({selectedImage}) => {
     <>
       
       <img className="image-preview-selection" alt="" src={selectedImage?.url} />
-      <hr className="divider" />
+      <div className="shadow-container" 
+      style={{height: "100%", marginTop: "1em", paddingTop: "1em",
+        width: "100%",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+      }}>
       <div className="keyword-container">
         <h3 className="keyword-title">Why do you like this image?</h3>
         <p className="keyword-subtitle">Choose keywords that you like.</p>
@@ -162,16 +179,7 @@ const KeywordSelection = ({selectedImage}) => {
               /></div>
               </div>}
       </div>
-      <hr
-          style={{
-            marginTop: "8px",
-            marginBottom: "0",
-            border: "none",
-            minHeight: "0.05em",
-            backgroundColor: "darkgrey",
-            width: "100%",
-          }}
-        />
+      </div>
     </>
   );
 };

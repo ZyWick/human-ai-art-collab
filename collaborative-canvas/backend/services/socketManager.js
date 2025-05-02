@@ -128,8 +128,7 @@ module.exports = (io, users) => {
         const user = users[socket.id];
         if (!user) return;
         socketEmitWithUser("updateImage", user, {update});
-        const updateimage = await imageService.updateImageWithChanges(update);
-        console.log("update", updateimage)
+        await imageService.updateImageWithChanges(update);
       } catch (error) {
         console.error("Error updating image position:", error);
         socket.emit("error", { message: "Failed to update image position" });

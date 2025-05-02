@@ -84,21 +84,11 @@ const MergePanel = () => {
         )}
       </div>
 
-      {/* Divider */}
-      <hr
-        style={{
-          border: "none",
-          height: "0.05em",
-          backgroundColor: "darkgrey",
-          width: "100%",
-          marginTop: "0.85em",
-          marginBottom: "0.25em",
-        }}
-      />
-
       {/* Image Container - Takes Up Remaining Space */}
       <div
         style={{
+          marginTop: "1em",
+          paddingTop: "1em",
           flex: 1 /* Allows it to grow and fill remaining space */,
           display: "flex",
           flexDirection: "column",
@@ -109,6 +99,15 @@ const MergePanel = () => {
           overflowY: "auto" /* Enables vertical scrolling */,
           scrollbarWidth: "none" /* Hide scrollbar for Firefox */,
           msOverflowStyle: "none" /* Hide scrollbar for IE/Edge */,
+          
+          borderRadius: "8px",
+          boxShadow: [
+            "inset 0 4px 6px -4px rgba(0,0,0,0.2)",
+            "inset 0 -4px 6px -4px rgba(0,0,0,0.2)",
+            "inset 1px 0 2px -1px rgba(0,0,0,0.01)",
+            "inset -1px 0 2px -1px rgba(0,0,0,0.01)"
+            
+          ].join(", "),
         }}
         className="image-container"
       >
@@ -146,7 +145,7 @@ const MergePanel = () => {
               ></div>
             ))}
       </div>
-
+          {/* </div> */}
       {/* Hide scrollbar for Webkit browsers (Chrome, Safari) */}
       <style>
         {`
@@ -158,14 +157,14 @@ const MergePanel = () => {
 
       {/* Bottom Section with Generate Button */}
       <div style={{ width: "100%", marginTop: "auto", marginBottom: "4.5em" }}>
-        <hr
+        {/* <hr
           style={{
             border: "none",
             minHeight: "0.05em",
             backgroundColor: "darkgrey",
             width: "100%",
           }}
-        />
+        /> */}
         <button
           style={{
             border: "none",
@@ -180,7 +179,7 @@ const MergePanel = () => {
           }}
           onClick={generateImage}
           onMouseEnter={(e) => {
-            e.target.style.background = "rgba(169, 169, 169, 0.15)";
+            e.target.style.background = "rgba(92, 84, 84, 0.15)";
             e.target.style.color = "black";
           }}
           onMouseLeave={(e) => {

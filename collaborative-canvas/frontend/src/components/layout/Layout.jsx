@@ -56,7 +56,7 @@ const Layout = () => {
         <div className="sidebar-overlay left">
           <Dashboard stageRef={stageRef}/>          
         </div>  
-          <Toolbar />
+          <Toolbar stageRef={stageRef}/>
         <div className="moodboard-container">
           <Moodboard stageRef={stageRef}/>
         </div>

@@ -71,10 +71,17 @@ const Sidebar = ({stageRef}) => {
               flexDirection: "column",
               justifyContent: "space-between",
               alignItems: "center",
-              backgroundColor: "#F5F5F5",
+              backgroundColor: "white",
               overflowY: "auto",
               borderRadius: "8px",
-              boxShadow: "inset 0px 2px 4px rgba(0, 0, 0, 0.1)",
+              boxShadow: [
+                "inset 0 4px 6px -4px rgba(0,0,0,0.2)",
+                "inset 0 -4px 6px -4px rgba(0,0,0,0.2)",
+                "inset 1px 0 2px -1px rgba(0,0,0,0.05)",
+                "inset -1px 0 2px -1px rgba(0,0,0,0.05)"
+                
+              ].join(", "),
+              // boxShadow: "inset 0px 2px 4px rgba(0, 0, 0, 0.1)",
               padding: "1em",
               marginTop: "1em",
             }}

@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from "react";
+import Konva from "konva";
 import { useSelector } from "react-redux";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from "../../context/SocketContext";
@@ -16,7 +17,7 @@ import IterationsPopup from "../widgets/IterationsPopup";
 import "../../assets/styles/toolbar.css";
 
 
-const Toolbar = () => {
+const Toolbar = ({stageRef}) => {
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
 
@@ -30,6 +31,16 @@ const Toolbar = () => {
     (state) => state.selection.selectedKeywordIds
   );
   const keywords = useSelector(selectAllKeywords) 
+
+  const handleBackToOrigin = () => {
+    const stage = stageRef.current;
+    stage.to({
+      x: 0,
+      y: 0,
+      duration: 0.5,
+      easing: Konva.Easings.EaseInOut,
+    });
+  };
 
   const boardKeywords = useMemo(
     () => keywords.filter((kw) => kw.offsetX !== undefined && kw.offsetY !== undefined),
@@ -110,20 +121,38 @@ const Toolbar = () => {
 
       <div className="toolbar" style={{ boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.25)" }}>
         {/* Toolbar Controls */}
-        <div className="toolbar-group" style={{ display: "flex", flexDirection: "column", width: "100px", gap: "8px" }}>
+        <div className="toolbar-group" style={{ display: "flex", flexDirection: "column", width: "130px", gap: "0px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-            <button onClick={handleToggleComments} title="Add Comment" className={isAddingComments ? "active" : ""}>
-              🗨️
+          
+          <button
+            onClick={handleBackToOrigin}
+            title="Back to Origin"
+            style={{
+              paddingTop: '12px',
+              paddingInline: "7px",
+              margin: "0",
+            }}
+          >
+            <img src="/icons/crosshair.svg" alt="Back to Origin" width="30" height="30" />
+          </button>
+              <button onClick={handleToggleComments} title="Add Comment" 
+              className={isAddingComments ? "active" : ""}
+              style={{
+                paddingTop: '12px',
+              }}
+              >
+              <img src="/icons/sticky-notes.svg" alt="Add Comment" width="20" height="20" />
             </button>
             <button
               onClick={handleToggleIterations}
               title={showAllIterations ? "Hide Iterations" : "Show Iterations"}
               className={showAllIterations ? "active" : ""}
             >
-              {showAllIterations ? "📂" : "📌"}
+              {/* {showAllIterations ? "📂" : "📂"} */}
+              📂
             </button>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", paddingLeft: "0.5em", paddingRight: "0.75em", width: "100%" }}>
+          <div style={{ display: "flex", justifyContent: "center", paddingLeft: "0.5em", paddingRight: "0.75em", width: "100%" }}>
             <button onClick={handleToggleVoting} title="Vote" className={isVoting ? "active" : ""}>
               👍
             </button>

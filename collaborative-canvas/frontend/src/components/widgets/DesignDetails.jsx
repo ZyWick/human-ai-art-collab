@@ -49,11 +49,8 @@ const DesignDetails = () => {
       style={{
         display: "grid",
         gap: "1.5rem",
-        // flexGrow: "2",
-        // flexShrink: "1",
         width: "100%",
         maxHeight: "70%",
-        // height: "100%"
       }}
     >
       {fields.map(({ key, label, placeholder }) => (

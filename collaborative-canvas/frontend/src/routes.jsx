@@ -11,7 +11,7 @@ import PrivateRoute from "./context/AuthRoutes";
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<PrivateRoute><HomePage /></PrivateRoute>} />
       <Route path="/register" element={<Register />} />
       <Route path="/login" element={<Login />} />
       <Route path="/home" element={<PrivateRoute><HomePage /></PrivateRoute>} />

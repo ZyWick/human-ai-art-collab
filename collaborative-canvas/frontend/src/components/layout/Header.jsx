@@ -78,7 +78,7 @@ const Header = () => {
         containerRef.current.getBoundingClientRect().width * 0.03;
       const fitCount = Math.floor(
         (headerWidth * 0.3 -
-          (usernames.length * totalAvatarWidth > headerWidth * 0.3
+          (usernames?.length * totalAvatarWidth > headerWidth * 0.3
             ? totalAvatarWidth
             : 0)) /
           totalAvatarWidth

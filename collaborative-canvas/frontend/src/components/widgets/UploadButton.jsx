@@ -6,12 +6,39 @@ import { uploadImageApi } from "../../util/api";
 import { setSelectedImage } from "../../redux/selectionSlice";
 import "../../assets/styles/UploadButton.css";
 
+function ProgressBar({ uploadProgress }) {
+  if(!uploadProgress) return;
+  return (<div style={{width: "100%", height: "1.1em"}}>
+    <p
+    style= {{
+      color: "rgb(68,68,68)",
+      marginTop: "6px",
+      marginBottom: "1px",
+      fontSize: "10px",
+      textAlign: "left",
+      whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    }}
+    >{uploadProgress.fileName}</p>
+    <div style={{
+      width: '100%',
+      height: '2px',
+    }}>
+      <div style={{ height: '100%',
+      backgroundColor: '#007bff',
+      transition: 'width 0.3s ease-in-out', width: `${uploadProgress.progress}%` }} />
+    </div></div>
+  );
+}
+
 const UploadButton = ({stageRef}) => {
   const [imageUrl, setImageUrl] = useState("");
   const socket = useSocket();
   const dispatch = useDispatch()
   const boardId = useSelector((state) => state.room.currentBoardId);
-
+  const uploadProgressEs = useSelector((state) => state.room.uploadProgressEs);
+  
   const uploadImage = async (newImage) => {
     if (!newImage) return alert("Please select a file!");
     if (!stageRef.current) return;    
@@ -46,7 +73,7 @@ const UploadButton = ({stageRef}) => {
     formData.append("y", transformedPos.y);
 
     const result = await uploadImageApi(formData, socket.id, boardId);
-    dispatch(setSelectedImage(result._doc._id))
+    dispatch(setSelectedImage(result.image._id))
   };
 
   const uploadImageUrl = async () => {
@@ -61,9 +88,9 @@ const UploadButton = ({stageRef}) => {
     socket.emit("newImage", newImage);
     setImageUrl("");
   };
-
+  
   return (
-    <div className="upload-container">
+    <div className="upload-container" style= {{maxHeight: "10.25%"}}>
       {/* <input
         type="text"
         value={imageUrl}
@@ -87,7 +114,17 @@ const UploadButton = ({stageRef}) => {
         className="file-input"
         onChange={(e) => uploadImage(e.target.files[0])}
       />
-    </div>
+    
+      {uploadProgressEs && uploadProgressEs?.length>0 && 
+      
+      <div className="scrollable-container"
+      style={{width: "100%",}}>
+      {uploadProgressEs.map(
+        (uploadProgress) => (<ProgressBar uploadProgress={uploadProgress} />))}
+      </div>
+        }
+        
+        </div>
   );
 };
 

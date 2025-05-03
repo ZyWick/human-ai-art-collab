@@ -10,6 +10,7 @@ const roomReducer = createSlice({
     designDetails: {},
     designDetailsFull: {},
     isAddingComments: false,
+    uploadProgressEs: [],
   },
   reducers: {
     setRoomId: (state, action) => {
@@ -26,6 +27,24 @@ const roomReducer = createSlice({
     },
     setUsers: (state, action) => {
       state.users = action.payload;
+    },
+    // 1) create a new slot with both values
+    addUploadProgress: (state, action) => {
+      const { uploadId, fileName } = action.payload;
+      state.uploadProgressEs.push({ uploadId, fileName, progress: 0 });
+    },
+    // 2) afterwards only ever update the progress
+    updateUploadProgress: (state, action) => {
+      const { uploadId, progress } = action.payload;
+      const upload = state.uploadProgressEs.find(item => item.uploadId === uploadId);
+      if (upload) {
+        upload.progress = progress;
+      }
+    },
+    // 3) remove an existing upload progress entry
+    removeUploadProgress: (state, action) => {
+      const { uploadId } = action.payload;
+      state.uploadProgressEs = state.uploadProgressEs.filter(item => item.uploadId !== uploadId);
     },
     setDesignDetails: (state, action) => {
       state.designDetails = action.payload;
@@ -52,5 +71,8 @@ export const {
   updateDesignDetails,
   updateDesignDetailsFull,
   setIsAddingComments,
+  addUploadProgress,
+  updateUploadProgress,
+  removeUploadProgress,
 } = roomReducer.actions;
 export default roomReducer.reducer;

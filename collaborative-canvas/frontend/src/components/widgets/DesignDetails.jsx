@@ -50,7 +50,7 @@ const DesignDetails = () => {
         display: "grid",
         gap: "1.5rem",
         width: "100%",
-        maxHeight: "70%",
+        height: "100%",
       }}
     >
       {fields.map(({ key, label, placeholder }) => (

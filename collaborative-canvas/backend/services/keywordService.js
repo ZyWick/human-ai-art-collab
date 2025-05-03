@@ -22,6 +22,64 @@ const createKeyword = async (data) => {
   return keyword;
 };
 
+
+/**
+ * Generates keywords for an image (Placeholder, replace with actual implementation).
+ * @param {Object} image - The image document.
+ * @returns {Promise<Array>} Array of keyword objects.
+ */
+const generateKeywordsForImage = async (image, extractedKeywords) => {
+  const keywordObjects = [];
+
+  if (extractedKeywords && typeof extractedKeywords === "object") {
+    Object.entries(extractedKeywords).forEach(([category, keywords]) => {
+      if (Array.isArray(keywords) && keywords.length) {
+        keywords.forEach(keyword => {
+          if (keyword) { // Ensure keyword is valid
+            keywordObjects.push({
+              boardId: image.boardId,
+              imageId: image._id,
+              isSelected: false,
+              isCustom: false,
+              type: category,
+              keyword: keyword.trim() // Remove extra spaces
+            });
+          }
+        });
+      }
+    });
+  }
+
+  // Always include "Arrangement" keyword, even if extractedKeywords is empty
+  // keywordObjects.push({
+  //   boardId: image.boardId,
+  //   imageId: image._id,
+  //   isSelected: false,
+  //   isCustom: false,
+  //   type: "Arrangement",
+  //   keyword: "Arrangement"
+  // });
+
+  return keywordObjects;
+};
+
+
+const addKeywordsToImage = async (imageId, extractedKeywords) => {
+  const image = await Image.findById(imageId);
+  if (!image) throw new Error("Image not found");
+
+  const keywordsData = await generateKeywordsForImage(image, extractedKeywords);
+  let insertedKeywords = [];
+
+  if (keywordsData.length) {
+    insertedKeywords = await Keyword.insertMany(keywordsData);
+    image.keywords = insertedKeywords.map(k => k._id);
+    await image.save();
+  }
+
+  return insertedKeywords;
+};
+
 const updateKeywordWithChanges = async (update) => {
     const updatedKeyword = await Keyword.findByIdAndUpdate(
       update.id, // MongoDB `_id`
@@ -140,6 +198,7 @@ const resetVotesForBoard = async (boardId) => {
 module.exports = {
   getKeyword,
   createKeyword,
+  addKeywordsToImage,
   // updateKeyword,
   removeKeywordFromBoard,
   toggleKeywordSelection,

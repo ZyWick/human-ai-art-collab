@@ -139,6 +139,7 @@ const cloneBoard = async (boardId) => {
     images: clonedImages.filter(Boolean),
     keywords: clonedBoardKeywords.filter(Boolean),
     name: newBoardName, // Incremental name
+    isStarred: false,
     createdAt: new Date(), // Set to now
     updatedAt: new Date(), // Set to now
   });

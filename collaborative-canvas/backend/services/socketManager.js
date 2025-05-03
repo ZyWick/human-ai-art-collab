@@ -5,11 +5,10 @@ const roomService = require('./roomService')
 const threadService = require('./threadService')
 const { recommendKeywords } = require('../utils/llm')
 
-module.exports = (io, users) => {
+module.exports = (io, users, rooms) => {
   io.on("connection", (socket) => {
     console.log(`User connected: ${socket.id}`);
     
-    const rooms = {};
     const ioEmitWithUser = (event, user, data = {}) => {
       if (!socket || !user) return;
       io.to(user.roomId).emit(event, { ...data, user: { id: user.userId, name: user.username } });
@@ -24,7 +23,7 @@ module.exports = (io, users) => {
       try {
         socket.join(roomId);
         users[socket.id] = { username, userId, roomId };
-
+        
         if (!rooms[roomId]) rooms[roomId] = [];
         rooms[roomId].push({ id: socket.id, username, userId });
         const currUsers = rooms[roomId].map(user => user.username)
@@ -311,7 +310,7 @@ module.exports = (io, users) => {
         if (!user) return;
 
         const newBoard = await boardService.cloneBoard(boardId);
-        ioEmitWithUser("newBoard", user, {newBoardId: newBoard._id});
+        ioEmitWithUser("newBoard", user, {board: newBoard});
       } catch (error) {
         console.error("Error duplicating board:", error);
         socket.emit("error", { message: "Failed to duplicate board" });

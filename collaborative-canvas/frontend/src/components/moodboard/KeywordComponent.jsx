@@ -187,7 +187,7 @@ const KeywordComponent = ({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [selectedKeywordId, dispatch, data._id, data, socket]);
+  }, [selectedKeywordId, dispatch, data._id, data, socket, isClicked]);
 
   return data.offsetX !== undefined && data.offsetY !== undefined ? (
     <>

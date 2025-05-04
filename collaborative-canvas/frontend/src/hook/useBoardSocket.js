@@ -29,7 +29,7 @@ import {
 import { addSelectedKeyword, removeSelectedKeyword } from "../redux/selectionSlice";
 import {
   addKeyword,
-  addKeywords,
+  // addKeywords,
   removeKeyword,
   removeKeywords,
   updateKeyword,
@@ -194,7 +194,7 @@ const useBoardSocket = () => {
           socket.off(evt);
         });
       };
-    }, [socket, dispatchWithMeta]);
+    }, [socket, dispatchWithMeta, dispatch]);
   
   };
   

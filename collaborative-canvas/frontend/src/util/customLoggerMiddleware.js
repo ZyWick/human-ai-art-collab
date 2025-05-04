@@ -31,7 +31,14 @@ const createLoggerMiddleware = (entity, trackedFields = []) => (store) => (next)
 
       if (prevState) {
         const stateChanges = Object.entries(changes)
-          .filter(([key, value]) => trackedFields.includes(key) && areArraysDifferent(prevState[key], value))
+          .filter(([key, value]) =>
+            trackedFields.includes(key) &&
+            areArraysDifferent(prevState[key], value) &&
+            !(
+              (key === "offsetX" || key === "offsetY") &&
+              (value === undefined)
+            )
+          )
           .reduce((acc, [key, value]) => ({
             ...acc,
             [key]: { before: prevState[key], after: value },
@@ -46,7 +53,7 @@ const createLoggerMiddleware = (entity, trackedFields = []) => (store) => (next)
   return next(action);
 };
 
-export const keywordLoggerMiddleware = createLoggerMiddleware("keywords", ["votes", "downvotes", "isSelected"]);
+export const keywordLoggerMiddleware = createLoggerMiddleware("keywords", ["votes", "downvotes", "isSelected", "offsetX", "offsetY"]);
 export const imageLoggerMiddleware = createLoggerMiddleware("images");
 export const threadLoggerMiddleware = createLoggerMiddleware("threads", ["isResolved", "value"]);
 export const boardLoggerMiddleware = createLoggerMiddleware("boards", ["name", "isStarred", "isVoting"]);

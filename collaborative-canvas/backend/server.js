@@ -26,7 +26,7 @@ const allowedOrigins = [
 ];
 
 const upload = multer({
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max file size
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max file size
   storage: multer.memoryStorage(), // Store file in memory for processing
   fileFilter: (req, file, cb) => {
     if (!file.mimetype.startsWith("image/")) {
@@ -57,8 +57,9 @@ mongoose.connect(process.env.MONGO_URI)
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 let users = [];
-let rooms = {};
-socketManager(io, users, rooms);
+let rooms = [];
+let boardKWCache = [], boardSKWCache = [];
+socketManager(io, users, rooms, boardKWCache, boardSKWCache);
 
 // Routes
 app.use('/boards', boardRoutes);
@@ -148,26 +149,28 @@ app.post("/upload", upload.array("images", 10), async (req, res) => {
 
 const generateKeywords = async (imageId, roomId, files, socketId, uploadId) => {
   const captions = await Promise.all(
-    files.map((segment, idx) => {
-      getCaption(segment.buffer).catch((err) => {
+    files.map(async (segment, idx) => {
+      try {
+        const caption = await getCaption(segment.buffer);
+        return caption;
+      } catch (err) {
         console.error(`Caption generation failed for segment #${idx}:`, err);
         return null;
-      })
-      io.to(socketId).emit("updateUploadProgress", {
+      } finally {
+        io.to(socketId).emit("updateUploadProgress", {
         uploadId,
-        progress: 20 +  5 * idx,
-      });
-    }
-    )
-    
+        progress: 20 + 5 * idx,
+        });
+      }
+    })
   );
-  const validCaptions = captions.filter((c) => c != null);
-  console.log(validCaptions)
+  const Caption = captions.filter((c) => c != null);
+
    // 2b) Extract keywords (tolerate failure)
    let keywords = [];
-   if (validCaptions.length) {
+   if (Caption.length) {
      try {
-       keywords = await extractKeywords(validCaptions);
+       keywords = await extractKeywords(JSON.stringify({Caption}, null, 2));
      } catch (err) {
        console.error("Keyword extraction failed:", err);
        // leave keywords = []
@@ -176,7 +179,7 @@ const generateKeywords = async (imageId, roomId, files, socketId, uploadId) => {
 
     // 2c) Insert keywords & link to image (tolerate DB failure)
   let newKeywords = [];
-  if (keywords.length) {
+  if (keywords && typeof keywords === 'object') {
     try {
       newKeywords = await keywordService.addKeywordsToImage(imageId, keywords);
     } catch (err) {

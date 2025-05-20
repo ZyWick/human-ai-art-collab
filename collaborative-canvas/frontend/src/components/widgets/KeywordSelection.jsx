@@ -13,7 +13,6 @@ const KeywordSelection = ({selectedImage}) => {
   const keywordRefs = useRef({});
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
-
   const [likedElementTypes, setLikedElementTypes] = useState({});
   // const [groupedKeywords, setGroupedKeywords] = useState({});
   const imageKeywords = useSelector((state) => selectKeywordsByImage(state, selectedImage));
@@ -107,8 +106,9 @@ const KeywordSelection = ({selectedImage}) => {
       
       <img className="image-preview-selection" alt="" src={selectedImage?.url} />
       <div className="shadow-container" 
-      style={{height: "100%", marginTop: "1em", paddingTop: "1em",
+      style={{height: "40.5%", marginTop: "1em", paddingTop: "1em",
         width: "100%",
+        flex: "1",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -118,7 +118,7 @@ const KeywordSelection = ({selectedImage}) => {
         <p className="keyword-subtitle">Choose keywords that you like.</p>
       </div>
       
-      <div className="image-container">
+      <div className="image-container scrollable-container">
       {Object.entries(groupedKeywords)
     .filter(([type]) => type !== "Arrangement") // Exclude "Arrangement" here
     .map(([type, keywords]) => (

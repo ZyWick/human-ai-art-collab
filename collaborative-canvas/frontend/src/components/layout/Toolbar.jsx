@@ -1,7 +1,10 @@
-import React, { useState, useCallback, useMemo, useEffect } from "react";
+import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import Konva from "konva";
+import { debounce,  } from 'lodash';
+import _ from 'lodash';
 import { useSelector } from "react-redux";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
+import useRandomStageCoordinates from "../../hook/useRandomStageCoordinates";
 import { useSocket } from "../../context/SocketContext";
 import {
   selectBoardById,
@@ -16,10 +19,41 @@ import { KeywordButton } from "../widgets/KeywordButton";
 import IterationsPopup from "../widgets/IterationsPopup";
 import "../../assets/styles/toolbar.css";
 
+const DEBOUNCE_DELAY = 2500
+const summarizeKeywords = (list) =>
+  _.sortBy(
+    list
+      .filter(({ offsetX, offsetY }) => offsetX !== undefined && offsetY !== undefined)
+      .map(({ _id, keyword, type, votes = [], downvotes = [] }) => ({
+        _id,
+        keyword,
+        type,
+        votes: votes.length - downvotes.length,
+      })),
+    "_id"
+  );
+
+const normalizeType = (type) => {
+  const map = {
+    "subject matter": "Subject matter",
+    "action & pose": "Action & pose",
+    "theme & mood": "Theme & mood",
+  };
+  return map[type.trim().toLowerCase()];
+};
+
+const usePrevious = (value) => {
+  const ref = useRef();
+  useEffect(() => {
+    ref.current = value;
+  }, [value]);
+  return ref.current;
+};
 
 const Toolbar = ({stageRef}) => {
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
+  const getRandomCoordinates = useRandomStageCoordinates(stageRef);
 
   const [showAllIterations, setShowAllIterations] = useState(false);
 
@@ -30,7 +64,9 @@ const Toolbar = ({stageRef}) => {
   const selectedKeywordIds = useSelector(
     (state) => state.selection.selectedKeywordIds
   );
+  const designDetails = useSelector((state) => state.room.designDetails);
   const keywords = useSelector(selectAllKeywords) 
+  
 
   const handleBackToOrigin = () => {
     const stage = stageRef.current;
@@ -42,45 +78,82 @@ const Toolbar = ({stageRef}) => {
     });
   };
 
-  const boardKeywords = useMemo(
-    () => keywords.filter((kw) => kw.offsetX !== undefined && kw.offsetY !== undefined),
-    [keywords]
+  const processKeywords = useCallback((keywords, brief) => {
+    const result = {
+      "Subject matter": {},
+      "Action & pose": {},
+      "Theme & mood": {},
+      "Brief": brief,
+    };
+    
+    keywords.forEach(({ type, keyword, votes }) => {
+      const normalized = normalizeType(type);
+      if (normalized) {
+        result[normalized][keyword.trim()] = votes;
+      }
+    });
+
+    return result;
+  }, []);
+
+  const debouncedEmitBoardKw = useMemo(() =>
+    debounce((keywords) => {
+      const data = processKeywords(keywords, designDetails.objective);
+      socket.emit("recommendFromBoardKw", { boardId, data });
+    }, DEBOUNCE_DELAY),
+    [socket, boardId, designDetails.objective, processKeywords]
   );
-  const selectedKeywords = useMemo(
-    () => keywords.filter((kw) => selectedKeywordIds.includes(kw._id) && kw.offsetX !== undefined && kw.offsetY !== undefined),
-    [keywords, selectedKeywordIds]
-  );
-  
-  const filterdata = useCallback(
-    (metadataArray) => metadataArray.map(({ keyword, type }) => ({ keyword, type })),
-    []
+
+  const debouncedEmitSelectedKw = useMemo(() =>
+    debounce((keywords) => {
+      const data = processKeywords(keywords, designDetails.objective);
+      socket.emit("recommendFromSelectedKw", { boardId, data });
+    }, DEBOUNCE_DELAY),
+    [socket, boardId, designDetails.objective, processKeywords]
   );
 
   useEffect(() => {
-    if (boardKeywords.length) {
-      socket.emit("recommendFromBoardKw", { boardId, keywords: filterdata(boardKeywords) });
-    }
-  }, [socket, boardId, boardKeywords, filterdata]);
+    return () => {
+      debouncedEmitBoardKw.cancel();
+      debouncedEmitSelectedKw.cancel();
+    };
+  }, [debouncedEmitBoardKw, debouncedEmitSelectedKw]);
+
+  // Board keywords effect
+  const summarizedKeywords = summarizeKeywords(keywords);
+  const prevBoard = usePrevious(summarizedKeywords);
 
   useEffect(() => {
-    if (selectedKeywords.length) {
-      socket.emit("recommendFromSelectedKw", { boardId, keywords: filterdata(selectedKeywords) });
+    if (!_.isEqual(prevBoard, summarizedKeywords)) {
+      // debouncedEmitBoardKw(summarizedKeywords);
     }
-  }, [socket, boardId, selectedKeywords, filterdata]);
+  }, [summarizedKeywords, prevBoard, debouncedEmitBoardKw]);
 
-  const { boardRecommendedKeywords = [], selectedRecommendedKeywords = [] } = currBoard || {};
+  // Selected keywords effect
+  const selectedSummarized = summarizeKeywords(
+    keywords.filter((kw) => selectedKeywordIds.includes(kw._id))
+  );
+  const prevSelected = usePrevious(selectedSummarized);
+ 
+  useEffect(() => {
+    if (!_.isEqual(prevSelected, selectedSummarized)) {
+      debouncedEmitSelectedKw(selectedSummarized);
+    }
+  }, [selectedSummarized, prevSelected, debouncedEmitSelectedKw]);
+
 
   const addKeywordSelection = useCallback(
     (type, newKeywordText) => {
+      const { x, y } = getRandomCoordinates();
       socket.emit("newKeyword", {
         boardId,
         type,
         keyword: newKeywordText,
-        offsetX: window.innerWidth * (0.5 + Math.random() * 0.5),
-        offsetY: window.innerHeight * (0.5 + Math.random() * 0.5),
+        offsetX: x,
+        offsetY: y,
       });
     },
-    [boardId, socket]
+    [boardId, socket, getRandomCoordinates]
   );
 
   const handleResetVotes = useCallback(() => {
@@ -101,18 +174,28 @@ const Toolbar = ({stageRef}) => {
     setShowAllIterations((prev) => !prev);
   }, []);
 
-  const handleClickRecomKw = useCallback(
-    (from, keyword, type) => {
-      addKeywordSelection(type, keyword);
-      const updatedKeywords =
-        from === "board"
-          ? boardRecommendedKeywords.filter((k) => k.type !== type || k.keyword !== keyword)
-          : selectedRecommendedKeywords.filter((k) => k.type !== type || k.keyword !== keyword);
+  let { boardRecommendedKeywords = [], selectedRecommendedKeywords = [] } = currBoard || {};
 
-      dispatch(updateBoard, { id: boardId, changes: { [`${from}RecommendedKeywords`]: updatedKeywords } });
-    },
-    [dispatch, boardId, addKeywordSelection, boardRecommendedKeywords, selectedRecommendedKeywords]
-  );
+  const handleClickRecomKw = useCallback(
+  (from, keyword, type) => {
+    addKeywordSelection(type, keyword);
+
+    const sourceKeywords =
+      from === "board" ? boardRecommendedKeywords : selectedRecommendedKeywords;
+
+    const updatedKeywords = {
+      ...sourceKeywords,
+      [type]: sourceKeywords[type]?.filter(k => k !== keyword) || []
+    };
+
+    dispatch(updateBoard, {
+      id: boardId,
+      changes: { [`${from}RecommendedKeywords`]: updatedKeywords }
+    });
+  },
+  [dispatch, boardId, addKeywordSelection, boardRecommendedKeywords, selectedRecommendedKeywords]
+);
+
 
   return (
     <>
@@ -177,20 +260,22 @@ const Toolbar = ({stageRef}) => {
           fontSize: "20px",
         }}
       >
-        {boardRecommendedKeywords && boardRecommendedKeywords.length > 0 &&
-          boardRecommendedKeywords.map((keyword, i) => (
-            <KeywordButton
-            style={{fontSize: "12px"}}
-              key={i}
-              text={keyword.keyword}
-              type={keyword.type}
-              isSelected={false}
-              onClick={() => {
-                handleClickRecomKw ("board", keyword.keyword, keyword.type)
-              }}
-            />
-          ))
-        }
+        {boardRecommendedKeywords &&
+  Object.entries(boardRecommendedKeywords).map(([type, keywords]) =>
+    keywords.map((keyword, i) => (
+      <KeywordButton
+        key={`${type}-${i}`}
+        style={{ fontSize: "12px" }}
+        text={keyword}
+        type={type}
+        isSelected={false}
+        onClick={() => {
+          handleClickRecomKw("board", keyword, type);
+        }}
+      />
+    ))
+  )}
+        
       </div>
         </div>
 
@@ -210,20 +295,22 @@ const Toolbar = ({stageRef}) => {
           fontSize: "20px",
         }}
       >
-        {selectedRecommendedKeywords && selectedRecommendedKeywords.length > 0 &&
-          selectedRecommendedKeywords.map((keyword, i) => (
-            <KeywordButton
-            style={{fontSize: "12px"}}
-              key={i}
-              text={keyword.keyword}
-              type={keyword.type}
-              isSelected={false}
-              onClick={() => {
-                handleClickRecomKw ("selected", keyword.keyword, keyword.type)
-              }}
-            />
-          ))
-        }
+{selectedRecommendedKeywords &&
+  Object.entries(selectedRecommendedKeywords).map(([type, keywords]) =>
+    keywords.map((keyword, i) => (
+      <KeywordButton
+        key={`${type}-${i}`}
+        style={{ fontSize: "12px" }}
+        text={keyword}
+        type={type}
+        isSelected={false}
+        onClick={() => {
+          handleClickRecomKw("selected", keyword, type);
+        }}
+      />
+    ))
+  )}
+
       </div>
         </div>
 

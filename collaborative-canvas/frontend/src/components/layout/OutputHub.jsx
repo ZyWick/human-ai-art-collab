@@ -16,7 +16,7 @@ const OutputHub = () => {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        height: "100vh" /* Ensures full viewport height */,
+        height: "100%" /* Ensures full viewport height */,
       }}
     >
        <nav style={{ display: "flex", gap: "1rem", padding: "0.55em", paddingBottom: "1.25em" }}>

@@ -5,25 +5,28 @@ import { useSocket } from "../../context/SocketContext";
 import { KeywordButton } from "./KeywordButton";
 import { selectBoardById } from "../../redux/boardsSlice";
 import { updateKeyword, selectAllKeywords } from "../../redux/keywordsSlice";
-import { addSelectedKeyword, removeSelectedKeyword } from "../../redux/selectionSlice";
+import {
+  addSelectedKeyword,
+  removeSelectedKeyword,
+} from "../../redux/selectionSlice";
 
 const MergePanel = () => {
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
-
+  const users = useSelector((state) => state.room.users);
   const selectedKeywordIds = useSelector(
     (state) => state.selection.selectedKeywordIds
   );
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
-  const keywords = useSelector(selectAllKeywords)  
+  const keywords = useSelector(selectAllKeywords);
 
-  const selectedBoardKeywords = keywords.filter(
+  const selectedBoardKeywords = keywords
+    .filter(
       (keyword) =>
         keyword.offsetX !== undefined && keyword.offsetY !== undefined
-    ).filter((keyword) =>
-    selectedKeywordIds.includes(keyword._id)
-  );
-  
+    )
+    .filter((keyword) => selectedKeywordIds.includes(keyword._id));
+
   const currBoard = useSelector((state) =>
     selectBoardById(state, currentBoardId)
   );
@@ -33,23 +36,34 @@ const MergePanel = () => {
   if (itLength > 0) {
     const latestIteration = currBoard?.iterations[itLength - 1];
     currGenerated = latestIteration?.generatedImages; // Assign inside the block
-  }  
+  }
 
-  const filterdata = (metadataArray) => 
-    metadataArray.map(({ keyword, type }) => ({ keyword, type }));
+  const filterData = (metadataArray) =>
+    metadataArray.map(({ keyword, type, votes, downvotes }) => ({
+      keyword,
+      type,
+      netVotes: votes.length - downvotes.length,
+    }));
 
   const generateImage = () => {
     if (selectedBoardKeywords?.length > 0)
-    socket.emit("generateNewImage", {boardId: currentBoardId, keywords:  filterdata(selectedBoardKeywords)});
+      socket.emit("generateNewImage", {
+        boardId: currentBoardId,
+        keywords: filterData(selectedBoardKeywords),
+        totalUsers: users.length,
+      });
   };
 
-    const toggleSelected = (keyword) => {
-      const newIsSelected = !keyword.isSelected 
-      const update = { id: keyword._id, changes: { isSelected: newIsSelected } };
-      dispatch(updateKeyword, update);
-      dispatch(newIsSelected ? addSelectedKeyword : removeSelectedKeyword, keyword._id);
-      socket.emit("updateKeywordSelected", update);
-    };
+  const toggleSelected = (keyword) => {
+    const newIsSelected = !keyword.isSelected;
+    const update = { id: keyword._id, changes: { isSelected: newIsSelected } };
+    dispatch(updateKeyword, update);
+    dispatch(
+      newIsSelected ? addSelectedKeyword : removeSelectedKeyword,
+      keyword._id
+    );
+    socket.emit("updateKeywordSelected", update);
+  };
 
   return (
     <>
@@ -99,14 +113,13 @@ const MergePanel = () => {
           overflowY: "auto" /* Enables vertical scrolling */,
           scrollbarWidth: "none" /* Hide scrollbar for Firefox */,
           msOverflowStyle: "none" /* Hide scrollbar for IE/Edge */,
-          
+
           borderRadius: "8px",
           boxShadow: [
             "inset 0 4px 6px -4px rgba(0,0,0,0.2)",
             "inset 0 -4px 6px -4px rgba(0,0,0,0.2)",
             "inset 1px 0 2px -1px rgba(0,0,0,0.01)",
-            "inset -1px 0 2px -1px rgba(0,0,0,0.01)"
-            
+            "inset -1px 0 2px -1px rgba(0,0,0,0.01)",
           ].join(", "),
         }}
         className="image-container"
@@ -145,7 +158,7 @@ const MergePanel = () => {
               ></div>
             ))}
       </div>
-          {/* </div> */}
+      {/* </div> */}
       {/* Hide scrollbar for Webkit browsers (Chrome, Safari) */}
       <style>
         {`

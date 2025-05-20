@@ -18,10 +18,10 @@ const RoomSchema = new mongoose.Schema(
     },
     designDetails: {
       objective: { type: String, default: "" },
-      targetAudience: { type: String, default: "" },
-      requirements: { type: String, default: "" },
-      constraints: { type: String, default: "" },
-      others: { type: String, default: "" },
+      // targetAudience: { type: String, default: "" },
+      // requirements: { type: String, default: "" },
+      // constraints: { type: String, default: "" },
+      // others: { type: String, default: "" },
     },
   },
   { timestamps: true }

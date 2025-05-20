@@ -4,6 +4,7 @@ import { useSocket } from '../../context/SocketContext'
 import { processImage, segmentImage } from "../../util/processImage";
 import { uploadImageApi } from "../../util/api";
 import { setSelectedImage } from "../../redux/selectionSlice";
+import useRandomStageCoordinates from "../../hook/useRandomStageCoordinates";
 import "../../assets/styles/UploadButton.css";
 
 function ProgressBar({ uploadProgress }) {
@@ -36,6 +37,7 @@ const UploadButton = ({stageRef}) => {
   const [imageUrl, setImageUrl] = useState("");
   const socket = useSocket();
   const dispatch = useDispatch()
+  const getRandomCoordinates = useRandomStageCoordinates(stageRef);
   const boardId = useSelector((state) => state.room.currentBoardId);
   const uploadProgressEs = useSelector((state) => state.room.uploadProgressEs);
   
@@ -47,19 +49,8 @@ const UploadButton = ({stageRef}) => {
     const segments = await segmentImage(processedFile);
     const formData = new FormData();
     
-    const stage = stageRef.current.getStage();
-    const stageWidth = stage.width();
-    const stageHeight = stage.height();
-
-    // Generate random coordinates within the stage
-    const randomX = stageWidth * (0.4 + Math.random() * 0.4);
-    const randomY = stageHeight * (0.4+ Math.random() * 0.4);
+    const { x, y } = getRandomCoordinates();
     
-    // Convert pointer position to transformed stage coordinates
-    const transform = stage.getAbsoluteTransform().copy();
-    transform.invert();
-    const transformedPos = transform.point({ x: randomX, y: randomY });
-
   segments.forEach((segment) => {
     if (segment.blob instanceof Blob) {
       formData.append("images", new File([segment.blob], segment.name, { type: "image/webp" }));
@@ -69,8 +60,8 @@ const UploadButton = ({stageRef}) => {
   });
     formData.append("width", width);
     formData.append("height", height);
-    formData.append("x", transformedPos.x);
-    formData.append("y", transformedPos.y);
+    formData.append("x", x);
+    formData.append("y", y);
 
     const result = await uploadImageApi(formData, socket.id, boardId);
     dispatch(setSelectedImage(result.image._id))

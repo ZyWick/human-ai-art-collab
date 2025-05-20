@@ -34,9 +34,9 @@ const createLoggerMiddleware = (entity, trackedFields = []) => (store) => (next)
           .filter(([key, value]) =>
             trackedFields.includes(key) &&
             areArraysDifferent(prevState[key], value) &&
-            !(
-              (key === "offsetX" || key === "offsetY") &&
-              (value === undefined)
+            (
+              (key !== "offsetX" && key !== "offsetY") || 
+              ((prevState[key] === undefined) !== (value === undefined))
             )
           )
           .reduce((acc, [key, value]) => ({

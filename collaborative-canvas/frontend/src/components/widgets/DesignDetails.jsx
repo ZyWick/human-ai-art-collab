@@ -6,11 +6,7 @@ import { updateDesignDetails, updateDesignDetailsFull} from "../../redux/roomSli
 import "../../assets/styles/dashboard.css";
 
 const fields = [
-  { key: "objective", label: "Project Overview", placeholder: "Briefly describe the project." },
-  { key: "targetAudience", label: "Target Audience", placeholder: "Who is this for, and what are their needs?" },
-  { key: "requirements", label: "Key Requirements", placeholder: "List essential features, elements, or guidelines." },
-  { key: "constraints", label: "Constraints", placeholder: "What resources should we consider?" },
-  { key: "others", label: "Other Specifications", placeholder: "Any additional considerations?" },
+  { key: "objective", label: "Design brief", placeholder: "Briefly describe the project." },
 ];
 
 const DesignDetails = () => {
@@ -56,7 +52,7 @@ const DesignDetails = () => {
       {fields.map(({ key, label, placeholder }) => (
         <div key={key} style={{ display: "flex", flexDirection: "column" }}>
           <label
-            style={{ fontSize: "0.9em", fontWeight: "bold", color: "#444" }}
+            style={{ fontSize: "0.9em", fontWeight: "bold", color: "#444", marginBottom: "0.5em" }}
           >
             {label}
           </label>
@@ -69,6 +65,7 @@ const DesignDetails = () => {
               onBlur={(e) => handleBlur(key, e.target.value)}
               placeholder={placeholder}
               style={{
+                maxWidth: "96.5899%",
                 fontSize: "0.9em",
                 backgroundColor: "transparent",
                 border: "1px solid #ccc",

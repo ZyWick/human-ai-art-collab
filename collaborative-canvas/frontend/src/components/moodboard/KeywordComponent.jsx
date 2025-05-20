@@ -37,7 +37,8 @@ const KeywordComponent = ({
   const isClicked = selectedKeywordId? selectedKeywordId === data._id : false;
 
   const kwBoard = useSelector((state) => selectBoardById(state, data.boardId));
-  const isVoting = kwBoard.isVoting;
+  const isVoting = kwBoard?.isVoting;
+  
   const image = useSelector((state) => selectImageById(state, data.imageId));
 
   const imageX = image?.x ?? 0;

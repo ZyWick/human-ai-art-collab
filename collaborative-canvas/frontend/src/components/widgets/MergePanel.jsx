@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useCallback} from "react";
 import { useSelector } from "react-redux";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from "../../context/SocketContext";
@@ -13,11 +13,11 @@ import {
 const MergePanel = () => {
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
-  const users = useSelector((state) => state.room.users);
   const selectedKeywordIds = useSelector(
     (state) => state.selection.selectedKeywordIds
   );
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
+  const designDetails = useSelector((state) => state.room.designDetails);
   const keywords = useSelector(selectAllKeywords);
 
   const selectedBoardKeywords = keywords
@@ -38,19 +38,38 @@ const MergePanel = () => {
     currGenerated = latestIteration?.generatedImages; // Assign inside the block
   }
 
-  const filterData = (metadataArray) =>
-    metadataArray.map(({ keyword, type, votes, downvotes }) => ({
-      keyword,
-      type,
-      netVotes: votes.length - downvotes.length,
-    }));
+  const normalizeType = (type) => {
+  const map = {
+    "subject matter": "Subject matter",
+    "action & pose": "Action & pose",
+    "theme & mood": "Theme & mood",
+  };
+  return map[type.trim().toLowerCase()];
+};
+
+    const processKeywords = useCallback((keywords, brief) => {
+      const result = {
+        "Subject matter": {},
+        "Action & pose": {},
+        "Theme & mood": {},
+        "Brief": brief,
+      };
+      
+      keywords.forEach(({ type, keyword, votes, downvotes }) => {
+        const normalized = normalizeType(type);
+        if (normalized) {
+          result[normalized][keyword.trim()] = votes.length - downvotes.length;
+        }
+      });
+  
+      return result;
+    }, []);
 
   const generateImage = () => {
     if (selectedBoardKeywords?.length > 0)
       socket.emit("generateNewImage", {
         boardId: currentBoardId,
-        keywords: filterData(selectedBoardKeywords),
-        totalUsers: users.length,
+        data: processKeywords(selectedBoardKeywords, designDetails.objective)
       });
   };
 

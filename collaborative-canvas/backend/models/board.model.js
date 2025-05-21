@@ -29,7 +29,8 @@ const boardSchema = new mongoose.Schema(
         generatedImages: [{ type: String, required: true }], // Array of image URLs
         keywords: [ {
           keyword: { type: String, required: true },
-          type: { type: String, required: true }
+          type: { type: String, required: true },
+          vote: {type: Number, default: 0}
         },
       ]
       },

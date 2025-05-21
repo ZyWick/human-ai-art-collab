@@ -4,11 +4,9 @@ import { GoogleGenAI } from "@google/genai";
 dotenv.config();
 
 const GEMINI_GEN_CAP_API_KEY = process.env.GEMINI_GEN_CAP_API_KEY;
+const ai = new GoogleGenAI({ apiKey: GEMINI_GEN_CAP_API_KEY });
 
-  const ai = new GoogleGenAI({ apiKey: GEMINI_GEN_CAP_API_KEY });
-
-  export async function getCaption(imageBlob) {
-  
+export async function getCaption(imageBlob) {
     const contents = [
         {
         inlineData: {
@@ -25,6 +23,16 @@ const GEMINI_GEN_CAP_API_KEY = process.env.GEMINI_GEN_CAP_API_KEY;
     });
 
     return response.text
+}
+
+
+/**
+ * Convert a Buffer to a Base64 string.
+ * @param {Buffer} buffer - The image buffer.
+ * @returns {string} - Base64 string.
+ */
+function bufferToBase64(buffer) {
+    return buffer.toString("base64");
 }
 
   
@@ -61,12 +69,3 @@ const GEMINI_GEN_CAP_API_KEY = process.env.GEMINI_GEN_CAP_API_KEY;
 //         console.error("Error:", error.message);
 //     }
 // }
-
-/**
- * Convert a Buffer to a Base64 string.
- * @param {Buffer} buffer - The image buffer.
- * @returns {string} - Base64 string.
- */
-function bufferToBase64(buffer) {
-    return buffer.toString("base64");
-}

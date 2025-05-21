@@ -3,7 +3,7 @@ const keywordService = require("./keywordService");
 const boardService = require("./boardService");
 const roomService = require("./roomService");
 const threadService = require("./threadService");
-const { recommendKeywords } = require("../utils/llm");
+const { recommendKeywords, generateTextualDescriptions, generateLayout } = require("../utils/llm");
 
 module.exports = (io, users, rooms, boardKWCache, boardSKWCache) => {
   io.on("connection", (socket) => {
@@ -341,28 +341,93 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache) => {
       };
     };
 
-    socket.on("generateNewImage", async (generateData) => {
+    socket.on("generateNewImage", async ({ boardId, data, arrangement }) => {
       try {
         const user = users[socket.id];
         if (!user) return;
-        normalizedGenerateData = normalizeKeywordVotesByType(generateData);
+        // normalizedGenerateData = normalizeKeywordVotesByType(generateData);
+        let textDescriptions = await generateTextualDescriptions(JSON.stringify({data}, null, 2))
+        let generatedLayouts = arrangement
+        let genImageInput = {}
+
+        if(!generatedLayouts) {
+          genLayoutInput = textDescriptions.output.map(entry => {
+          const objects = entry.Objects.flatMap(obj => Object.keys(obj));
+          return {
+            Caption: entry.Caption,
+            objects
+          };
+        });
         
+        let generatedLayouts = await Promise.allSettled(
+          genLayoutInput.map(item => generateLayout(JSON.stringify(item, null, 2))));
+
+        genImageInput = textDescriptions.output.map((captionEntry, index) => {
+        const prompt = captionEntry.Caption;
+        const boxEntries = generatedLayouts[index].value.output;
+
+        // Map descriptions by label
+        const descMap = {};
+        captionEntry.Objects.forEach(obj => {
+          const key = Object.keys(obj)[0];
+          const value = obj[key];
+          descMap[key] = value;
+        });
+
+        const boxes = [];
+        const phrases = [];
+
+        for (const [label, box] of boxEntries) {
+          boxes.push(box);
+          phrases.push(descMap[label]); // Duplicate the description for each matching box
+        }
+
+        return {
+          prompt,
+          boxes,
+          phrases
+        };
+      });
+
+        } else {
+
+        }
+
         
-        const { boardId, keywords } = generateData;
+       
+
+        console.log()
+
         // get selected keywords!
         // generate new images
         const generatedImages = getRandomImages();
         // store to aws
         // pack urls to array
         // store urls to db
-        const newIteration = { generatedImages, keywords };
-        ioEmitWithUser("updateBoardIterations", user, {
-          update: {
-            id: boardId,
-            iteration: newIteration,
-          },
-        });
-        await boardService.addIteration(boardId, newIteration);
+
+
+        // const keywords = [];
+
+        // for (const [type, entries] of Object.entries(data)) {
+        //   // Skip non-object entries like "Brief"
+        //   if (typeof entries !== 'object') continue;
+
+        //   for (const [keyword, vote] of Object.entries(entries)) {
+        //     keywords.push({
+        //       keyword,
+        //       type,
+        //       vote
+        //     });
+        //   }
+        // }
+        // const newIteration = { generatedImages, keywords };
+        // ioEmitWithUser("updateBoardIterations", user, {
+        //   update: {
+        //     id: boardId,
+        //     iteration: newIteration,
+        //   },
+        // });
+        // await boardService.addIteration(boardId, newIteration);
       } catch (error) {
         console.error("Error generating sketches:", error);
         socket.emit("error", { message: "Failed to generate new image" });

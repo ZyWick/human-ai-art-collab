@@ -1,15 +1,6 @@
-import { CompressionType } from "@aws-sdk/client-s3";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const LLMmodel = genAI.getGenerativeModel({ model: 'gemini-2.0-pro-exp' });
-const OPENAIMODEL = "gpt-4.1-2025-04-14"
-const extractKeywordsPrompt = `You will be provided with multiple sentences to describe an illustration. Your task is to extract a list of Subject matter, Action & pose, and Theme & mood. Subject matters are one-word, describing the specific physical objects, characters, or landscape that the user wants to include in their illustration. Example subject matters include pencil, children, or wave. For subject matters, no adjectives should be included. They should always be a noun. Actions & poses are word-level or phrase-level actions that the character or the object in the illustration performs. Example actions & poses include riding a bus, standing still, or traveling. Themes & moods are words not directly present in the illustration, but those that can potentially convey the overall theme or mood of the illustration. Example themes & moods include imaginative, eco-friendly, or sad. They should be adverbs, preferably one or two words. If you are provided sentences including some style such as cartoon, illustration, image, or photo, exclude it. For other examples, 'an illustration of a woman sitting at a table' caption is extracted to 'woman', 'table', 'sitting at a table', 'cozy'. The 'illustration' is not contained. Eliminate the changed forms of the same word, such as plurals. Only include roots. For example of 'trees' and 'tree', only include 'tree'." `
-const recommendKeywordsPrompt = `We are trying to support novice designers' ideation process by semantically combining different parts of illustration references. You will be provided with the topic of the ideation, and multiple keywords users like in the illustrations they found as references. There are three types of keywords: Subject matter, Action & Pose, and Theme & Mood. Subject matters are one-word, describing the specific physical objects, characters, or landscape that the user wants to include in their illustration. Example subject matters include pencil, children, or wave. For subject matters, no adjectives should be included. They should always be a noun. Come up with more than four new keywords for Subject matter. Actions & poses are word-level or phrase-level actions that the character or the object in the illustration performs. Example actions & poses include riding a bus, standing still, or traveling. Themes & moods are words not directly present in the illustration, but those that can potentially convey the overall theme or mood of the illustration. Example themes & moods include imaginative, eco-friendly, or sad. They should be adverbs, preferably one word. Your task is to expand on the keywords being given, by combining multiple keywords or looking for synonyms that can inspire new creations or ideas. For example, the subject matter "pencil" can be combined with the action & pose "traveling" to inspire a new action & pose "writing a diary". You can combine as many keywords at once. Another example is to generate "hair salon" from "hair dryer", "comb", and "scissors". For combinations that result in theme & mood, make them as abstract as possible. An example is to make "adventurous", "gusty" from "riding on ship" and "tent". Come up with new keywords for each keyword type with creative combinations. Only use the original keywords provided for creating new keywords. Do not just paraphrase original keywords. Do not suggest similar keywords to the original ones. Important: Include at least one subject matter for each combination. Subject matter and theme & mood should be a SINGLE WORD. Combinations among subject matters are highly recommended. New keywords should be śurprisingćompared to original ones. It means the character of your suggested word should have low similarity.' `
-
-
 import OpenAI from "openai";
 
+const OPENAIMODEL = "gpt-4.1-2025-04-14"
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -75,5 +66,104 @@ export async function recommendKeywords (data) {
       store: true
     });
 
+    return JSON.parse(response.output_text);;
+}
+
+export async function generateTextualDescriptions (data) {
+     const response = await openai.responses.create({
+      model: OPENAIMODEL,
+      input: [
+        {
+          role: "system",
+          content: [
+            {
+              type: "input_text",
+              text: "Generate imaginative illustration concepts as a Creative Director & Collaborative-Ideation Assistant based on the provided inputs.\n\nYou will be provided with:\n\n1. Three vote-weighted keyword lists (each item = { term: integer }):\n   - **Subject matter**: Specific nouns or noun phrases, including compound objects and descriptive pairings. \n   - **Action & pose**: Clearly implied actions or poses. Use the base form or descriptive phrases. \n   - **Theme & mood**: Adjectives or abstract nouns capturing emotion, setting, or cultural context.\n\n2. **Design Brief (string)**: a free-form text description of the overall illustration intent, use-case, or style.\n\n# Task\n\nGenerate exactly three distinct illustration ideas that:\n- Prioritize higher-vote terms for visual and thematic prominence.\n- Reuse higher-vote terms as needed; omit or de-emphasize lower-vote terms if they conflict.\n- Ensure diversity across at least two of the three input categories.\n- Explore visual or narrative contrast where possible.\n- Clearly reflect the Design Brief in tone, function, and visual styling.\n\n# Output Format\n\nReturn a JSON object with an `\"output\"` key, where its value is an array of three entries. Each entry must include:\n- `\"Caption\"`: A vivid, concise scene title or description, focused on essential elements and cinematic framing. Avoid excessive adjectives.\n- `\"Objects\"`: An array of { object_name: description }, where each description includes key elements of the subject along with a brief description of its state, action, or theme.\n\n# Steps\n\n1. Analyze vote weights to identify high-priority terms.\n2. Develop three diverse illustration ideas ensuring thematic and visual coherence.\n3. Validate each concept against the Design Brief: the scene should reflect the intended function, audience, and visual tone.\n4. Construct cinematic Captions and concise Object descriptions that capture narrative clarity and visual intent.\n\n# Examples\n\n## Example 1\n\nUser Input:\n```json\n{\n  \"Subject matter\": {\n    \"oak tree\": 4,\n    \"fox\": 3,\n    \"mushroom\": 2\n  },\n  \"Theme & mood\": {\n    \"whimsical\": 5,\n    \"quiet\": 3,\n    \"eerie\": 1\n  },\n  \"Action & pose\": {\n    \"peering\": 4,\n    \"growing\": 3,\n    \"lurking\": 1\n  },\n  \"Brief\": \"Illustration for a fairy-tale children's book page set in an enchanted forest.\"\n}\n```\nAssistant Output:\n```json\n{\n  \"output\": [\n    {\n      \"Caption\": \"A fox peering from behind a whimsical oak tree with mushrooms at its roots\",\n      \"Objects\": [\n        { \"fox\": \"a bright-eyed fox cautiously peering from behind the oak, its body partly hidden\" },\n        { \"oak tree\": \"a dominant, twisting oak tree with moss-covered bark and wide, whimsical branches\" },\n        { \"mushroom\": \"a patch of mushrooms growing at the tree’s base, varied in color and size\" }\n      ]\n    },\n    {\n      \"Caption\": \"Mushrooms growing quietly beneath a vast oak tree in an enchanted forest clearing\",\n      \"Objects\": [\n        { \"oak tree\": \"a towering oak tree with curling limbs, casting soft shade over the clearing\" },\n        { \"mushroom\": \"clusters of bioluminescent mushrooms growing in a gentle spiral near its roots\" }\n      ]\n    },\n    {\n      \"Caption\": \"A fox sitting quietly beneath a bent oak tree in a whimsical woodland setting\",\n      \"Objects\": [\n        { \"fox\": \"a calm fox sitting with its tail wrapped around its feet, gazing into the distance\" },\n        { \"oak tree\": \"an oak tree arching over like a natural canopy, branches shaped like reaching fingers\" }\n      ]\n    }\n  ]\n}\n```\n\n## Example 2\n\nUser Input:\n```json\n{\n  \"Subject matter\": {\n    \"lantern\": 3,\n    \"owl\": 0\n  },\n  \"Theme & mood\": {\n    \"calm\": 2,\n    \"tense\": 1\n  },\n  \"Action & pose\": {},\n  \"Brief\": \"A night-time forest scene for a meditation app splash screen.\"\n}\n```\nAssistant Output:\n```json\n{\n  \"output\": [\n    {\n      \"Caption\": \"A lantern glowing softly on a quiet forest path at night\",\n      \"Objects\": [\n        { \"lantern\": \"a softly glowing lantern placed on the path, casting warm light over mossy ground\" }\n      ]\n    },\n    {\n      \"Caption\": \"A calm lantern hanging from a branch, lighting still forest air\",\n      \"Objects\": [\n        { \"lantern\": \"an old iron lantern hanging motionless from a branch, its flame slow and steady\" }\n      ]\n    },\n    {\n      \"Caption\": \"A lantern resting among tree roots under a calm night sky\",\n      \"Objects\": [\n        { \"lantern\": \"a calm lantern nestled into thick roots, surrounded by stones and leaf litter, glowing faintly\" }\n      ]\n    }\n  ]\n}\n```\n\n## Example 3\n\nUser Input:\n```json\n{\n  \"Subject matter\": {\n    \"star\": 0,\n    \"moon\": 0,\n    \"planet\": 0\n  },\n  \"Theme & mood\": {\n    \"serene\": 0\n  },\n  \"Action & pose\": {\n    \"glowing\": 0,\n    \"orbiting\": 0,\n    \"drifting\": 0\n  },\n  \"Brief\": \"Scene illustrating a quiet night sky composition.\"\n}\n```\nAssistant Output:\n```json\n{\n  \"output\": [\n    {\n      \"Caption\": \"A moon and planet drifting quietly across a star-dotted night sky\",\n      \"Objects\": [\n        { \"moon\": \"a faintly glowing moon, its surface softly textured and serene\" },\n        { \"planet\": \"a small planet drifting along a slow arc, barely illuminated\" },\n        { \"star\": \"tiny scattered stars twinkling in clusters across the sky\" }\n      ]\n    },\n    {\n      \"Caption\": \"A serene composition of orbiting celestial bodies beneath a moonlit sky\",\n      \"Objects\": [\n        { \"planet\": \"a pair of planets orbiting gently in the distance, trailing dim light\" },\n        { \"moon\": \"a silver moon centered in the sky, luminous and undisturbed\" },\n        { \"star\": \"a sparse field of stars forming a soft backdrop\" }\n      ]\n    },\n    {\n      \"Caption\": \"A glowing moon above drifting stars and a distant planet\",\n      \"Objects\": [\n        { \"moon\": \"a glowing moon hanging high, casting soft illumination downward\" },\n        { \"star\": \"a soft stream of stars drifting slowly like mist\" },\n        { \"planet\": \"a planet hovering low on the horizon, barely outlined\" }\n      ]\n    }\n  ]\n}\n```\n\n# Notes\n\n- Each concept should demonstrate a clear interpretative link to the Design Brief, which can subtly influence object choices and scene framing.\n- Optimize descriptions for thematic clarity and resonance, ensuring diversity across idea categories.\n"
+            }
+          ]
+        },
+        {
+          role: "user",
+          content: data
+        }
+      ],
+      text: {
+        format: {
+          type: "json_object"
+        }
+      },
+      temperature: 1,
+      max_output_tokens: 2048,
+      top_p: 1,
+      store: true
+    });
+
+    console.log(response.output_text)
+    return JSON.parse(response.output_text);;
+}
+
+export async function generateLayout (data) {
+     const response = await openai.responses.create({
+      model: OPENAIMODEL,
+      input: [
+        {
+          role: "system",
+          content: [
+            {
+              type: "input_text",
+              text: "You are a high-precision object localizer tasked with extracting normalized bounding boxes for each distinct object instance explicitly mentioned in a scene description.\n\n**Image Specifications:**\n\n- Size: 512 x 512 pixels.\n- Coordinate origin: top-left is (0, 0), bottom-right is (512, 512).\n\n# Input\n\n- **Caption**: Natural language description of the scene.\n- **Objects**: List of object names.\n\n# Output Format\n\nProvide a JSON object with a key \"output\" and a value as a list of tuples for each object:\n\n- Format: `(\"object_label\", [x_min, y_min, width, height])`\n- Normalize all bounding boxes to the [0, 1] range:\n  - x_min = left_pixel / 512\n  - y_min = top_pixel / 512\n  - width = box_width_pixels / 512\n  - height = box_height_pixels / 512\n- Ensure:\n  - x_min + width ≤ 1\n  - y_min + height ≤ 1\n- Each occurrence of an object must have a separate entry.\n\n# Examples\n\n**User input:**\n\n```json\n{\n  \"Caption\": \"A bustling city street at night with a yellow taxi beside a red sports car and a pedestrian crossing the road.\",\n  \"objects\": [\"taxi\", \"sports car\", \"pedestrian\"]\n}\n```\n\n**Assistant output:**\n\n```json\n{\n  \"output\": [\n    [\"taxi\", [0.210, 0.620, 0.250, 0.180]],\n    [\"sports car\", [0.480, 0.625, 0.270, 0.175]],\n    [\"pedestrian\", [0.395, 0.540, 0.080, 0.210]]\n  ]\n}\n```\n\n**User input:**\n\n```json\n{\n  \"Caption\": \"Top-down view of a breakfast table showing a plate with two sunny-side-up eggs, a slice of toast, and a cup of coffee.\",\n  \"objects\": [\"plate\", \"egg\", \"toast\", \"coffee\"]\n}\n```\n\n**Assistant output:**\n\n```json\n{\n  \"output\": [\n    [\"plate\", [0.130, 0.220, 0.740, 0.610]],\n    [\"egg\", [0.360, 0.350, 0.120, 0.100]],\n    [\"egg\", [0.500, 0.350, 0.120, 0.100]],\n    [\"toast\", [0.300, 0.550, 0.180, 0.130]],\n    [\"coffee\", [0.700, 0.240, 0.160, 0.200]]\n  ]\n}\n```\n\n**User input:**\n\n```json\n{\n  \"Caption\": \"A playful tabby cat is chasing a blue yarn ball across a wooden floor.\",\n  \"objects\": [\"cat\", \"yarn ball\"]\n}\n```\n\n**Assistant output:**\n\n```json\n{\n  \"output\": [\n    [\"cat\", [0.420, 0.400, 0.350, 0.300]],\n    [\"yarn ball\", [0.220, 0.520, 0.120, 0.120]]\n  ]\n}\n```\n\n**User input:**\n\n```json\n{\n  \"Caption\": \"A group of three hikers stands on a rocky cliff overlooking a sunset.\",\n  \"objects\": [\"hiker\", \"cliff\"]\n}\n```\n\n**Assistant output:**\n\n```json\n{\n  \"output\": [\n    [\"hiker\", [0.150, 0.480, 0.130, 0.220]],\n    [\"hiker\", [0.310, 0.460, 0.140, 0.240]],\n    [\"hiker\", [0.480, 0.470, 0.125, 0.230]],\n    [\"cliff\", [0.000, 0.600, 1.000, 0.400]]\n  ]\n}\n```\n\n# Notes\n\n- Utilize best judgment to localize objects based on the scene description.\n- Provide accurate bounding boxes for each object instance present in the caption.\n"
+            }
+          ]
+        },
+        {
+          role: "user",
+          content: data
+        }
+      ],
+      text: {
+        format: {
+          type: "json_object"
+        }
+      },
+      temperature: 1,
+      max_output_tokens: 2048,
+      top_p: 1,
+      store: true
+    });
+
+    console.log(response.output_text)
+    return JSON.parse(response.output_text);;
+}
+
+export async function matchLayout (data) {
+     const response = await openai.responses.create({
+      model: OPENAIMODEL,
+      input: [
+        {
+          role: "system",
+          content: [
+            {
+              type: "input_text",
+              text: "You are a spatial reasoning expert responsible for aligning objects with bounding boxes based on scene descriptions in a natural and balanced way.\n\n# Input\n\n- **Caption**: Natural language description of the scene.\n- **Objects**: List of object names (duplicates possible).\n- **Boxes**: List of bounding box coordinates, unordered.\n\nBounding box format: [x, y, w, h]\n- x, y: Top-left corner coordinates (0 to 1 range).\n- w, h: Width and height (0 to 1 range).\n\nImage frame spans from [0,0] (top-left) to [1,1] (bottom-right).\n\n# Task\n\nYour task is to assign each object a unique bounding box:\n- Ensure the spatial relationships in the caption are respected (e.g., \"on the left\", \"above\").\n- Each bounding box must only be used once.\n- Avoid unnatural object clustering; maintain visual plausibility.\n- Consider implied object sizes and relationships (e.g., \"small mouse under large table\").\n- Ensure all bounding boxes remain within the [0,1] frame.\n\n# Output Format\n\nOutput a JSON object with a key \"output\", where its value is a list of tuples with `N` elements: `[(\"object_name\", [x, y, w, h]), ...]`.\n\n# Examples\n\n**Example 1:**\n\nUser input: \n```json\n{ \"Caption\": \"A tabby cat stretches on the right edge of a sunlit sofa, while a small gray mouse peeks from a hole at the bottom left.\",\n  \"Objects\": [\"cat\", \"mouse\", \"sofa\"],  \n  \"Boxes\": [ [0.750, 0.200, 0.230, 0.400], [0.050, 0.700, 0.120, 0.180], [0.100, 0.100, 0.800, 0.700] ]\n}\n```\nAssistant Output: \n```json\n{ \"output\": [(\"sofa\", [0.100, 0.100, 0.800, 0.700]), (\"cat\", [0.750, 0.200, 0.230, 0.400]), (\"mouse\", [0.050, 0.700, 0.120, 0.180])] }\n```\n\n**Example 2:**\n\nUser input: \n```json\n{\n  \"Caption\": \"A bustling city street scene with a yellow taxi in the foreground, a red sports car behind it slightly to the left, and a pedestrian crossing in front.\",\n  \"Objects\": [\"taxi\", \"sports car\", \"pedestrian\"],\n  \"Boxes\": [[0.100, 0.600, 0.500, 0.350], [0.050, 0.700, 0.200, 0.200], [0.650, 0.550, 0.150, 0.300]]\n}\n```\n\nAssistant output: \n```json\n{\n  \"output\": [[\"taxi\", [0.050, 0.700, 0.200, 0.200]], [\"sports car\", [0.100, 0.600, 0.500, 0.350]], [\"pedestrian\", [0.650, 0.550, 0.150, 0.300]]]\n}\n```\n\n**Example 3:**\n\nUser input: \n```json\n{\n  \"Caption\": \"A painting of a hot-air balloon drifting above rolling hills with a lone oak tree on the left hill.\",\n  \"Objects\": [\"balloon\", \"hills\", \"tree\"],\n  \"Boxes\": [[0.350, 0.100, 0.300, 0.300], [0.000, 0.400, 1.000, 0.600], [0.100, 0.450, 0.150, 0.300]]\n}\n```\n\nAssistant output:\n```json\n{\n  \"output\": [[\"hills\", [0.000, 0.400, 1.000, 0.600]], [\"tree\", [0.100, 0.450, 0.150, 0.300]], [\"balloon\", [0.350, 0.100, 0.300, 0.300]]]\n}\n```\n\n**Example 4:**\n\nUser input:\n```json\n{\n  \"Caption\": \"An aerial view of a boat sailing south of a group of five kayakers on a calm lake.\",\n  \"Objects\": [\"boat\", \"kayaker\", \"kayaker\", \"kayaker\", \"kayaker\", \"kayaker\"],\n  \"Boxes\": [[0.450, 0.200, 0.100, 0.100], [0.200, 0.400, 0.080, 0.080], [0.300, 0.420, 0.080, 0.080], [0.400, 0.440, 0.080, 0.080], [0.500, 0.460, 0.080, 0.080], [0.600, 0.480, 0.080, 0.080]]\n}\n```\nAssistant output: \n```json\n{\n  \"output\": [\n    [\"kayaker\", [0.200, 0.400, 0.080, 0.080]],\n    [\"kayaker\", [0.300, 0.420, 0.080, 0.080]],\n    [\"kayaker\", [0.400, 0.440, 0.080, 0.080]],\n    [\"kayaker\", [0.500, 0.460, 0.080, 0.080]],\n    [\"kayaker\", [0.600, 0.480, 0.080, 0.080]],\n    [\"boat\", [0.450, 0.200, 0.100, 0.100]]\n  ]\n}\n```\n\n# Notes\n\n- Approach the task as solving a visual layout puzzle, ensuring semantic and spatial coherence.\n- Adapt to various caption styles for effective scene interpretation.\n"
+            }
+          ]
+        },
+        {
+          role: "user",
+          content: data
+        }
+      ],
+      text: {
+        format: {
+          type: "json_object"
+        }
+      },
+      temperature: 1,
+      max_output_tokens: 2048,
+      top_p: 1,
+      store: true
+    });
+
+    console.log(response.output_text)
     return JSON.parse(response.output_text);;
 }

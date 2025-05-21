@@ -393,6 +393,9 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache) => {
 
         }
 
+        ioEmitWithUser("updateBoardIterations", user, {
+          update: genImageInput
+        });
         
        
 

@@ -114,8 +114,9 @@ const useBoardSocket = () => {
                                     ,
         updateBoard:              ({ update, user }) => 
                                     dispatchWithMeta(updateBoard, update, user),
-        updateBoardIterations:    ({ update, user }) => 
-                                    dispatchWithMeta(updateBoardIterations, update, user),
+        updateBoardIterations:    ({ update, user }) => {console.log(update)
+                                    // dispatchWithMeta(updateBoardIterations, update, user)
+                                  },
         deleteBoard:              ({ boardId: bId, user }) => {
                                     dispatchWithMeta(removeBoard, bId, user);
                                     const remaining = boardsRef.current.filter(b => b._id !== bId);

@@ -19,9 +19,11 @@ jobs:
         node-version: 18
 
     - name: Install dependencies
+      working-directory: ./collaborative-canvas/frontend
       run: npm install
 
     - name: Build React app
+      working-directory: ./collaborative-canvas/frontend
       run: npm run build
 
     - name: Configure AWS credentials

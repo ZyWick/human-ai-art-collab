@@ -1,5 +1,5 @@
 // const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
-const baseURL = "http://collabdesign-env.eba-frmbypmh.ap-southeast-1.elasticbeanstalk.com";
+const baseURL = "https://collabdesign-env.eba-frmbypmh.ap-southeast-1.elasticbeanstalk.com";
 
 /**
  * Helper function to make API calls using fetch.
@@ -88,30 +88,6 @@ export const uploadImageApi = async (formData, socketId, boardId) => {
 };
 
 
-/* -----------------------------
-   KEYWORD FUNCTIONS
------------------------------- */
-export const createKeywordManual = async (
-  boardId,
-  imageId,
-  type,
-  keyword
-) => {
-  return  apiFetch("/keywords", {
-    method: "POST",
-    data: { boardId, imageId, isSelected: false, 
-      type, keyword },
-  });}
-
-export const toggleKeywordSelection = async (id) =>
-  apiFetch(`/keywords/${id}/toggle`, { method: "PATCH" });
-
-export const deleteKeyword = async (id) =>
-  apiFetch(`/keywords/${id}`, { method: "DELETE" });
-
-/* -----------------------------
-   ROOM FUNCTIONS
------------------------------- */
 export const createRoom = async (name) =>
   apiFetch("/rooms/create", { method: "POST", data: { name } });
 

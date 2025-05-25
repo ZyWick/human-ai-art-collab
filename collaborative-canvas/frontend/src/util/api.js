@@ -115,14 +115,11 @@ export const deleteKeyword = async (id) =>
 export const createRoom = async (name) =>
   apiFetch("/rooms/create", { method: "POST", data: { name } });
 
-export const updateRoomName = async (roomId, newName) =>
-  apiFetch(`/rooms/${roomId}`, { method: "PUT", data: { newName } });
-
-export const deleteRoom = async (roomId) =>
-  apiFetch(`/rooms/${roomId}`, { method: "DELETE" });
-
 export const joinRoom = async (joinCode) =>
   apiFetch(`/rooms/join/${joinCode}`, { method: "GET" });
 
 export const getRoom = async (roomId) =>
   apiFetch(`/rooms/${roomId}`, { method: "GET" });
+
+export const getBoard = async (id) =>
+  apiFetch(`/boards/${id}`, { method: "GET" });

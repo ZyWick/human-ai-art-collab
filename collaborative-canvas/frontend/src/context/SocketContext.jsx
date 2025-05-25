@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
 
-const REACT_APP_BACKEND_URL = "https://collabdesign-env.eba-frmbypmh.ap-southeast-1.elasticbeanstalk.com";
+const REACT_APP_BACKEND_URL = "https://aicollabdesign.space";
 
 // Create context
 const SocketContext = createContext(null);

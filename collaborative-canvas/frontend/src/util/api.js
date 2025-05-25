@@ -1,4 +1,5 @@
-const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+// const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+const baseURL = "http://collabdesign-env.eba-frmbypmh.ap-southeast-1.elasticbeanstalk.com";
 
 /**
  * Helper function to make API calls using fetch.
@@ -86,35 +87,6 @@ export const uploadImageApi = async (formData, socketId, boardId) => {
   }
 };
 
-/* -----------------------------
-   BOARD FUNCTIONS
------------------------------- */
-export const createBoard = async (name) =>
-  apiFetch("/boards", { method: "POST", data: { name } });
-
-export const getBoard = async (id) =>
-  apiFetch(`/boards/${id}`, { method: "GET" });
-
-export const updateBoardName = async (id, newName) =>
-  apiFetch(`/boards/${id}`, { method: "PUT", data: { name: newName } });
-
-export const deleteBoard = async (id) =>
-  apiFetch(`/boards/${id}`, { method: "DELETE" });
-
-export const getAllBoardInfo = async (id) =>
-  apiFetch(`/boards/${id}/all`, { method: "GET" });
-
-/* -----------------------------
-   IMAGE FUNCTIONS
------------------------------- */
-export const createImage = async (boardId, url, x, y) =>
-  apiFetch("/images", { method: "POST", data: { boardId, url, x, y } });
-
-export const updateImageCoordinates = async (id, x, y) =>
-  apiFetch(`/images/${id}`, { method: "PUT", data: { x, y } });
-
-export const deleteImage = async (id) =>
-  apiFetch(`/images/${id}`, { method: "DELETE" });
 
 /* -----------------------------
    KEYWORD FUNCTIONS

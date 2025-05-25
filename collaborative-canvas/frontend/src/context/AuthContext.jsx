@@ -3,8 +3,11 @@ import axios from "axios";
 
 const AuthContext = createContext();
 
-const REACT_APP_BACKEND_URL =
-  process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+// const REACT_APP_BACKEND_URL =
+//   process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
+
+
+const REACT_APP_BACKEND_URL = "http://collabdesign-env.eba-frmbypmh.ap-southeast-1.elasticbeanstalk.com";
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

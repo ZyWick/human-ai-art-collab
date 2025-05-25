@@ -1,5 +1,5 @@
 // const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
-const baseURL = "https://aicollabdesign.space";
+const baseURL = "https://api.aicollabdesign.space";
 
 /**
  * Helper function to make API calls using fetch.

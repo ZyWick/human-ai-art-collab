@@ -26,6 +26,9 @@ jobs:
       working-directory: ./collaborative-canvas/frontend
       run: npm run build
 
+    - name: Install jq
+      run: sudo apt-get install -y jq
+
     - name: Assume Role and Export Credentials
       id: assume-role
       run: |

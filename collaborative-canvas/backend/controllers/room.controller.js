@@ -1,4 +1,21 @@
 const roomService = require('../services/roomService');
+const boardService = require('../services/boardService');
+
+
+/**
+ * Controller to get a board by ID.
+ */
+const getBoard = async (req, res) => {
+  try {
+    const { boardId } = req.params;
+    const board = await boardService.getBoard(boardId);
+    if (!board) return res.status(404).json({ error: 'Board not found' });
+    res.json(board);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 /**
  * Handle room creation.
@@ -10,34 +27,6 @@ const createRoom = async (req, res) => {
     res.status(201).json(room);
   } catch (error) {
     res.status(500).json({ message: error.message });
-  }
-};
-
-/**
- * Handle room name update.
- */
-const updateRoomName = async (req, res) => {
-  try {
-    const { roomId } = req.params;
-    const { newName } = req.body;
-    const updatedRoom = await roomService.updateRoomName(roomId, newName);
-    if (!updatedRoom) return res.status(404).json({ message: 'Room not found' });
-    res.json(updatedRoom);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-/**
- * Handle room deletion.
- */
-const deleteRoom = async (req, res) => {
-  try {
-    const { roomId } = req.params;
-    const deletedRoom = await roomService.deleteRoom(roomId);
-    res.json(deletedRoom);
-  } catch (error) {
-    res.status(404).json({ message: error.message });
   }
 };
 
@@ -66,8 +55,7 @@ const getRoom = async (req, res) => {
 
 module.exports = {
   createRoom,
-  updateRoomName,
-  deleteRoom,
+  getBoard,
   joinRoom,
   getRoom
 };

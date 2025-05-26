@@ -1,7 +1,64 @@
 const Keyword = require("../models/keyword.model");
 const Image = require("../models/image.model");
 const Board = require("../models/board.model");
-const Thread = require('../models/thread.model')
+const Thread = require("../models/thread.model");
+const { getCaption } = require("../utils/imageCaptioning");
+const { extractKeywords } = require("../utils/llm");
+
+const generateKeywords = async (
+  io,
+  progressCounter,
+  imageId,
+  roomId,
+  files
+) => {
+  const captions = await Promise.all(
+    files.map(async (segment, idx) => {
+      try {
+        const caption = await getCaption(segment.buffer);
+        return caption;
+      } catch (err) {
+        console.error(`Caption generation failed for segment #${idx}:`, err);
+        return null;
+      } finally {
+        progressCounter.add(4.5);
+      }
+    })
+  );
+  const Caption = captions.filter((c) => c != null);
+
+  // 2b) Extract keywords (tolerate failure)
+  let keywords = [];
+  if (Caption.length) {
+    try {
+      keywords = await extractKeywords(JSON.stringify({ Caption }, null, 2));
+    } catch (err) {
+      console.error("Keyword extraction failed:", err);
+      // leave keywords = []
+    }
+  }
+
+  progressCounter.add(15);
+
+  // 2c) Insert keywords & link to image (tolerate DB failure)
+  let newKeywords = [];
+  if (keywords && typeof keywords === "object") {
+    try {
+      newKeywords = await addKeywordsToImage(imageId, keywords);
+    } catch (err) {
+      console.error("Saving keywords to DB failed:", err);
+      // leave newKeywords = []
+    }
+  }
+
+  progressCounter.add(5);
+
+  newKeywords.forEach((keyword) => {
+    io.to(roomId).emit("newKeyword", { keyword });
+  });
+
+  progressCounter.add(5);
+};
 
 /**
  * Manually create a new keyword.
@@ -22,7 +79,6 @@ const createKeyword = async (data) => {
   return keyword;
 };
 
-
 /**
  * Generates keywords for an image (Placeholder, replace with actual implementation).
  * @param {Object} image - The image document.
@@ -34,15 +90,16 @@ const generateKeywordsForImage = async (image, extractedKeywords) => {
   if (extractedKeywords && typeof extractedKeywords === "object") {
     Object.entries(extractedKeywords).forEach(([category, keywords]) => {
       if (Array.isArray(keywords) && keywords.length) {
-        keywords.forEach(keyword => {
-          if (keyword) { // Ensure keyword is valid
+        keywords.forEach((keyword) => {
+          if (keyword) {
+            // Ensure keyword is valid
             keywordObjects.push({
               boardId: image.boardId,
               imageId: image._id,
               isSelected: false,
               isCustom: false,
               type: category,
-              keyword: keyword.trim() // Remove extra spaces
+              keyword: keyword.trim(), // Remove extra spaces
             });
           }
         });
@@ -63,7 +120,6 @@ const generateKeywordsForImage = async (image, extractedKeywords) => {
   return keywordObjects;
 };
 
-
 const addKeywordsToImage = async (imageId, extractedKeywords) => {
   const image = await Image.findById(imageId);
   if (!image) throw new Error("Image not found");
@@ -73,7 +129,7 @@ const addKeywordsToImage = async (imageId, extractedKeywords) => {
 
   if (keywordsData.length) {
     insertedKeywords = await Keyword.insertMany(keywordsData);
-    image.keywords = insertedKeywords.map(k => k._id);
+    image.keywords = insertedKeywords.map((k) => k._id);
     await image.save();
   }
 
@@ -81,12 +137,12 @@ const addKeywordsToImage = async (imageId, extractedKeywords) => {
 };
 
 const updateKeywordWithChanges = async (update) => {
-    const updatedKeyword = await Keyword.findByIdAndUpdate(
-      update.id, // MongoDB `_id`
-      { $set: update.changes }, // Fields to update
-      { new: true } // Return the updated document
-    );
-    return updatedKeyword;
+  const updatedKeyword = await Keyword.findByIdAndUpdate(
+    update.id, // MongoDB `_id`
+    { $set: update.changes }, // Fields to update
+    { new: true } // Return the updated document
+  );
+  return updatedKeyword;
 };
 
 /**
@@ -103,7 +159,7 @@ const updateKeyword = async (keywordId, updateData) => {
       new: true,
       runValidators: true,
     }
-  )
+  );
 
   return updatedKeyword;
 };
@@ -162,8 +218,10 @@ const updateKeywordVotes = async (keywordId, userId, action) => {
 const toggleKeywordSelection = async (keywordId) => {
   const keyword = await Keyword.findById(keywordId);
   if (!keyword) throw new Error("Keyword not found");
-  return await keyword
-    .updateOne({ isSelected: !keyword.isSelected }, { new: true })
+  return await keyword.updateOne(
+    { isSelected: !keyword.isSelected },
+    { new: true }
+  );
 };
 
 /**
@@ -177,14 +235,17 @@ const deleteKeyword = async (keywordId) => {
 
   const { boardId, imageId } = keyword;
   await Promise.all([
-    imageId ? Image.findByIdAndUpdate(imageId, { $pull: { keywords: keywordId } }) : null,
-    boardId ? Board.findByIdAndUpdate(boardId, { $pull: { keywords: keywordId } }) : null,
+    imageId
+      ? Image.findByIdAndUpdate(imageId, { $pull: { keywords: keywordId } })
+      : null,
+    boardId
+      ? Board.findByIdAndUpdate(boardId, { $pull: { keywords: keywordId } })
+      : null,
     Thread.deleteMany({ keywordId }),
   ]);
 
   return keyword;
 };
-
 
 const resetVotesForBoard = async (boardId) => {
   const result = await Keyword.updateMany(
@@ -197,6 +258,7 @@ const resetVotesForBoard = async (boardId) => {
 
 module.exports = {
   getKeyword,
+  generateKeywords,
   createKeyword,
   addKeywordsToImage,
   // updateKeyword,

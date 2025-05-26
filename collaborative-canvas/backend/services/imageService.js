@@ -1,30 +1,17 @@
-const Image = require('../models/image.model');
-const Keyword = require('../models/keyword.model');
-const Board = require('../models/board.model');
-const Thread = require('../models/thread.model')
-const { deleteS3Image } = require('./s3service');
-  
-// /**
-//  * Creates a new image and generates associated keywords.
-//  * @param {Object} data - Contains boardId, url, x, y, width, height.
-//  * @returns {Promise<Object>} The created image document with populated keywords.
-//  */
-// const createImage = async (data, extractedKeywords) => {
-//   const image = await Image.create(data);
-//     const keywordsData = await generateKeywordsForImage(image, extractedKeywords);
-//     let insertedKeywords = [];
-//     if (keywordsData.length) {
-//       insertedKeywords = await Keyword.insertMany(keywordsData);
-//       image.keywords = insertedKeywords.map(k => k._id);
-//       await image.save();
-//     }
-//   await Board.findByIdAndUpdate(image.boardId, { $push: { images: image._id } });
-//   return image.populate('keywords');
-// };
+const Image = require("../models/image.model");
+const Keyword = require("../models/keyword.model");
+const Board = require("../models/board.model");
+const Thread = require("../models/thread.model");
+const { uploadS3Image, deleteS3Image } = require("./s3service");
+const keywordService = require("./keywordService");
+
+const { sendBufferImageToSAM } = require("../utils/imageSegmentation");
 
 const createImage = async (data) => {
   const image = await Image.create(data);
-  await Board.findByIdAndUpdate(image.boardId, { $push: { images: image._id } });
+  await Board.findByIdAndUpdate(image.boardId, {
+    $push: { images: image._id },
+  });
   return image; // Do not populate keywords yet
 };
 
@@ -34,8 +21,11 @@ const createImage = async (data) => {
  * @param {Object} updateData - Fields to update.
  * @returns {Promise<Object|null>} The updated keyword document or null if not found.
  */
-const updateImage = async(imageId, updateData) => 
-  await Image.findByIdAndUpdate(imageId, updateData, { new: true, runValidators: true });
+const updateImage = async (imageId, updateData) =>
+  await Image.findByIdAndUpdate(imageId, updateData, {
+    new: true,
+    runValidators: true,
+  });
 
 const updateImageWithChanges = async (update) => {
   const updatedImage = await Image.findByIdAndUpdate(
@@ -60,12 +50,159 @@ const deleteImage = async (imageId) => {
   await Promise.all([
     Keyword.deleteMany({ imageId }),
     Thread.deleteMany({ imageId }),
-    image.boardId ? Board.findByIdAndUpdate(image.boardId, { $pull: { images: imageId } }) : null,
-    image.url ? deleteS3Image(image.url) : null
+    image.boardId
+      ? Board.findByIdAndUpdate(image.boardId, { $pull: { images: imageId } })
+      : null,
+    image.url ? deleteS3Image(image.url) : null,
   ]);
 
   return image;
 };
 
+const uploadImage = (users, io) => async (req, res) => {
+  try {
+    if (!isValidFileCount(req.files)) {
+      return res
+        .status(400)
+        .json({ error: "Expected 10 images (1 full + 9 segments)" });
+    }
 
-module.exports = { createImage, updateImage, updateImageWithChanges, deleteImage };
+    const fullImage = req.files[0];
+    // const bboxes = await segementImage(fullImage);
+    // return;
+    const { width, height, x, y } = req.body;
+    const boardId = req.headers["board-id"];
+    const socketId = req.headers["socket-id"];
+    const user = users[socketId];
+    const uploadId = generateUploadId();
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid socket‑id" });
+    }
+
+    const progressCounter = createUploadProgressCounter(io, socketId, uploadId, fullImage.originalname);
+
+    const uploadResult = await tryUploadToS3(fullImage, res);
+    if (!uploadResult) return;
+
+    progressCounter.add(10);
+
+    const imageDoc = await tryCreateImage(
+      boardId,
+      uploadResult.url,
+      { width, height, x, y },
+      res
+    );
+    if (!imageDoc) return;
+
+    progressCounter.add(5);
+    notifyClients(io, user, imageDoc);
+    startKeywordGeneration(io, progressCounter, imageDoc._id, user.roomId, req.files);
+    // segementImage(fullImage);
+    progressCounter.add(15);
+
+    return res.status(201).json({
+      message: "Image uploaded",
+      url: uploadResult.url,
+      image: imageDoc,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// --- Helpers ---
+
+const isValidFileCount = (files) => files && files.length === 10;
+
+const generateUploadId = () => Math.floor(Math.random() * 1_000_000);
+
+const notifyStart = (io, socketId, uploadId, fileName) => {
+  io.to(socketId).emit("addUploadProgress", {
+    uploadId,
+    fileName,
+  });
+};
+
+function createUploadProgressCounter(io, socketId, uploadId, fileName) {
+  let count = 0;
+
+  // Emit initial progress start event
+  io.to(socketId).emit("addUploadProgress", {
+    uploadId,
+    fileName,
+  });
+
+  return {
+    add: (up = 1) => {
+      count += up;
+      io.to(socketId).emit("updateUploadProgress", {
+        uploadId,
+        progress: count,
+      });
+    }
+  };
+}
+
+
+const tryUploadToS3 = async (file, res) => {
+  try {
+    return await uploadS3Image(file);
+  } catch (err) {
+    console.error("❌ S3 upload failed:", err);
+    res.status(502).json({ error: "Image storage failed" });
+    return null;
+  }
+};
+
+const tryCreateImage = async (boardId, url, dimensions, res) => {
+  try {
+    const { x, y, width, height } = dimensions;
+    return await createImage({ boardId, url, x, y, width, height });
+  } catch (err) {
+    console.error("❌ Saving image to DB failed:", err);
+    res.status(500).json({ error: "Saving image failed" });
+    return null;
+  }
+};
+
+const segementImage = async (fullImage) => {
+  try {
+    const result = await sendBufferImageToSAM(fullImage.buffer, fullImage.originalname, fullImage.mimetype);
+    progressCounter.add(15);
+    return result;
+  } catch (err) {
+    console.error("❌ Segmenting Image failed:", err);
+    res.status(500).json({ error: "Segmenting Image failed" });
+    return null;
+  }
+}
+
+const notifyClients = (io, user, imageDoc) => {
+  io.to(user.roomId).emit("newImage", {
+    image: imageDoc,
+    user: { id: user.userId, name: user.username },
+  });
+};
+
+const startKeywordGeneration = (
+  io,
+  progressCounter,
+  imageId,
+  roomId,
+  files
+) => {
+  keywordService
+    .generateKeywords(io, progressCounter, imageId, roomId, files)
+    .catch((err) => {
+      console.error("❌ generateKeywords encountered an unhandled error:", err);
+    });
+};
+
+
+module.exports = {
+  updateImage,
+  updateImageWithChanges,
+  deleteImage,
+  uploadImage,
+};

@@ -11,7 +11,7 @@ const HomePage = () => {
   const { user } = useAuth();
   const { logout } = useAuth();
   const [newRoomCode, setNewRoomCode] = useState("");
-  const [joinCode, setJoinCode] = useState("UJONZK");
+  const [joinCode, setJoinCode] = useState("");
 
   
   const handleCreateRoom = () => {

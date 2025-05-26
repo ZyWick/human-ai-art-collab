@@ -38,7 +38,7 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
         height: "30px",
         backgroundColor: "transparent",
         borderRadius: "50%",
-        border: "1px solid grey"
+        border: "2px solid grey"
       }}
     ></div>
 

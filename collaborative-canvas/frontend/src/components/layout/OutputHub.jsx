@@ -27,6 +27,7 @@ const OutputHub = () => {
             style={{
               background: "transparent",
               border: "none",
+              color: "black",
               fontSize: "1rem",
               fontWeight: activePanel === key ? "bold" : "normal",
               borderBottom: activePanel === key ? "0.5px solid black" : "none",

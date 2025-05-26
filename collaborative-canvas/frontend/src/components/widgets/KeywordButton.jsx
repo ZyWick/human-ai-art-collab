@@ -144,7 +144,7 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
       <select
         value={selectedType}
         onChange={(e) => setSelectedType(e.target.value)}
-        style={{ width: "fit-content", border: "none", padding: "0.5em", marginRight: "0.4em", fontSize: "14px",  outline: "none", backgroundColor: "white" }}
+        style={{ width: "fit-content", color: "black", border: "none", padding: "0.5em", marginRight: "0.4em", fontSize: "14px",  outline: "none", backgroundColor: "white" }}
       >
         {typeOptions.map((option) => (
           <option key={option} value={option}>{option}</option>

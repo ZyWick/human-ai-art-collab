@@ -204,45 +204,39 @@ const Toolbar = ({stageRef}) => {
 
       <div className="toolbar" style={{ boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.25)" }}>
         {/* Toolbar Controls */}
-        <div className="toolbar-group" style={{ display: "flex", flexDirection: "column", width: "130px", gap: "0px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
-          
-          <button
-            onClick={handleBackToOrigin}
+        <div className="toolbar-group" style={{height: "100%", display: "flex", paddingTop: "0.25em",  width: "130px", alignItems:"center" }}>
+            <div style={{ height: "85%", width: "100%", display: 'grid', gridTemplateRows: '1fr 1fr' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '33.33% 33.33% 33.33%'}}>
+        <div onClick={handleBackToOrigin} style={{display: "flex", justifyContent: "center", alignItems: "center"}}><button
             title="Back to Origin"
-            style={{
-              paddingTop: '12px',
-              paddingInline: "7px",
-              margin: "0",
-            }}
+            style={{height:"100%", width: "100%"}}
           >
-            <img src="/icons/crosshair.svg" alt="Back to Origin" width="30" height="30" />
-          </button>
-              <button onClick={handleToggleComments} title="Add Comment" 
+            <img src="/icons/crosshair.svg" alt="Back to Origin" width="20" height="20" />
+          </button></div>
+        <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}><button onClick={handleToggleComments} title="Add Comment" 
               className={isAddingComments ? "active" : ""}
-              style={{
-                paddingTop: '12px',
-              }}
+              style={{height:"100%", width: "100%"}}
               >
-              <img src="/icons/sticky-notes.svg" alt="Add Comment" width="20" height="20" />
-            </button>
-            <button
+              <img src="/icons/chat.svg" alt="Add Comment" width="20" height="17.5" />
+            </button></div>
+        <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}><button 
               onClick={handleToggleIterations}
               title={showAllIterations ? "Hide Iterations" : "Show Iterations"}
               className={showAllIterations ? "active" : ""}
+              style={{height:"100%", width: "100%"}}
             >
-              {/* {showAllIterations ? "📂" : "📂"} */}
-              📂
-            </button>
-          </div>
-          <div style={{ display: "flex", justifyContent: "center", paddingLeft: "0.5em", paddingRight: "0.75em", width: "100%" }}>
-            <button onClick={handleToggleVoting} title="Vote" className={isVoting ? "active" : ""}>
-              👍
-            </button>
-            <button className="resetVotesIcon" onClick={handleResetVotes} title="Reset Votes">
-              ↻
-            </button>
-          </div>
+              <img src="/icons/folder.svg" alt="Add Comment" width="20" height="20" />
+            </button></div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '50% 50%', marginInline:"15px"}}>
+        <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}> <button style={{height:"100%", width: "100%"}} onClick={handleToggleVoting} title="Vote" className={isVoting ? "active" : ""}>
+              <img src="/icons/vote.svg" alt="Add Comment" width="20" height="20" />
+            </button></div>
+        <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}><button style={{height:"100%", width: "100%"}} onClick={handleResetVotes} title="Reset Votes">
+              <img src="/icons/reset.svg" alt="Add Comment" width="14" height="14" />
+            </button></div>
+      </div>
+    </div>
         </div>
 
         <div className="toolbar-group" style={{ maxHeight: "100%", minWidth: "240px", gap: "0.3em", flexDirection: "column"}}>

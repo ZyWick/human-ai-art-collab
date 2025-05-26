@@ -14,6 +14,7 @@ import ThreadBubble from "./ThreadBubble";
 import ThreadInput from "../widgets/ThreadInput";
 import FeedbackPopup from "../widgets/FeedbackPopup";
 import useWindowSize from "../../hook/useWindowSize";
+import "../../assets/styles/customCursor.css"
 
 const Moodboard = ({stageRef}) => {
   const tooltipRef = useRef(null);
@@ -145,8 +146,9 @@ const Moodboard = ({stageRef}) => {
   }, []);
 
   return (
-    <div style={{ cursor: isAddingComments ? "text" : "default" }}>
+    <div>
       <Stage
+       className={isAddingComments ? "custom-cursor" : ""}
         width={windowSize.width}
         height={windowSize.height}
         ref={stageRef}

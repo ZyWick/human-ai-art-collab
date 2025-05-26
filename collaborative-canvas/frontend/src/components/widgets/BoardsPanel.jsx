@@ -34,7 +34,7 @@ const BoardsPanel = () => {
   const saveCopy = () => socket.emit("cloneBoard", currentBoardId);
   const loadBoard = useCallback((boardId) => dispatch(setCurrentBoardId(boardId)), [dispatch]);
 
-  const starBoard = useCallback((boardId, isStarred) => {
+  const starBoard = useCallback((boardId) => {
     socket.emit("starBoard", boardId);
   }, [socket]);
 
@@ -88,7 +88,7 @@ const BoardsPanel = () => {
                         className="star-button"
                         onClick={(e) => {
                           e.stopPropagation();
-                          starBoard(_id, isStarred);
+                          starBoard(_id);
                         }}
                       >
                         <svg
@@ -124,7 +124,7 @@ const BoardsPanel = () => {
                     className="star-button filled"
                     onClick={(e) => {
                       e.stopPropagation();
-                      starBoard(_id, isStarred);
+                      starBoard(_id);
                     }}
                   >
                     <svg

@@ -3,7 +3,7 @@ const keywordService = require("./keywordService");
 const boardService = require("./boardService");
 const roomService = require("./roomService");
 const threadService = require("./threadService");
-const { recommendKeywords, generateTextualDescriptions, generateLayout } = require("../utils/llm");
+const { recommendKeywords, generateTextualDescriptions, generateLayout, matchLayout } = require("../utils/llm");
 
 module.exports = (io, users, rooms, boardKWCache, boardSKWCache) => {
   io.on("connection", (socket) => {
@@ -350,7 +350,7 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache) => {
         let generatedLayouts = arrangement
         let genImageInput = {}
 
-        if(!generatedLayouts) {
+        if(!generatedLayouts && arrangement.length > 0) {
           genLayoutInput = textDescriptions.output.map(entry => {
           const objects = entry.Objects.flatMap(obj => Object.keys(obj));
           return {
@@ -391,16 +391,34 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache) => {
 
         } else {
 
-        }
+        const matchLayoutInput = data.output.map((item, index) => {
+          while (boxIndex < boundingBoxes.length && boundingBoxes[boxIndex].length === 0) {
+                boxIndex++;
+          }
+
+          const objectNames = item.Objects.map(obj => Object.keys(obj)[0]);
+          const boxes = arrangement[index] || [];
+
+          return {
+            Caption: item.Caption,
+            Objects: objectNames,
+            Boxes: boxes
+          };
+        });
+        let matchedLayouts = await Promise.allSettled(
+                  matchLayoutInput.map(item => matchLayout(JSON.stringify(item, null, 2))));
+
+       
+       
+       
+       }
+
+
 
         ioEmitWithUser("updateBoardIterations", user, {
           update: genImageInput
         });
         
-       
-
-        console.log()
-
         // get selected keywords!
         // generate new images
         const generatedImages = getRandomImages();

@@ -1,8 +1,8 @@
 const { STSClient, AssumeRoleCommand } = require("@aws-sdk/client-sts");
 const { S3Client, PutObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 
-const REGION = "ap-southeast-2";
-const BUCKET_NAME = "collab-art";
+const REGION = "ap-southeast-1";
+const BUCKET_NAME = "aicollabdesignmedia";
 const ROLE_ARN = "arn:aws:iam::339712725212:role/collab-art-user";
 
 const stsClient = new STSClient({ region: REGION });

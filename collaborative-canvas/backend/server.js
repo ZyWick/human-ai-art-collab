@@ -11,6 +11,7 @@ const keywordService = require("./services/keywordService");
 const socketManager = require('./services/socketManager');
 const {getCaption} = require('./utils/imageCaptioning')
 const { extractKeywords } = require('./utils/llm')
+const { sendBufferImageToSAM } = require("./utils/imageSegmentation");
 
 const boardRoutes = require('./routes/board.routes');
 const imageRoutes = require('./routes/image.routes');
@@ -20,9 +21,8 @@ const authRoutes = require('./routes/auth.routes'); // Import auth routes
 
 const allowedOrigins = [
   process.env.CLIENT_URL,
-  "http://localhost:3000",
-  "https://human-ai-art-collab-dev.onrender.com",
-  "https://human-ai-art-collab.vercel.app"
+  "https://d3kigqhpgswrju.cloudfront.net",
+  "https://aicollabdesign.space"
 ];
 
 const upload = multer({
@@ -45,8 +45,6 @@ app.use(cors({
 }));
 
 app.options("*", cors());
-
-
 app.use(express.json());
 
 // 🔹 Connect to MongoDB Atlas
@@ -55,11 +53,12 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error("MongoDB connection error:", err));
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, { cors: { origin: allowedOrigins } });
 let users = [];
 let rooms = [];
 let boardKWCache = [], boardSKWCache = [];
 socketManager(io, users, rooms, boardKWCache, boardSKWCache);
+
 
 // Routes
 app.use('/boards', boardRoutes);
@@ -75,6 +74,10 @@ app.post("/upload", upload.array("images", 10), async (req, res) => {
       }
 
       const fullImage = req.files[0];
+      // console.log({fullImage})
+      // console.log(await sendBufferImageToSAM(fullImage.buffer, fullImage.originalname, fullImage.mimetype))
+      // return;
+      console.log(fullImage.type)
       const { width, height, x, y } = req.body;
       const boardId = req.headers["board-id"];
       const socketId = req.headers["socket-id"];

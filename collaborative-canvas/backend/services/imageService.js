@@ -68,8 +68,6 @@ const uploadImage = (users, io) => async (req, res) => {
     }
 
     const fullImage = req.files[0];
-    // const bboxes = await segementImage(fullImage);
-    // return;
     const { width, height, x, y } = req.body;
     const boardId = req.headers["board-id"];
     const socketId = req.headers["socket-id"];
@@ -97,9 +95,8 @@ const uploadImage = (users, io) => async (req, res) => {
 
     progressCounter.add(5);
     notifyClients(io, user, imageDoc);
+    segementImage(fullImage, io, imageDoc._id, user.roomId, progressCounter);
     startKeywordGeneration(io, progressCounter, imageDoc._id, user.roomId, req.files);
-    // segementImage(fullImage);
-    progressCounter.add(15);
 
     return res.status(201).json({
       message: "Image uploaded",
@@ -116,13 +113,6 @@ const uploadImage = (users, io) => async (req, res) => {
 const isValidFileCount = (files) => files && files.length === 10;
 
 const generateUploadId = () => Math.floor(Math.random() * 1_000_000);
-
-const notifyStart = (io, socketId, uploadId, fileName) => {
-  io.to(socketId).emit("addUploadProgress", {
-    uploadId,
-    fileName,
-  });
-};
 
 function createUploadProgressCounter(io, socketId, uploadId, fileName) {
   let count = 0;
@@ -166,15 +156,17 @@ const tryCreateImage = async (boardId, url, dimensions, res) => {
   }
 };
 
-const segementImage = async (fullImage) => {
+const segementImage = async (fullImage, io, imageId, roomId, progressCounter, res) => {
   try {
     const result = await sendBufferImageToSAM(fullImage.buffer, fullImage.originalname, fullImage.mimetype);
-    progressCounter.add(15);
+    const ArrangementKW = await keywordService.addArrangementToImage(imageId, result)
+    io.to(roomId).emit("newKeyword", {keyword: ArrangementKW })
     return result;
   } catch (err) {
     console.error("❌ Segmenting Image failed:", err);
-    res.status(500).json({ error: "Segmenting Image failed" });
     return null;
+  } finally {
+    progressCounter.add(15);
   }
 }
 

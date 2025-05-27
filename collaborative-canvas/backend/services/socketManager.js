@@ -4,8 +4,9 @@ const boardService = require("./boardService");
 const roomService = require("./roomService");
 const threadService = require("./threadService");
 const { recommendKeywords, generateTextualDescriptions, generateLayout, matchLayout } = require("../utils/llm");
+const { checkMeaningfulChanges, debounceBoardFunction } = require("../utils/helpers")
 
-module.exports = (io, users, rooms, boardKWCache, boardSKWCache) => {
+module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) => {
   io.on("connection", (socket) => {
     console.log(`User connected: ${socket.id}`);
 
@@ -507,10 +508,10 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache) => {
         const user = users[socket.id];
         if (!user) return;
 
-        let previousData = boardKWCache[user.roomId];
+        let previousData = boardKWCache[boardId];
         if (!previousData || checkMeaningfulChanges(previousData, data)) {
-          let result = [];
-          result = await recommendKeywords(JSON.stringify({data}, null, 2))
+          debounceBoardFunction(debounceMap, boardId, "board", async () => {
+          const result = await recommendKeywords(JSON.stringify({data}, null, 2))
           if (result  && typeof result === 'object')
             io.to(user.roomId).emit("updateBoard", {
               update: {
@@ -518,10 +519,10 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache) => {
                 changes: { boardRecommendedKeywords: result },
               },
             });
-
-          // Proceed with processing
-          boardKWCache[user.roomId] = data;
+          boardKWCache[boardId] = data;
+          }, 5000);
         }
+
       } catch (error) {
         console.error("Error recommending board keyword:", error);
         socket.emit("error", {
@@ -530,60 +531,34 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache) => {
       }
     });
 
-    function checkMeaningfulChanges(prev, curr) {
-      const prevKeys = Object.keys(prev);
-      const currKeys = Object.keys(curr);
-
-      if (prevKeys.length !== currKeys.length) return true;
-
-      for (const key of new Set([...prevKeys, ...currKeys])) {
-        const prevVal = prev[key];
-        const currVal = curr[key];
-
-        if (typeof prevVal !== "object" || typeof currVal !== "object") {
-          if (prevVal !== currVal) return true;
-        } else {
-          const subKeysPrev = Object.keys(prevVal);
-          const subKeysCurr = Object.keys(currVal);
-
-          if (subKeysPrev.length !== subKeysCurr.length) return true;
-
-          for (const subKey of new Set([...subKeysPrev, ...subKeysCurr])) {
-            if (prevVal[subKey] !== currVal[subKey]) return true;
-          }
-        }
-      }
-
-      return false;
-    }
-
     socket.on("recommendFromSelectedKw", async ({ boardId, data }) => {
       try {
         const user = users[socket.id];
         if (!user) return;
 
-        let previousData = boardSKWCache[user.roomId];
+        let previousData = boardSKWCache[boardId];
         if (!previousData || checkMeaningfulChanges(previousData, data)) {
-          let result = [];
-          result = await recommendKeywords(JSON.stringify({data}, null, 2))
-          if (result  && typeof result === 'object')
-            io.to(user.roomId).emit("updateBoard", {
-              update: {
-                id: boardId,
-                changes: { selectedRecommendedKeywords: result },
-              },
-            });
-
-          // Proceed with processing
-          boardSKWCache[user.roomId] = data;
+          debounceBoardFunction(debounceMap, boardId, "selected", async () => {
+            const result = await recommendKeywords(JSON.stringify({data}, null, 2))
+            if (result  && typeof result === 'object')
+              io.to(user.roomId).emit("updateBoard", {
+                update: {
+                  id: boardId,
+                  changes: { selectedRecommendedKeywords: result },
+                },
+              });
+            boardSKWCache[boardId] = data;
+          }, 5000);
         }
       } catch (error) {
         console.error("Error recommending selected keyword:", error);
         socket.emit("error", {
-          message: "Failed to ecommend keywords related to selected",
+          message: "Failed to recommend keywords related to selected",
         });
       }
     });
+
+
 
     socket.on("newBoard", async (boardData) => {
       try {

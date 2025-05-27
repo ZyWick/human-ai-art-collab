@@ -120,6 +120,32 @@ const generateKeywordsForImage = async (image, extractedKeywords) => {
   return keywordObjects;
 };
 
+const addArrangementToImage = async (imageId, boundingBoxes) => {
+  const image = await Image.findById(imageId);
+  if (!image) throw new Error("Image not found");
+
+  // Construct the keyword object
+  const keywordData = {
+    boardId: image.boardId,
+    imageId: image._id,
+    isSelected: false,
+    isCustom: false,
+    type: "Arrangement", // or any type you need
+    keyword: "Arrangement",
+    boundingBoxes,
+  };
+  
+  // Insert the keyword
+  const insertedKeyword = await Keyword.create(keywordData);
+
+  // Update the image's keyword references
+  image.keywords.push(insertedKeyword._id);
+  await image.save();
+
+  return insertedKeyword;
+};
+
+
 const addKeywordsToImage = async (imageId, extractedKeywords) => {
   const image = await Image.findById(imageId);
   if (!image) throw new Error("Image not found");
@@ -268,4 +294,5 @@ module.exports = {
   updateKeywordVotes,
   resetVotesForBoard,
   updateKeywordWithChanges,
+  addArrangementToImage
 };

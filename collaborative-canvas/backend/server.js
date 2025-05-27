@@ -50,7 +50,8 @@ const io = new Server(server, { cors: { origin: allowedOrigins } });
 let users = [];
 let rooms = [];
 let boardKWCache = [], boardSKWCache = [];
-socketManager(io, users, rooms, boardKWCache, boardSKWCache);
+let debounceMap = {};
+socketManager(io, users, rooms, boardKWCache, boardSKWCache, debounceMap);
 
 // Routes
 app.use('/boards', boardRoutes);

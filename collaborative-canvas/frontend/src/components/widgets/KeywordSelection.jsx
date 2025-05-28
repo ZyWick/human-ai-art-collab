@@ -103,7 +103,16 @@ const KeywordSelection = ({selectedImage}) => {
 
   return (
     <>
-      
+       <hr
+          style={{
+            border: "none",
+            minHeight: "1px",
+            marginBottom: "0.9em",
+            marginTop: "1.25em",
+            backgroundColor: "lightgray",
+            width: "100%",
+          }}
+        />
       <img className="image-preview-selection" alt="" src={selectedImage?.url} />
       <div className="shadow-container" 
       style={{height: "40.5%", marginTop: "1em", paddingTop: "1em",

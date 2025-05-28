@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Image, Transformer, Group, Rect } from "react-konva";
+import { Image, Transformer, Group, Rect, Tag, Label, Text} from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
 import useImageSelection from "../../hook/useImageSelection";
 import { updateImage } from "../../redux/imagesSlice";
@@ -80,6 +80,26 @@ const ImageComponent = ({
     socket.emit(action, update);
   };
 
+  useEffect(() => {
+  if (transformerRef.current && imageRef.current) {
+    const transformer = transformerRef.current;
+    transformer.nodes([imageRef.current]);
+    transformer.moveToTop();
+    transformer.getLayer().batchDraw();
+  }
+}, [imageRef]);
+
+  const textRef = useRef();
+  const [textWidth, setTextWidth] = useState(0);
+
+  useEffect(() => {
+    if (textRef.current) {
+      setTextWidth(textRef.current.width()); // Get actual text width
+    }
+  }, [imgData.filename]);
+  
+
+
   return image ? (
     <>
       <Group
@@ -123,6 +143,30 @@ const ImageComponent = ({
             ]}
           />
         )}
+         {isSelected && imgData.filename  && (
+            <Label   x={imgData.x + image.width / 2 - textWidth / 2}
+        y={imgData.y - 70} >
+            <Tag
+              name="label-tag"
+              pointerDirection="left"
+              fill={"white"}
+              // stroke={colorMapping[type]}
+              cornerRadius={4}
+              shadowColor={"grey"}
+              shadowBlur={2 }
+              shadowOpacity={0.75}
+            />
+            <Text
+            ref={textRef}
+            fill={'rgb(85, 85, 85)'}
+              text={imgData.filename}
+              name="label-text"
+              fontSize={14}
+              lineHeight={1}
+              padding={12}
+            />
+          </Label>
+        )}
         {!isSelected && isHovered && (
           <Rect
             x={imgData.x}
@@ -151,6 +195,7 @@ const ImageComponent = ({
             }
           />
         ))}
+        
     </>
   ) : null;
 };

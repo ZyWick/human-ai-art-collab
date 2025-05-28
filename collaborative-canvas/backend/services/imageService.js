@@ -88,6 +88,7 @@ const uploadImage = (users, io) => async (req, res) => {
     const imageDoc = await tryCreateImage(
       boardId,
       uploadResult.url,
+      fullImage.originalname,
       { width, height, x, y },
       res
     );
@@ -145,10 +146,10 @@ const tryUploadToS3 = async (file, res) => {
   }
 };
 
-const tryCreateImage = async (boardId, url, dimensions, res) => {
+const tryCreateImage = async (boardId, url, filename, dimensions, res) => {
   try {
     const { x, y, width, height } = dimensions;
-    return await createImage({ boardId, url, x, y, width, height });
+    return await createImage({ boardId, url, filename, x, y, width, height });
   } catch (err) {
     console.error("❌ Saving image to DB failed:", err);
     res.status(500).json({ error: "Saving image failed" });

@@ -5,6 +5,8 @@ const roomService = require("./roomService");
 const threadService = require("./threadService");
 const { recommendKeywords, generateTextualDescriptions, generateLayout, matchLayout } = require("../utils/llm");
 const { checkMeaningfulChanges, debounceBoardFunction } = require("../utils/helpers")
+const {generateImage} = require('../utils/imageGeneration')
+const {uploadS3Image} = require("../services/s3service")
 
 module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) => {
   io.on("connection", (socket) => {
@@ -303,45 +305,6 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
       return imageUrls.toSorted(() => Math.random() - 0.5).slice(0, count);
     };
 
-    const normalizeKeywordVotesByType = (data, newMin = 0.5, newMax = 1.5) => {
-      const { boardId, keywords, totalUsers } = data;
-
-      // Step 1: Group keywords by type
-      const grouped = {};
-      keywords.forEach((k) => {
-        if (!grouped[k.type]) grouped[k.type] = [];
-        grouped[k.type].push(k);
-      });
-
-      // Step 2: Normalize netVotes within each group
-      const normalizedKeywords = [];
-
-      Object.entries(grouped).forEach(([type, group]) => {
-        const netVotesList = group.map((k) => k.netVotes);
-        const minVote = Math.min(...netVotesList);
-        const maxVote = Math.max(...netVotesList);
-
-        group.forEach(({ keyword, netVotes }) => {
-          let normalizedVote;
-          if (maxVote === minVote) {
-            normalizedVote = (newMin + newMax) / 2;
-          } else {
-            normalizedVote =
-              ((netVotes - minVote) / (maxVote - minVote)) * (newMax - newMin) +
-              newMin;
-          }
-
-          normalizedKeywords.push({ keyword, type, netVotes, normalizedVote });
-        });
-      });
-
-      return {
-        boardId,
-        totalUsers,
-        keywords: normalizedKeywords,
-      };
-    };
-
     socket.on("generateNewImage", async ({ boardId, data, arrangement }) => {
       try {
         const user = users[socket.id];
@@ -351,7 +314,7 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
         let generatedLayouts = arrangement
         let genImageInput = {}
 
-        if(!generatedLayouts && arrangement.length > 0) {
+        if(!generatedLayouts) {
           genLayoutInput = textDescriptions.output.map(entry => {
           const objects = entry.Objects.flatMap(obj => Object.keys(obj));
           return {
@@ -385,6 +348,7 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
 
         return {
           prompt,
+          negative_prompt: "",
           boxes,
           phrases
         };
@@ -409,47 +373,55 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
         let matchedLayouts = await Promise.allSettled(
                   matchLayoutInput.map(item => matchLayout(JSON.stringify(item, null, 2))));
 
-       
-       
-       
        }
 
+      const generatedImages = await Promise.all(
+          genImageInput.map(async (data, index) => {
+            try {
+              
+        console.log(JSON.stringify(data, null, 2))
+              const imageBuffer = await generateImage(JSON.stringify(data, null, 2));
 
+              const file = {
+                originalname: `image_${index}.jpg`,
+                buffer: imageBuffer,
+                mimetype: 'image/jpeg'
+              };
 
+              const uploadResult = await uploadS3Image(file);
+              console.log(`Uploaded to S3: ${uploadResult.url}`);
+              return uploadResult.url;
+            } catch (err) {
+              console.error(`Failed to generate/upload image ${index}:`, err.message);
+              return null;
+            }
+          })
+        );
+
+console.log(generatedImages)
+
+        const keywords = [];
+
+        for (const [type, entries] of Object.entries(data)) {
+          // Skip non-object entries like "Brief"
+          if (typeof entries !== 'object') continue;
+
+          for (const [keyword, vote] of Object.entries(entries)) {
+            keywords.push({
+              keyword,
+              type,
+              vote
+            });
+          }
+        }
+        const newIteration = { generatedImages, keywords };
         ioEmitWithUser("updateBoardIterations", user, {
-          update: genImageInput
+          update: {
+            id: boardId,
+            iteration: newIteration,
+          },
         });
-        
-        // get selected keywords!
-        // generate new images
-        const generatedImages = getRandomImages();
-        // store to aws
-        // pack urls to array
-        // store urls to db
-
-
-        // const keywords = [];
-
-        // for (const [type, entries] of Object.entries(data)) {
-        //   // Skip non-object entries like "Brief"
-        //   if (typeof entries !== 'object') continue;
-
-        //   for (const [keyword, vote] of Object.entries(entries)) {
-        //     keywords.push({
-        //       keyword,
-        //       type,
-        //       vote
-        //     });
-        //   }
-        // }
-        // const newIteration = { generatedImages, keywords };
-        // ioEmitWithUser("updateBoardIterations", user, {
-        //   update: {
-        //     id: boardId,
-        //     iteration: newIteration,
-        //   },
-        // });
-        // await boardService.addIteration(boardId, newIteration);
+        await boardService.addIteration(boardId, newIteration);
       } catch (error) {
         console.error("Error generating sketches:", error);
         socket.emit("error", { message: "Failed to generate new image" });

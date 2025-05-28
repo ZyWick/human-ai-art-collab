@@ -97,11 +97,12 @@ const UploadButton = ({stageRef}) => {
         }
         className="upload-button"
       >
-        {imageUrl.trim() ? "Add Image" : "Upload File"}
+        {imageUrl.trim() ? "Add Image" : "Upload Image"}
       </button>
       <input
         id="fileInput"
-        type="file"
+         type="file"
+        accept="image/*"
         className="file-input"
         onChange={(e) => uploadImage(e.target.files[0])}
       />

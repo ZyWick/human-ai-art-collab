@@ -7,6 +7,11 @@ const imageSchema = new mongoose.Schema(
       ref: "Board",
       required: true,
     },
+    filename: {
+      type: String,
+      required: false, // optional field
+      default: "", // ensures field is omitted if not provided
+    },
     url: {
       type: String,
       required: true,

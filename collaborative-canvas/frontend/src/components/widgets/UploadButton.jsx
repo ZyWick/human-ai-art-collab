@@ -6,6 +6,7 @@ import { uploadImageApi } from "../../util/api";
 import { setSelectedImage } from "../../redux/selectionSlice";
 import useRandomStageCoordinates from "../../hook/useRandomStageCoordinates";
 import "../../assets/styles/UploadButton.css";
+import "../../assets/styles/button.css";
 
 function ProgressBar({ uploadProgress }) {
   if(!uploadProgress) return;
@@ -95,10 +96,11 @@ const UploadButton = ({stageRef}) => {
             ? uploadImageUrl
             : () => document.getElementById("fileInput").click()
         }
-        className="upload-button"
+        className="wideButton"
       >
-        {imageUrl.trim() ? "Add Image" : "Upload Image"}
-      </button>
+        <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}>
+        Upload Image <img style={{marginLeft: "0.5em"}} src="/icons/upload.svg" alt="Add Comment" width="15" height="15" />
+      </div></button>
       <input
         id="fileInput"
          type="file"

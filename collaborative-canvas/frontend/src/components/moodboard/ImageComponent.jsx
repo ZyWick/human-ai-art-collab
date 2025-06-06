@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Image, Transformer, Group, Rect, Tag, Label, Text} from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
 import useImageSelection from "../../hook/useImageSelection";
@@ -11,6 +11,7 @@ import ThreadBubble from "./ThreadBubble";
 const ImageComponent = ({
   imgData,
   stageRef,
+  setKeywordSelectionData,
   handleElementClick,
   handleThreadClick,
   setTooltipData,
@@ -30,15 +31,23 @@ const ImageComponent = ({
   const [isHovered, setIsHovered] = useState(false);
   const isSelected = selectedImageId ? selectedImageId === imgData._id : false;
   
-  useImageSelection(stageRef, imgData._id, imgData.keywords);
+  useImageSelection(stageRef, imgData._id, imgData.keywords, setKeywordSelectionData);
 
   const handleClick = (e) => {
     if (isAddingComments) handleElementClick(e, { imageId: imgData._id });
     else {
+      handleImageClick(e, imgData)
       dispatch(setSelectedImage(imgData._id));
       dispatch(setSelectedKeyword(null));
     }
   };
+
+  const handleImageClick = useCallback((event, imageData) => {
+    event.cancelBubble = true;
+    const rect = event.target.getClientRect();
+    const position = { x: rect.x + rect.width + 20, y: rect.y };
+    setKeywordSelectionData({ position, imageData });
+  }, []);
 
   useEffect(() => {
     if (!imgData || !imgData.url) return;
@@ -102,6 +111,7 @@ const ImageComponent = ({
 
   return image ? (
     <>
+    
       <Group
         onMouseEnter={e => {
           const container = e.target.getStage().container();
@@ -113,6 +123,8 @@ const ImageComponent = ({
           container.style.cursor = "default";
           setIsHovered(false)
         }}
+          onClick={(e) => handleClick(e)}
+          onTap={(e) => handleClick(e)}
       >
         <Image
           ref={imageRef}
@@ -122,8 +134,6 @@ const ImageComponent = ({
           draggable
           x={imgData.x}
           y={imgData.y}
-          onClick={(e) => handleClick(e)}
-          onTap={(e) => handleClick(e)}
           onDragMove={(e) => handleDrag(e, "imageMoving")}
           onDragEnd={(e) => handleDrag(e, "updateImage")}
           onTransform={(e) => handleTransform("imageTransforming", e)}
@@ -142,30 +152,6 @@ const ImageComponent = ({
               "bottom-right",
             ]}
           />
-        )}
-         {isSelected && imgData.filename  && (
-            <Label   x={imgData.x + image.width / 2 - textWidth / 2}
-        y={imgData.y - 70} >
-            <Tag
-              name="label-tag"
-              pointerDirection="left"
-              fill={"white"}
-              // stroke={colorMapping[type]}
-              cornerRadius={4}
-              shadowColor={"grey"}
-              shadowBlur={2 }
-              shadowOpacity={0.75}
-            />
-            <Text
-            ref={textRef}
-            fill={'rgb(85, 85, 85)'}
-              text={imgData.filename}
-              name="label-text"
-              fontSize={14}
-              lineHeight={1}
-              padding={12}
-            />
-          </Label>
         )}
         {!isSelected && isHovered && (
           <Rect

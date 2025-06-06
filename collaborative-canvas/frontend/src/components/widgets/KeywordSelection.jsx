@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, { useEffect, useState, useRef, useMemo, useCallback } from "react";
 import { useSelector } from "react-redux";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from '../../context/SocketContext';
@@ -9,8 +9,13 @@ import { selectKeywordsByImage, updateKeyword } from "../../redux/keywordsSlice"
 import { removeSelectedKeyword } from "../../redux/selectionSlice";
 
 
-const KeywordSelection = ({selectedImage}) => {
+const KeywordSelection = ({keywordSelectionData, onClose}) => {
+  console.log(keywordSelectionData)
+  const selectedImage = keywordSelectionData.imageData
+  const [position, setPosition] = useState(keywordSelectionData.position)
+
   const keywordRefs = useRef({});
+  const kwSelectionRef = useRef();
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
   const [likedElementTypes, setLikedElementTypes] = useState({});
@@ -32,9 +37,99 @@ const KeywordSelection = ({selectedImage}) => {
     return grouped;
   }, [imageKeywords]);
 
-  // useEffect(() => {
-  //   console.log("Updated imageKeywords:", imageKeywords);
-  // }, [imageKeywords]);
+useEffect(() => {
+  if (kwSelectionRef.current) {
+    const { width, height } = kwSelectionRef.current.getBoundingClientRect();
+    const newPosition = {
+      x: Math.min(keywordSelectionData.position.x, window.innerWidth - width - 10),
+      y: Math.min(keywordSelectionData.position.y, window.innerHeight - height - 10),
+    };
+    setPosition(newPosition);
+  }
+}, [keywordSelectionData.position]);
+
+useEffect(() => {
+  const element = kwSelectionRef.current;
+  if (!element) return;
+
+  let animationFrame = null;
+
+  const updatePosition = () => {
+    if (!element) return;
+
+    const { width, height } = element.getBoundingClientRect();
+    animationFrame = requestAnimationFrame(() => {
+      setPosition((prev) => {
+        let newX = prev.x;
+        let newY = prev.y;
+        const maxX = window.innerWidth - width - 10;
+        const maxY = window.innerHeight - height - 10;
+
+        // Only adjust if out of bounds
+        if (prev.x > maxX) newX = maxX;
+        if (prev.y > maxY) newY = maxY;
+
+        // Prevent re-renders unless position actually changed
+        if (newX !== prev.x || newY !== prev.y) {
+          return { x: newX, y: newY };
+        }
+
+        return prev;
+      });
+    });
+  };
+
+  const resizeObserver = new ResizeObserver(updatePosition);
+  resizeObserver.observe(element);
+
+  // Optional: run once to correct initial layout
+  updatePosition();
+
+  return () => {
+    resizeObserver.disconnect();
+    cancelAnimationFrame(animationFrame);
+  };
+}, [kwSelectionRef]);
+
+
+
+
+  const [dragging, setDragging] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
+
+  const handleMouseDown = (e) => {
+    setDragging(true);
+    setOffset({ x: e.clientX - position.x, y: e.clientY - position.y });
+  };
+
+  const handleMouseMove = useCallback(
+    (e) => {
+      if (!dragging || !kwSelectionRef.current) return;
+
+      const { offsetWidth, offsetHeight } = kwSelectionRef.current;
+      const maxX = window.innerWidth - offsetWidth;
+      const maxY = window.innerHeight - offsetHeight;
+
+      setPosition({
+        x: Math.max(0, Math.min(e.clientX - offset.x, maxX)),
+        y: Math.max(0, Math.min(e.clientY - offset.y, maxY)),
+      });
+    },
+    [dragging, offset]
+  );
+
+  const handleMouseUp = () => setDragging(false);
+
+  useEffect(() => {
+    if (dragging) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    }
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [dragging, handleMouseMove]);
   
 
   useEffect(() => {
@@ -101,28 +196,64 @@ const KeywordSelection = ({selectedImage}) => {
     });
   };
 
+
   return (
-    <>
-       <hr
-          style={{
-            border: "none",
-            minHeight: "1px",
-            marginBottom: "0.9em",
-            marginTop: "1.25em",
-            backgroundColor: "lightgray",
-            width: "100%",
-          }}
-        />
-      <img className="image-preview-selection" alt="" src={selectedImage?.url} />
-      <div className="shadow-container" 
-      style={{height: "40.5%", marginTop: "1em", paddingTop: "1em",
-        width: "100%",
-        flex: "1",
+    <div 
+    ref={kwSelectionRef}
+    style={{
+      position:"absolute",
+      top: position.y,
+      left: position.x,
+      zIndex: 150,
+      width: "240px",
+      maxHeight: "50vh",
+      backgroundColor: "white",
+      flex: "1",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-      }}>
-      <div className="keyword-container">
+        borderRadius: "8px",
+    boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",
+    padding: "13px",
+    }}>
+            <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "10px",
+          borderBottom: "1px solid rgba(0, 0, 0, 0.1)",
+          paddingBottom: "0.5em",
+          cursor: "grab",
+          width: "100%"
+        }}
+        onMouseDown={handleMouseDown}
+      >
+        <span style={{ fontSize: "0.8em", color: "#222" }}>{selectedImage.filename}</span>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={onClose}
+            style={{
+              fontSize: "12px",
+              padding: "4px 8px",
+              borderRadius: "6px",
+              border: "none",
+              background: "none",
+              color: "#222",
+              cursor: "pointer",
+              transition: "background 0.2s",
+            }}
+            title="Close"
+            onMouseEnter={(e) =>
+              (e.target.style.background = "rgba(0,0,0,0.1)")
+            }
+            onMouseLeave={(e) => (e.target.style.background = "none")}
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+     <div className="keyword-container">
         <h3 className="keyword-title">Why do you like this image?</h3>
         <p className="keyword-subtitle">Choose keywords that you like.</p>
       </div>
@@ -134,13 +265,14 @@ const KeywordSelection = ({selectedImage}) => {
       <div key={type} className="keyword-group">
         <KeywordButton
           className="keyword-button"
+          style={{fontSize:"0.86782em"}}
           text={`I like the ${type} of this image`}
           type={type}
           isSelected={likedElementTypes[type]}
           onClick={() => toggleLikedElementType(type)}
         />
         {likedElementTypes[type] && (
-          <div className="keyword-list">
+          <div className="keyword-list scrollable-container" style={{maxHeight:"6.4em"}}>
             {keywords.map((keyword) => (
               <KeywordButton
                 key={keyword._id}
@@ -171,6 +303,7 @@ const KeywordSelection = ({selectedImage}) => {
                 className="keyword-button"
                 text={`I like the Arrangement of this image`}
                 type={"Arrangement"}
+                style={{fontSize:"0.86782em"}}
                 isSelected={(groupedKeywords["Arrangement"][0].offsetX !== undefined && groupedKeywords["Arrangement"][0].offsetY !== undefined)}
                 onClick={(e) => {e.stopPropagation();
                   toggleLikedElementType("Arrangement")
@@ -188,8 +321,7 @@ const KeywordSelection = ({selectedImage}) => {
               /></div>
               </div>}
       </div>
-      </div>
-    </>
+    </div>
   );
 };
 

@@ -13,10 +13,10 @@ const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
 
   useEffect(() => {
     if (popupRef.current) {
-      const { offsetWidth, offsetHeight } = popupRef.current;
+      const { offsetWidth } = popupRef.current;
       setPosition({
         x: window.innerWidth / 2 - offsetWidth / 2,
-        y: window.innerHeight / 2 - offsetHeight / 2,
+        y: window.innerHeight * .15,
       });
     }
   }, []);

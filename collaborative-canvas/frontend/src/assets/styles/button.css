@@ -1,0 +1,16 @@
+.wideButton {
+    padding: 8px;
+    background: white;
+    color: black;
+    border: 1px solid #ccc;
+    cursor: pointer;
+    width: 100%;
+    overflow: hidden;
+    display:  flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wideButton:hover {
+  background-color: #f0f0f0; /* light grey */
+}

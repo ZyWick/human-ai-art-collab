@@ -31,8 +31,10 @@
 
 .toolbar {
     z-index: 999;
+    max-width: 30vw;
+    min-width: fit-content;
     position: absolute; /* or use fixed if needed */
-    bottom: 5%; /* Adjust the position as needed */
+    bottom: 2.5%; /* Adjust the position as needed */
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -54,18 +56,7 @@
     position: relative;
   }
   
-  /* Add vertical separator between groups */
-  .toolbar-group:not(:last-child)::after {
-    content: "";
-    position: absolute;
-    right: -8px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 1px;
-    height: 60%;
-    background: #ddd;
-  }
-  
+
   /* Button Styling */
   .toolbar button {
     background: transparent;
@@ -90,3 +81,22 @@
     color: white;
     border-radius: 5px;
   }
+
+.custom-button {
+  background-color: transparent;
+  border: none;
+  border-radius: 0.5em;
+  height: 100%;
+  width: 100%;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.custom-button:hover {
+  background-color: #f0f0f0; /* light grey */
+}
+
+.custom-button.active {
+  background-color: #f0f0f0; /* darker grey */
+}
+

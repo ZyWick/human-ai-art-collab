@@ -1,11 +1,11 @@
 .avatars-container {
   display: flex;
-  height: 80%;
+  height: 70%;
   align-items: center;
   white-space: nowrap;
-  justify-content: end;
+  justify-content: start;
   overflow: hidden;
-  width: 30%;
+  width: 80%;
   flex-shrink: 0;
 }
 

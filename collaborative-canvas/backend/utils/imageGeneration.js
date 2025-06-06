@@ -1,27 +1,30 @@
 import fetch from 'node-fetch';
 
+const RUN_POD_URL_INSTDIFF = process.env.RUN_POD_URL_INSTDIFF
+const RUN_POD_API_KEY = process.env.RUN_POD_API_KEY
+
 export async function generateImage(data) {
   try {
-    const res = await fetch('http://192.168.55.102:8001/generate', {
-      method: 'POST',
+    const response = await fetch(RUN_POD_URL_INSTDIFF, {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'image/jpeg'
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${RUN_POD_API_KEY}`,
       },
       body: data
     });
 
-    if (!res.ok) {
-      throw new Error(`Failed to generate image: Server responded with status ${res.status}`);
-    }
+    const result = await response.json();
+    console.log("here" + result)
+    console.log(result)
+     console.log(result.image_base64)
+        if (result.image_base64) {
+            return result.image_base64;
+        } else {
+            throw new Error(result.error || "Image generation failed");
+        }
 
-    const arrayBuffer = await res.arrayBuffer(); // ✅ safe
-    const buffer = Buffer.from(arrayBuffer);
-    return buffer
-
-    console.log("Image generated, size:", buffer.length);
-    // Save the buffer or pass it to uploadS3Image()
   } catch (err) {
-    console.error("Error:", err.message);
+    console.error("Request failed:", err);
   }
 }

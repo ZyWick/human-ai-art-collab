@@ -11,6 +11,7 @@ import { selectAllImages } from "../../redux/imagesSlice";
 import ImageComponent from "./ImageComponent";
 import KeywordComponent from "./KeywordComponent";
 import ThreadBubble from "./ThreadBubble";
+import KeywordSelection from "../widgets/KeywordSelection";
 import ThreadInput from "../widgets/ThreadInput";
 import FeedbackPopup from "../widgets/FeedbackPopup";
 import useWindowSize from "../../hook/useWindowSize";
@@ -27,8 +28,9 @@ const Moodboard = ({stageRef}) => {
   const isAddingComments = useSelector((state) => state.room.isAddingComments);
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
   const boardThreads = useSelector(selectBoardThreads);
-  
+
   const [popupData, setPopupData] = useState(null); // Click popup
+  const [keywordSelectionData, setKeywordSelectionData] = useState(null);
   const [inputData, setInputData] = useState(null);
   const [tooltipData, setTooltipData] = useState(null);
   const [adjustedPosition, setAdjustedPosition] = useState({
@@ -63,6 +65,7 @@ const Moodboard = ({stageRef}) => {
 
   const handleStageClick = useCallback(
     (event) => {
+      // setSelectedImage(null)
       if (!isAddingComments) return;
 
       const stage = event.target.getStage();
@@ -139,10 +142,8 @@ const Moodboard = ({stageRef}) => {
   const handleThreadClick = useCallback((event, threadId) => {
     event.cancelBubble = true;
     const rect = event.target.getClientRect();
-    setPopupData({
-      position: { x: rect.x, y: rect.y + rect.height + 8 },
-      threadId,
-    });
+    const position = { x: rect.x + rect.width + 8, y: rect.y  }
+    setPopupData({ position, threadId });
   }, []);
 
   return (
@@ -163,6 +164,7 @@ const Moodboard = ({stageRef}) => {
                 key={img._id}
                 imgData={img}
                 stageRef={stageRef}
+                setKeywordSelectionData={setKeywordSelectionData}
                 handleElementClick={handleElementClick}
                 setTooltipData={setTooltipData}
                 handleThreadClick={handleThreadClick}
@@ -250,7 +252,7 @@ const Moodboard = ({stageRef}) => {
           </p>
         </div>
       )}
-
+      {keywordSelectionData && <KeywordSelection keywordSelectionData={keywordSelectionData} onClose={() => setKeywordSelectionData(null)}/>}
       {popupData && (
         <FeedbackPopup
           popupData={popupData}

@@ -26,13 +26,14 @@
 
 .keyword-title {
     margin-block: 0;
-    font-size: 1.25em;
+    font-size: 1.05em;
     text-align: left;
 }
 
 .keyword-subtitle {
     color: grey;
     margin: 0;
+    font-size: 0.85em;
     margin-bottom: 0.65em;
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo, useEffect, useRef } from "react";
+import React, { useCallback, useMemo, useEffect, useRef } from "react";
 import { debounce,  } from 'lodash';
 import _ from 'lodash';
 import { useSelector } from "react-redux";
@@ -46,8 +46,9 @@ const usePrevious = (value) => {
   return ref.current;
 };
 
-const Toolbar = ({stageRef}) => {
-  const socket = useSocket();
+const RecommendedKeywords = ({stageRef}) => {
+
+const socket = useSocket();
   const dispatch = useDispatchWithMeta();
   const getRandomCoordinates = useRandomStageCoordinates(stageRef);
 
@@ -162,62 +163,51 @@ const Toolbar = ({stageRef}) => {
 );
 
 
-  return (
-    <>
-      
-
-
-      <div className="toolbar" style={{ boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.25)" }}>
-        {/* Toolbar Controls */}
-
-        <div className="toolbar-group" style={{ maxHeight: "100%", width: "220px", gap: "0.3em", flexDirection: "column"}}>
-          <span style={{fontSize: "0.7em", color: "grey"}}>related to your keywords</span>
-          <div
-          className="scrollable-container"
-        style={{
-          width: "80%",
-          maxHeight: "5%",
+  return (<> <span style={{fontSize: "0.7em", color: "grey",
+            marginBottom:"0.4em"}}>related to your keywords</span>
+            <div
+                     className="scrollable-container"
+                   style={{
+                    maxHeight: "6vh",
           display: "flex",
           justifyContent: "center",
           overflowX: "auto",
           flexWrap: "wrap",
           gap: "0.2em",
           fontSize: "20px",
-        }}
-      >
-        {boardRecommendedKeywords &&
-  Object.entries(boardRecommendedKeywords).map(([type, keywords]) =>
-    keywords.map((keyword, i) => (
-      <KeywordButton
-        key={`${type}-${i}`}
-        style={{ fontSize: "12px" }}
-        text={keyword}
-        type={type}
-        isSelected={false}
-        onClick={() => {
-          handleClickRecomKw("board", keyword, type);
-        }}
-      />
-    ))
-  )}
-        
-      </div>
-        </div>
+                   }}
+                 >
+                   {selectedRecommendedKeywords &&
+             Object.entries(selectedRecommendedKeywords).map(([type, keywords]) =>
+               keywords.map((keyword, i) => (
+                 <KeywordButton
+                   key={`${type}-${i}`}
+                   style={{ fontSize: "12px" }}
+                   text={keyword}
+                   type={type}
+                   isSelected={false}
+                   onClick={() => {
+                     handleClickRecomKw("board", keyword, type);
+                   }}
+                 />
+               ))
+             )}
+                   
+                 </div>
    <div
           style={{
-            height: "90%",
-            width: "1px",
+            height: "1px",
+            width: "100%",
             backgroundColor: "#ccc",
+            marginBlock:"0.4em"
           }}
         />
-        {/* Iterations Toggle */}
-        <div className="toolbar-group" style={{ maxHeight: "100%", width: "220px", gap: "0.3em", flexDirection: "column"}}>
-          <span style={{fontSize: "0.7em", color: "grey"}}>related to selected keywords</span>
-          <div
+  <span style={{fontSize: "0.7em", color: "grey",
+            marginBottom:"0.4em"}}>related to your selected keywords</span>
+              <div
           className="scrollable-container"
         style={{
-          width: "80%",
-          maxHeight: "5%",
+          maxHeight: "5vh",
           display: "flex",
           justifyContent: "center",
           overflowX: "auto",
@@ -242,12 +232,7 @@ const Toolbar = ({stageRef}) => {
     ))
   )}
 
-      </div>
-        </div>
+      </div></>)
+}
 
-      </div>
-    </>
-  );
-};
-
-export default Toolbar;
+export default RecommendedKeywords;

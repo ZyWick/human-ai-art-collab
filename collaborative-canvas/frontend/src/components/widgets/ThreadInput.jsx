@@ -61,7 +61,7 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
           fontSize: "16px",
           border: "1px solid grey",
           padding: "6px",
-          backgroundColor: "#F5F5F5",
+          backgroundColor: "white",
           outline: "none",
           borderRadius: "5px",
         }}

@@ -1,11 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import Dashboard from "./Dashboard";
-import OutputHub from "./OutputHub";
-import Header from "./Header";
 import Moodboard from "../moodboard/Moodboard";
 import "../../assets/styles/Layout.css";
 import Toolbar from './Toolbar'
+import MergeKeywords from './MergeKeywords'
+import DesignWorkspace from './DesignWorkspace'
 
 import useBoardSocket from "../../hook/useBoardSocket";
 import { setImages } from "../../redux/imagesSlice";
@@ -14,6 +13,8 @@ import { setBoards } from "../../redux/boardsSlice";
 import { getRoom, getBoard } from "../../util/api";
 import { setKeywords } from "../../redux/keywordsSlice";
 import { setThreads } from "../../redux/threadsSlice";
+import RoomDetails from "./RoomDetails";
+import RoomStatusBar from "./RoomStatusBar";
 
 const Layout = () => {
   useBoardSocket();
@@ -51,18 +52,22 @@ const Layout = () => {
 
   return (
     <>
-      <Header />
+    <RoomDetails />
+    <RoomStatusBar />
+    <DesignWorkspace stageRef={stageRef} />
+    <MergeKeywords stageRef={stageRef}/>
+      {/* <Header /> */}
       <div className="layout-container">
-        <div className="sidebar-overlay left">
+        {/* <div className="sidebar-overlay left">
           <Dashboard stageRef={stageRef}/>          
-        </div>  
+        </div>   */}
           <Toolbar stageRef={stageRef}/>
         <div className="moodboard-container">
           <Moodboard stageRef={stageRef}/>
         </div>
-         <div className="sidebar-overlay right">
+         {/* <div className="sidebar-overlay right">
           <OutputHub />
-        </div>
+        </div> */}
       </div>
     </>
   );

@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setSelectedImage } from "../redux/selectionSlice";
 import { useSocket } from '../context/SocketContext'
 
-const useImageSelection = (stageRef, imgDataId, keywords) => {
+const useImageSelection = (stageRef, imgDataId, keywords, setKeywordSelectionData) => {
   const dispatch = useDispatch();
   const socket = useSocket();
   const selectedImageId = useSelector((state) => state.selection.selectedImageId);
@@ -29,6 +29,7 @@ const useImageSelection = (stageRef, imgDataId, keywords) => {
     const handleClickOutside = (e) => {
       if (stageRef.current && e.target === stageRef.current) {
         dispatch(setSelectedImage(null));
+        setKeywordSelectionData(null)
       }
     };
 

@@ -35,7 +35,10 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
 
         if (!rooms[roomId]) rooms[roomId] = [];
         rooms[roomId].push({ id: socket.id, username, userId });
-        const currUsers = rooms[roomId].map((user) => user.username);
+        const currUsers = rooms[roomId].map(user => ({
+          userId: user.userId,
+          username: user.username
+        }));
 
         io.to(roomId).emit("updateRoomUsers", currUsers);
       } catch (error) {
@@ -568,7 +571,10 @@ console.log(generatedImages)
         if (rooms[roomId].length === 0) {
           delete rooms[roomId];
         } else {
-          const usernames = rooms[roomId].map((item) => item.username);
+          const usernames = rooms[roomId].map(user => ({
+          userId: user.userId,
+          username: user.username
+        }));
           io.to(roomId).emit("updateRoomUsers", usernames);
         }
 
@@ -589,7 +595,10 @@ console.log(generatedImages)
             (u) => u.id !== socket.id
           );
           if (rooms[user.roomId].length === 0) delete rooms[user.roomId];
-          else usernames = rooms[user.roomId].map((item) => item.username);
+          else usernames = rooms[roomId].map(user => ({
+          userId: user.userId,
+          username: user.username
+        }));
           io.to(user.roomId).emit("updateRoomUsers", usernames);
         }
 

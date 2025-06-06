@@ -123,28 +123,22 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
   };
 
   return (
-    <div className={"note-keywords-container"} style={{width: "100%", marginTop: "auto",  marginBottom: "4.5em",}}>
-        <hr
-          style={{
-            border: "none",
-            minHeight: "0",
-            backgroundColor: "darkgrey",
-            width: "100%",
-          }}
-        />
-    <div style={{width: "90%", 
+    <div className={"note-keywords-container"}>
+        
+    <div style={{
       display: "flex",
       flexDirection: "column",
       alignItems: "center",}}>
-      <div style={{width: "90%",}}>
-      <h3 style={{marginBlock: "0px", fontSize: "1.25em"}}>Add notes</h3><p style={{ color: "grey", margin: "0", marginBottom: "0.65em" }}>
+      <div>
+      <h5 style={{marginBlock: "0px", fontSize: "1em"}}>Add notes</h5>
+      <p style={{ color: "rgb(136, 136, 136)", fontSize:"0.8em", margin: "0", marginBottom: "0.65em" }}>
         Add Keywords that you like
       </p>
-    <div style={{ display: "inline-flex", alignItems: "center", border: "1px solid black", borderRadius: "4px", overflow: "hidden" }}>
+    <div style={{ display: "inline-flex", width: "fit-content", alignItems: "center", border: "1px solid #ccc", borderRadius: "4px"}}>
       <select
         value={selectedType}
         onChange={(e) => setSelectedType(e.target.value)}
-        style={{ width: "fit-content", color: "black", border: "none", padding: "0.5em", marginRight: "0.4em", fontSize: "14px",  outline: "none", backgroundColor: "white" }}
+        style={{ width: "fit-content", color: "black", fontSize: "0.75em", border: "none", padding: "0.35em", marginRight: "0.4em",  outline: "none", backgroundColor: "white" }}
       >
         {typeOptions.map((option) => (
           <option key={option} value={option}>{option}</option>
@@ -154,12 +148,20 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        style={{ border: "none", padding: "8px", fontSize: "14px",  borderLeft: "0.5px solid black", outline: "none", maxWidth: "5em", flex: 1 }}
+        style={{ border: "none", padding: "8px", fontSize: "14px",  borderLeft: "0.5px solid #ccc", outline: "none", maxWidth: "5em", flex: 1 }}
       />
       <button
         onClick={handleAdd}
-        style={{ backgroundColor: "transparent", border: "none", borderLeft: "0.5px solid black", padding: "8px 12px", fontSize: "14px",  cursor: "pointer", transition: "background-color 0.3s" }}
-      >
+        style={{ backgroundColor: "transparent", width: "fit-content", border: "none", borderLeft: "0.5px solid #ccc", padding: "8px 12px", fontSize: "14px",  cursor: "pointer", transition: "background-color 0.3s" }}
+          onMouseEnter={(e) => {
+              e.target.style.backgroundColor = "#ccc";
+              e.target.style.color = "black";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.backgroundColor =  "transparent";
+              e.target.style.color =  "black";
+            }}
+     >
         +
       </button>
     </div>

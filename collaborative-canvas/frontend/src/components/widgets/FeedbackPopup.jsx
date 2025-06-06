@@ -9,6 +9,7 @@ import { selectPopulatedThreadById, updateThread } from "../../redux/threadsSlic
 const FeedbackPopup = ({ popupData, onClose }) => {
   const [reply, setReply] = useState("");
   const [position, setPosition] = useState(popupData.position);
+
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [editingId, setEditingId] = useState(null);
@@ -48,10 +49,11 @@ const FeedbackPopup = ({ popupData, onClose }) => {
   useEffect(() => {
     if (popupRef.current) {
       const { width, height } = popupRef.current.getBoundingClientRect();
-      setPosition((prev) => ({
-        x: Math.min(prev.x, window.innerWidth - width - 10),
-        y: Math.min(prev.y, window.innerHeight - height - 10),
-      }));
+      const newPosition = {
+        x: Math.min(popupData.position.x, window.innerWidth - width - 10),
+        y: Math.min(popupData.position.y, window.innerHeight - height - 10),
+      };
+      setPosition(newPosition);
     }
   }, [popupData.position]);
 

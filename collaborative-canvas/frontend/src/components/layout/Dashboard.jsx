@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import DesignDetails from "../widgets/DesignDetails";
-import UploadButton from "../widgets/UploadButton";
 import "../../assets/styles/dashboard.css";
 import KeywordSelection from "../widgets/KeywordSelection";
 import { selectImageById } from "../../redux/imagesSlice";
@@ -15,15 +13,11 @@ const Sidebar = ({stageRef}) => {
   const selectedImage = useSelector((state) =>
     selectedImageId ? selectImageById(state, selectedImageId) : null
   );
-  const designDetails = useSelector((state) => state.room.designDetails);
   const boardId = useSelector((state) => state.room.currentBoardId);
   const socket = useSocket();
 
   const [isUploadingImg, setIsUploadingImg] = useState(false);
   
-  const isDesignDetailsEmpty = Object.entries(designDetails)
-    .filter(([key]) => key !== "others")
-    .some(([, value]) => !value?.trim());
 
   const addKeywordSelection = (type, newKeywordText) => {
     const newKeyword = {
@@ -47,17 +41,7 @@ const Sidebar = ({stageRef}) => {
         alignItems: "center",
       }}
     >
-      {!isDesignDetailsEmpty ? (
-        <UploadButton
-          stageRef={stageRef}
-          isUploadingImg={isUploadingImg}
-          setIsUploadingImg={setIsUploadingImg}
-        />
-      ) : (
-        <p style={{ fontSize: "0.75em", marginBottom: "0" }}>
-          Please complete design brief to add images
-        </p>
-      )}
+     
       {!isUploadingImg &&
         (selectedImage ? (
           <KeywordSelection selectedImage={selectedImage} />
@@ -86,7 +70,6 @@ const Sidebar = ({stageRef}) => {
               marginTop: "1em",
             }}
           >
-            <DesignDetails />
           </div>
         ))}
       <NoteKeywordInput addKeywordSelection={addKeywordSelection} />

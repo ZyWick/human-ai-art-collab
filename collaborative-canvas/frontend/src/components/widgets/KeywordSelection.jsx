@@ -42,7 +42,7 @@ useEffect(() => {
     const { width, height } = kwSelectionRef.current.getBoundingClientRect();
     const newPosition = {
       x: Math.min(keywordSelectionData.position.x, window.innerWidth - width - 10),
-      y: Math.min(keywordSelectionData.position.y, window.innerHeight - height - 10),
+      y: Math.max(0, Math.min(keywordSelectionData.position.y, window.innerHeight - height - 10)),
     };
     setPosition(newPosition);
   }

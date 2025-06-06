@@ -11,13 +11,13 @@ const RoomStatusBar = () => {
   const headerRef = useRef();
   const [visibleUsers, setVisibleUsers] = useState([]);
   const [hiddenUsers, setHiddenUsers] = useState([]);
-  const avatarAreaRatio = 0.75;
 
   useEffect(() => {
       setVisibleUsers(users.slice(0, 4));
       setHiddenUsers(users.slice(4));
   },[users])
 
+  // const avatarAreaRatio = 0.75;
   //  useEffect(() => {
   //   const resizeHandler = () => {
   //     if (!headerRef.current || !containerRef.current) return;
@@ -80,7 +80,7 @@ const RoomStatusBar = () => {
       </div>
     );
   })}
-        {hiddenUsers.length > 0 && (
+        {hiddenUsers && hiddenUsers.length > 0 && (
           <div className="avatar more" title={hiddenUsers.map(u => u.username).join(", ")}>
             +{hiddenUsers.length} {console.log(hiddenUsers)}
           </div>

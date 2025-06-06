@@ -10,13 +10,11 @@ import {
   removeSelectedKeyword,
 } from "../../redux/selectionSlice";
 import "../../assets/styles/button.css";
-import RecommendedKeywords from "../widgets/RecommendKeywords";
 
 const MergeKeywords = ({stageRef}) => {
 const topRef = useRef(null);
 const secondRef = useRef(null);
 const [topBottom, setTopBottom] = useState(0);
-const [secondHeight, setSecondHeight] = useState(0);
 
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
@@ -111,30 +109,6 @@ const [secondHeight, setSecondHeight] = useState(0);
     window.removeEventListener("resize", updatePosition);
   };
 }, []);
-
-useEffect(() => {
-  if (!secondRef.current) {
-    setSecondHeight(0); // fallback to 0 if second box not shown
-    return;
-  }
-
-  const updateSecondHeight = () => {
-    const rect = secondRef.current?.getBoundingClientRect();
-    setSecondHeight(rect?.height || 0);
-  };
-
-  updateSecondHeight();
-
-  const observer = new ResizeObserver(updateSecondHeight);
-  observer.observe(secondRef.current);
-
-  window.addEventListener("resize", updateSecondHeight);
-
-  return () => {
-    observer.disconnect();
-    window.removeEventListener("resize", updateSecondHeight);
-  };
-}, [currGenerated, secondRef]); // runs when images update
 
   return (
     <>

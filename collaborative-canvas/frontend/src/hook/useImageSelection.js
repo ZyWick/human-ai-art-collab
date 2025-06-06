@@ -45,7 +45,7 @@ const useImageSelection = (stageRef, imgDataId, keywords, setKeywordSelectionDat
         stage.off("tap", handleClickOutside);
       }
     };
-  }, [stageRef, dispatch]);
+  }, [stageRef, dispatch, setKeywordSelectionData]);
 };
 
 export default useImageSelection;

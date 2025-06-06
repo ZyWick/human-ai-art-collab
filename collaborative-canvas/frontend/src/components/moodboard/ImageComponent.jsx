@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import { Image, Transformer, Group, Rect, Tag, Label, Text} from "react-konva";
+import { Image, Transformer, Group, Rect} from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
 import useImageSelection from "../../hook/useImageSelection";
 import { updateImage } from "../../redux/imagesSlice";
@@ -47,7 +47,7 @@ const ImageComponent = ({
     const rect = event.target.getClientRect();
     const position = { x: rect.x + rect.width + 20, y: rect.y };
     setKeywordSelectionData({ position, imageData });
-  }, []);
+  }, [setKeywordSelectionData]);
 
   useEffect(() => {
     if (!imgData || !imgData.url) return;
@@ -97,16 +97,6 @@ const ImageComponent = ({
     transformer.getLayer().batchDraw();
   }
 }, [imageRef]);
-
-  const textRef = useRef();
-  const [textWidth, setTextWidth] = useState(0);
-
-  useEffect(() => {
-    if (textRef.current) {
-      setTextWidth(textRef.current.width()); // Get actual text width
-    }
-  }, [imgData.filename]);
-  
 
 
   return image ? (

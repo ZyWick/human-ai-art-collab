@@ -120,7 +120,7 @@ const Moodboard = ({stageRef}) => {
     const { width } = tooltipRef.current.getBoundingClientRect();
     setAdjustedPosition({
       x: Math.min(tooltipData.position.x, window.innerWidth - width - 10),
-      y: Math.max(tooltipData.position.y, 40),
+      y: Math.max(tooltipData.position.y, 7.5),
     });
   }, [tooltipData]); // Runs after tooltipData updates and ensures tooltipRef is valid
 
@@ -130,8 +130,8 @@ const Moodboard = ({stageRef}) => {
       const rect = event.target.getClientRect();
       setTooltipData({
         position: {
-          x: rect.x + rect.width * 0.75,
-          y: rect.y - rect.height * 0.65,
+          x: rect.x + rect.width * 1,
+          y: rect.y - rect.height * 1.2,
         },
         data,
       });

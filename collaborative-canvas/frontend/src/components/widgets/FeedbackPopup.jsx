@@ -51,7 +51,7 @@ const FeedbackPopup = ({ popupData, onClose }) => {
       const { width, height } = popupRef.current.getBoundingClientRect();
       const newPosition = {
         x: Math.min(popupData.position.x, window.innerWidth - width - 10),
-        y: Math.min(popupData.position.y, window.innerHeight - height - 10),
+        y:  Math.max(7.5, Math.min(popupData.position.y, window.innerHeight - height - 10)),
       };
       setPosition(newPosition);
     }

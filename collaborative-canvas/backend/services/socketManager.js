@@ -399,17 +399,17 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
         };
       });
        }
-       
+       console.log("hello2")
       const generatedImages = await Promise.all(
           genImageInput.map(async (data, index) => {
             try {
               
-        console.log(JSON.stringify(data, null, 2))
-              const imageBuffer = await generateImage(JSON.stringify(data, null, 2));
+              console.log(JSON.stringify(data, null, 2))
+             const base64Image = await generateImage(data);
 
               const file = {
                 originalname: `image_${index}.jpg`,
-                buffer: imageBuffer,
+                buffer: Buffer.from(base64Image, 'base64'),
                 mimetype: 'image/jpeg'
               };
 
@@ -422,8 +422,6 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
             }
           })
         );
-
-console.log(generatedImages)
 
         const keywords = [];
 

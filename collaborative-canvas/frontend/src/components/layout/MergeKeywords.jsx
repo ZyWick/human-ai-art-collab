@@ -82,8 +82,8 @@ function filterArrangementData(data) {
       votes: (item.votes?.length || 0) - (item.downvotes?.length || 0),
     }));
 }
-
 const generateImage = () => {
+      console.log("hello2")
   if (selectedBoardKeywords?.length > 0) {
     const dataKeywords = processKeywords(selectedBoardKeywords, designDetails.objective);
 
@@ -194,7 +194,6 @@ const generateImage = () => {
       {topBottom > 0 && currGenerated && currGenerated.length > 0 && (
         <div
         ref={secondRef}
-          className="scrollable-container"
           style={{
            width: "240px",
             maxHeight: "52.5vh",
@@ -213,7 +212,7 @@ const generateImage = () => {
             gap: "0.5em",
           }}
         >
-          {/* {currGenerated.map((img, index) => (
+          {currGenerated.map((img, index) => (
             <img
               key={index}
               style={{
@@ -225,25 +224,8 @@ const generateImage = () => {
               alt=""
               src={img}
             />
-          ))} */}
-         {Array.from({ length: 3 }).map((_, index) => (
-              <div
-              className="image-preview"
-                key={index}
-                style={{
-                  width: "100%",
-                  height: "17.5vh",
-                  background: "rgba(200, 200, 200, 0.3)", // Lighter grey
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "#777", // Softer text color
-                  fontSize: "14px",
-                  fontWeight: "bold",
-                  marginBottom: "5%",
-                }}
-              />
-            ))}
+          ))}
+      
         </div>
       )}
       {/* <div

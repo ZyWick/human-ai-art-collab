@@ -98,7 +98,6 @@ export async function generateTextualDescriptions (data) {
       store: true
     });
 
-    console.log(response.output_text)
     return JSON.parse(response.output_text);;
 }
 
@@ -131,7 +130,6 @@ export async function generateLayout (data) {
       store: true
     });
 
-    console.log(response.output_text)
     return JSON.parse(response.output_text);;
 }
 
@@ -163,7 +161,6 @@ export async function matchLayout (data) {
       top_p: 1,
       store: true
     });
-
-    console.log(response.output_text)
+    
     return JSON.parse(response.output_text);;
 }

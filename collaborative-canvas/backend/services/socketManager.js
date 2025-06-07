@@ -7,6 +7,7 @@ const { recommendKeywords, generateTextualDescriptions, generateLayout, matchLay
 const { checkMeaningfulChanges, debounceBoardFunction } = require("../utils/helpers")
 const {generateImage} = require('../utils/imageGeneration')
 const {uploadS3Image} = require("../services/s3service")
+const {getTopFusedBoxes} = require('../utils/getBoundingBoxes')
 
 module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) => {
   io.on("connection", (socket) => {
@@ -359,14 +360,9 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
 
         } else {
 
-        const matchLayoutInput = data.output.map((item, index) => {
-          while (boxIndex < boundingBoxes.length && boundingBoxes[boxIndex].length === 0) {
-                boxIndex++;
-          }
-
+        const matchLayoutInput = textDescriptions.output.map((item) => {
           const objectNames = item.Objects.map(obj => Object.keys(obj)[0]);
-          const boxes = arrangement[index] || [];
-
+          const boxes = getTopFusedBoxes(arrangement, objectNames.length)
           return {
             Caption: item.Caption,
             Objects: objectNames,
@@ -375,9 +371,35 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
         });
         let matchedLayouts = await Promise.allSettled(
                   matchLayoutInput.map(item => matchLayout(JSON.stringify(item, null, 2))));
+      genImageInput = textDescriptions.output.map((captionEntry, index) => {
+        const prompt = captionEntry.Caption;
+        const boxEntries = matchedLayouts[index].value.output;
 
+        // Map descriptions by label
+        const descMap = {};
+        captionEntry.Objects.forEach(obj => {
+          const key = Object.keys(obj)[0];
+          const value = obj[key];
+          descMap[key] = value;
+        });
+
+        const boxes = [];
+        const phrases = [];
+
+        for (const [label, box] of boxEntries) {
+          boxes.push(box);
+          phrases.push(descMap[label]); // Duplicate the description for each matching box
+        }
+
+        return {
+          prompt,
+          negative_prompt: "",
+          boxes,
+          phrases
+        };
+      });
        }
-
+       
       const generatedImages = await Promise.all(
           genImageInput.map(async (data, index) => {
             try {

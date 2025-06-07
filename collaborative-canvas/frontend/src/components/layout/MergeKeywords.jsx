@@ -43,40 +43,63 @@ const [topBottom, setTopBottom] = useState(0);
     currGenerated = latestIteration?.generatedImages; // Assign inside the block
   }
 
-  const normalizeType = (type) => {
-    const map = {
-      "subject matter": "Subject matter",
-      "action & pose": "Action & pose",
-      "theme & mood": "Theme & mood",
-    };
-    return map[type.trim().toLowerCase()];
+const typeMap = {
+  "subject matter": "Subject matter",
+  "action & pose": "Action & pose",
+  "theme & mood": "Theme & mood",
+};
+
+const normalizeType = (type) => {
+  return typeMap[type.trim().toLowerCase()];
+};
+
+const processKeywords = useCallback((keywords, brief) => {
+  // Initialize the result with empty objects for each type
+  const result = {
+    "Subject matter": {},
+    "Action & pose": {},
+    "Theme & mood": {},
+    Brief: brief,
   };
 
-  const processKeywords = useCallback((keywords, brief) => {
-    const result = {
-      "Subject matter": {},
-      "Action & pose": {},
-      "Theme & mood": {},
-      Brief: brief,
-    };
+  keywords.forEach(({ type, keyword, votes, downvotes }) => {
+    const normalized = normalizeType(type);
+    if (normalized) {
+      const key = keyword.trim();
+      const score = (votes?.length || 0) - (downvotes?.length || 0);
+      result[normalized][key] = score;
+    }
+  });
 
-    keywords.forEach(({ type, keyword, votes, downvotes }) => {
-      const normalized = normalizeType(type);
-      if (normalized) {
-        result[normalized][keyword.trim()] = votes.length - downvotes.length;
-      }
-    });
+  return result;
+}, []);
 
-    return result;
-  }, []);
+function filterArrangementData(data) {
+  return data
+    .filter(item => item.type === "Arrangement")
+    .map(item => ({
+      boundingBoxes: item.boundingBoxes,
+      votes: (item.votes?.length || 0) - (item.downvotes?.length || 0),
+    }));
+}
 
-  const generateImage = () => {
-    if (selectedBoardKeywords?.length > 0)
+const generateImage = () => {
+  if (selectedBoardKeywords?.length > 0) {
+    const dataKeywords = processKeywords(selectedBoardKeywords, designDetails.objective);
+
+    // Check if at least one keyword exists in any category
+    const hasKeywords = ["Subject matter", "Action & pose", "Theme & mood"]
+      .some(category => Object.keys(dataKeywords[category]).length > 0);
+
+    if (hasKeywords) {
       socket.emit("generateNewImage", {
         boardId: currentBoardId,
-        data: processKeywords(selectedBoardKeywords, designDetails.objective),
+        data: dataKeywords,
+        arrangement: filterArrangementData(selectedBoardKeywords),
       });
-  };
+    }
+  }
+};
 
   const toggleSelected = (keyword) => {
     const newIsSelected = !keyword.isSelected;

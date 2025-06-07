@@ -15,8 +15,8 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
   };
 
   const adjustedPosition = useMemo(() => ({
-    x: Math.min(position.x, window.innerWidth - 265),
-    y: Math.max(position.y, 40),
+    x: Math.max(Math.min(position.x, window.innerWidth - 280), 40),
+    y: Math.max(Math.min(position.y, window.innerHeight - 80 ), 40),
   }), [position]);
   
 
@@ -24,8 +24,8 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
     <div
       style={{
         position: "absolute",
-        top: adjustedPosition.y + 15,
-        left: adjustedPosition.x - 15,
+        top: adjustedPosition.y - 17.5,
+        left: adjustedPosition.x - 17.5,
         display: "flex",
         alignItems: "center",
         gap: "5px",

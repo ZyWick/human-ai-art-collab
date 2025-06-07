@@ -120,7 +120,7 @@ const Moodboard = ({stageRef}) => {
     const { width } = tooltipRef.current.getBoundingClientRect();
     setAdjustedPosition({
       x: Math.min(tooltipData.position.x, window.innerWidth - width - 10),
-      y: Math.max(tooltipData.position.y, 7.5),
+      y: Math.max(Math.min(tooltipData.position.y, window.innerHeight - 80), 7.5),
     });
   }, [tooltipData]); // Runs after tooltipData updates and ensures tooltipRef is valid
 

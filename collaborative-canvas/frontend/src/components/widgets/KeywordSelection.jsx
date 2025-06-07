@@ -10,7 +10,6 @@ import { removeSelectedKeyword } from "../../redux/selectionSlice";
 
 
 const KeywordSelection = ({keywordSelectionData, onClose}) => {
-  console.log(keywordSelectionData)
   const selectedImage = keywordSelectionData.imageData
   const [position, setPosition] = useState(keywordSelectionData.position)
 
@@ -310,15 +309,6 @@ useEffect(() => {
                   toggleOnBoard(groupedKeywords["Arrangement"][0])
                 }}
               />
-              <div className="keyword-list" style={{visibility: "hidden" }}>
-               <KeywordButton
-                key={groupedKeywords["Arrangement"][0]?._id}
-                text={"Arrangement"}
-                type={"Arrangement"}
-                ref={(el) => {
-                  if (el) keywordRefs.current[groupedKeywords["Arrangement"][0]?._id] = el;
-                }}
-              /></div>
               </div>}
       </div>
     </div>

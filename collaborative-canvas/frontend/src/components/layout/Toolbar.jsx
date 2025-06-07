@@ -19,7 +19,7 @@ const DEBOUNCE_DELAY = 2500
 const summarizeKeywords = (list) =>
   _.sortBy(
     list
-      .filter(({ offsetX, offsetY }) => offsetX !== undefined && offsetY !== undefined)
+      .filter(({type, offsetX, offsetY }) => type !== "Arrangement" && offsetX !== undefined && offsetY !== undefined)
       .map(({ _id, keyword, type, votes = [], downvotes = [] }) => ({
         _id,
         keyword,

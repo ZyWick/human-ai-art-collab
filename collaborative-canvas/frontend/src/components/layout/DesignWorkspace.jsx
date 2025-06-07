@@ -179,18 +179,18 @@ width: "220px",
               className={showAllIterations ? "active custom-button" : "custom-button"}
               style={{height:"100%", width: "100%"}}
             >
-              <img src="/icons/folder.svg" alt="Add Comment" width="20" height="20" />
+              <img src="/icons/folder.svg" alt="Show iterations" width="20" height="20" />
             </button></div>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: '33.33% 33.33% 33.33%'}}>
         <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}> <button style={{height:"100%", width: "100%"}} onClick={handleToggleVoting} title="Vote" className={isVoting ? "active custom-button" : "custom-button"}>
-              <img src="/icons/vote.svg" alt="Add Comment" width="20" height="20" />
+              <img src="/icons/vote.svg" alt="Toggle Voting" width="20" height="20" />
             </button></div>
         <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}><button className="custom-button" style={{height:"100%", width: "100%"}} onClick={handleResetVotes} title="Reset Votes">
-              <img src="/icons/reset.svg" alt="Add Comment" width="14" height="14" />
+              <img src="/icons/reset.svg" alt="Reset votes" width="14" height="14" />
             </button></div>
-        <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}><button className={isAddingNotes ? "active custom-button" : "custom-button"} style={{height:"100%", width: "100%"}} onClick={() => setIsAddingNotes(!isAddingNotes)} title="Reset Votes">
-              <img src="/icons/note-svgrepo-com.svg" alt="Add Comment" width="20" height="20" />
+        <div style={{display: "flex", justifyContent: "center", alignItems: "center"}}><button className={isAddingNotes ? "active custom-button" : "custom-button"} style={{height:"100%", width: "100%"}} onClick={() => setIsAddingNotes(!isAddingNotes)} title="Add Notes">
+              <img src="/icons/note-svgrepo-com.svg" alt="Add Notes" width="20" height="20" />
             </button></div>
             
       </div>

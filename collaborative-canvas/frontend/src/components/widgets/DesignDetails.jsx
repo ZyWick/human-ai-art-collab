@@ -25,7 +25,7 @@ const DesignDetails = () => {
 
   const handleBlur = (field, value) => {
   const newValue = typeof value === "string" ? value.trim() : "";
-  if (!newValue || newValue === designDetails[field]) {
+  if (!newValue) {
     setEditingField(null);
     return;
   }

@@ -399,12 +399,9 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
         };
       });
        }
-       console.log("hello2")
       const generatedImages = await Promise.all(
           genImageInput.map(async (data, index) => {
             try {
-              
-              console.log(JSON.stringify(data, null, 2))
              const base64Image = await generateImage(data);
 
               const file = {
@@ -414,7 +411,6 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
               };
 
               const uploadResult = await uploadS3Image(file);
-              console.log(`Uploaded to S3: ${uploadResult.url}`);
               return uploadResult.url;
             } catch (err) {
               console.error(`Failed to generate/upload image ${index}:`, err.message);

@@ -26,7 +26,7 @@ async function pollJobStatus(jobId, endpoint) {
 
     const jobStatus = await res.json();
     const status = jobStatus.status;
-    console.log(`Polling attempt ${attempt + 1}: ${status}`);
+    // console.log(`Polling attempt ${attempt + 1}: ${status}`);
 
     if (status === "COMPLETED") return jobStatus.output;
     if (status === "FAILED" || status === "CANCELLED") throw new Error(`Job ${status}`);
@@ -47,9 +47,6 @@ export async function generateImage(data) {
     body: JSON.stringify({
       input: data})
   };
-console.log("hello")
-  console.log( JSON.stringify({
-      input: data}));
 
   try {
     const response = await fetch(RUNPOD_RUN_URL_INSTDIFF, requestConfig);

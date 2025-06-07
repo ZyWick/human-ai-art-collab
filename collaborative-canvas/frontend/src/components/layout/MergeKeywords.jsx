@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { useSelector } from "react-redux";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from "../../context/SocketContext";
@@ -43,18 +43,17 @@ const [topBottom, setTopBottom] = useState(0);
     currGenerated = latestIteration?.generatedImages; // Assign inside the block
   }
 
-const typeMap = {
+const typeMap = useMemo(() => ({
   "subject matter": "Subject matter",
   "action & pose": "Action & pose",
   "theme & mood": "Theme & mood",
-};
-
-const normalizeType = (type) => {
-  return typeMap[type.trim().toLowerCase()];
-};
+}), []);
 
 const processKeywords = useCallback((keywords, brief) => {
-  // Initialize the result with empty objects for each type
+  const normalizeType = (type) => {
+    return typeMap[type.trim().toLowerCase()];
+  };
+
   const result = {
     "Subject matter": {},
     "Action & pose": {},
@@ -72,7 +71,9 @@ const processKeywords = useCallback((keywords, brief) => {
   });
 
   return result;
-}, []);
+}, [typeMap]);
+
+
 
 function filterArrangementData(data) {
   return data

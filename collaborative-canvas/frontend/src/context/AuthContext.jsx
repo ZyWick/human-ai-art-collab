@@ -3,7 +3,7 @@ import axios from "axios";
 
 const AuthContext = createContext();
 
-const REACT_APP_BACKEND_URL = "http://localhost:5000";
+const REACT_APP_BACKEND_URL = "https://api.aicollabdesign.space";
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);

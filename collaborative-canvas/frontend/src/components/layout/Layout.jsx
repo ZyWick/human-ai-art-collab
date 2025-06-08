@@ -8,7 +8,7 @@ import DesignWorkspace from './DesignWorkspace'
 
 import useBoardSocket from "../../hook/useBoardSocket";
 import { setImages } from "../../redux/imagesSlice";
-import { setSelectedKeywords, setSelectedImage } from "../../redux/selectionSlice";
+import { setSelectedKeywords } from "../../redux/selectionSlice";
 import { setBoards } from "../../redux/boardsSlice";
 import { getRoom, getBoard } from "../../util/api";
 import { setKeywords } from "../../redux/keywordsSlice";
@@ -34,7 +34,6 @@ const Layout = () => {
         const newRoomData = newBoard.roomId ? await getRoom(newBoard.roomId) : null;
         const selectedKeywordIds = newKeywords?.filter(k => k.isSelected).map(k => k._id) || [];
 
-        dispatch(setSelectedImage(null));
         dispatch(setSelectedKeywords(selectedKeywordIds));
         dispatch(setImages(newImages));
         dispatch(setKeywords(newKeywords));
@@ -52,22 +51,15 @@ const Layout = () => {
 
   return (
     <>
+      <div className="layout-container">
     <RoomDetails />
     <RoomStatusBar />
     <DesignWorkspace stageRef={stageRef} />
     <MergeKeywords stageRef={stageRef}/>
-      {/* <Header /> */}
-      <div className="layout-container">
-        {/* <div className="sidebar-overlay left">
-          <Dashboard stageRef={stageRef}/>          
-        </div>   */}
           <Toolbar stageRef={stageRef}/>
         <div className="moodboard-container">
           <Moodboard stageRef={stageRef}/>
         </div>
-         {/* <div className="sidebar-overlay right">
-          <OutputHub />
-        </div> */}
       </div>
     </>
   );

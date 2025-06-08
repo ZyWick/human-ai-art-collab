@@ -1,20 +1,12 @@
-.scrollable-container {
-    overflow-y: auto;
-    scrollbar-width: none;
-    msOverflowStyle: none;
+.designbrief-text-matching-style {
+  -webkit-font-smoothing: antialiased;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font-size: 0.9em;
+  word-break: break-word;
+  border-radius: 4px;
+  padding: 0.3em 0.6em;
+  white-space: pre-wrap;
+  box-sizing: border-box;
+  width: 100%;
+  line-height: 1.4;
 }
-
-.scrollable-container::-webkit-scrollbar {
-    display: none;
-}
-
-
-
-
-.chatBOX p:last-child {
-    margin-bottom: 0;
-  }
-
-  .note-keywords-container {
-    flex: none; /* Keep it fixed */
-  }

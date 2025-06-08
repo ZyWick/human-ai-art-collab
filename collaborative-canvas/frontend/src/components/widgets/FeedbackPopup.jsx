@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import { timeAgo } from "../../util/time";
 import { selectPopulatedThreadById, updateThread } from "../../redux/threadsSlice";
+import "../../assets/styles/button.css";
 
 const FeedbackPopup = ({ popupData, onClose }) => {
   const [reply, setReply] = useState("");
@@ -34,11 +35,13 @@ const FeedbackPopup = ({ popupData, onClose }) => {
     setEditingId(null);
   };
 
-  const onResolve = useCallback(() => {
-    const update = { id: threadData._id, changes: { isResolved: true } };
+  const onResolve = useCallback((id) => {
+    const update = { id, changes: { isResolved: true } };
     dispatch(updateThread, update);
     socket.emit("updateThread", update);
-  }, [dispatch, socket, threadData]);
+
+    if (popupData.threadId === id) onClose()
+  }, [dispatch, socket, onClose, popupData.threadId]);
 
   useEffect(() => {
     if (repliesContainerRef.current) {
@@ -104,6 +107,20 @@ const FeedbackPopup = ({ popupData, onClose }) => {
     });
     setReply("");
   };
+  const textAreaRefs = useRef({});
+  const resizeTextArea = (id) => {
+  const el = textAreaRefs.current[id];
+  if (el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+};
+useEffect(() => {
+  if (editingId) {
+    resizeTextArea(editingId);
+  }
+}, [editText, editingId]);
+
 
   return (
     <div
@@ -141,43 +158,19 @@ const FeedbackPopup = ({ popupData, onClose }) => {
       >
         <strong style={{ fontSize: "16px", color: "#222" }}>Comment</strong>
         <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            onClick={() => onResolve(threadData._id)}
-            style={{
-              fontSize: "12px",
-              padding: "4px 8px",
-              borderRadius: "6px",
-              border: "none",
-              background: "none",
-              color: "#222",
-              cursor: "pointer",
-              transition: "background 0.2s",
-            }}
-            title="Mark as resolved"
-            onMouseEnter={(e) =>
-              (e.target.style.background = "rgba(0,0,0,0.1)")
-            }
-            onMouseLeave={(e) => (e.target.style.background = "none")}
-          >
-            ✓
-          </button>
+         
           <button
             onClick={onClose}
             style={{
               fontSize: "12px",
               padding: "4px 8px",
               borderRadius: "6px",
-              border: "none",
-              background: "none",
               color: "#222",
               cursor: "pointer",
               transition: "background 0.2s",
             }}
             title="Close"
-            onMouseEnter={(e) =>
-              (e.target.style.background = "rgba(0,0,0,0.1)")
-            }
-            onMouseLeave={(e) => (e.target.style.background = "none")}
+            className="commonButton"
           >
             ✕
           </button>
@@ -190,26 +183,37 @@ const FeedbackPopup = ({ popupData, onClose }) => {
           alignItems: "center",
         }}
       >
-        <span style={{ fontSize: "13px", color: "#333", fontWeight: "bold" }}>
+        <span style={{marginLeft:"0.5em", fontSize: "13px", color: "#333", fontWeight: "bold" }}>
           {threadData.username}{" "}
-          <span style={{ fontSize: "12px", color: "#777" }}>
-            {timeAgo(threadData.createdAt)}
+          <span style={{ fontSize: "12px", wordBreak: "break-word", color: "#777" }}>
+            {timeAgo(threadData.updatedAt)}
           </span>
         </span>
-        {threadData.userId === user.id && editingId !== threadData._id && (
+        {threadData.userId === user.id && editingId !== threadData._id ? (
           <button
-            style={{
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              fontSize: "16px",
-              color: "#777",
-            }}
+          title="edit comment"
             onClick={() => handleEditClick(threadData)}
+            className="commonButton"
           >
-            &#8230;
+             <img src="/icons/edit.svg" alt="Reset votes" width="10" height="10" />
           </button>
-        )}
+        ) : 
+         <button
+            onClick={() => onResolve(threadData._id)}
+            style={{
+              fontSize: "12px",
+              padding: "4px 8px",
+              borderRadius: "6px",
+              color: "#222",
+              cursor: "pointer",
+              paddingTop: "0.6em"
+            }}
+            title="delete comment"
+            className="commonButton"
+          >
+            <img src="/icons/trash.svg" alt="Reset votes" width="14" height="14" />
+          </button>
+      }
       </div>
 
       {editingId === threadData._id ? (
@@ -218,40 +222,48 @@ const FeedbackPopup = ({ popupData, onClose }) => {
             display: "flex",
             flexDirection: "column",
             marginTop: "4px",
-            width: "90%",
+            width: "100%",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+            marginBottom: "0.5em"
           }}
         >
           <textarea
+           ref={(el) => {
+              if (el) textAreaRefs.current[threadData._id] = el;
+            }}
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
+            autofocus
             style={{
               fontSize: "13px",
               padding: "6px",
-              width: "100%",
-              minHeight: "60px",
-              resize: "vertical",
+              width: "95%",
+              border: "none",
+              outline: "none",
+              minHeight: "20px",
+              resize: "none",
               borderRadius: "4px",
-              border: "1px solid #ccc",
+              borderBottom: "1px solid #ccc",
             }}
           />
           <div
             style={{
               display: "flex",
               justifyContent: "flex-end",
-              marginTop: "4px",
+              marginBlock: "0.3em",
+              alignItems: "center"
             }}
           >
             <button
+            className="editButton"
+              onClick={() => setEditingId(null)}
+            >
+              Cancel
+            </button>
+            <button
+            className="editButton doneButton" 
               onClick={handleSave}
-              style={{
-                fontSize: "13px",
-                padding: "6px 10px",
-                background: "#007bff",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer",
-              }}
             >
               Done
             </button>
@@ -260,10 +272,12 @@ const FeedbackPopup = ({ popupData, onClose }) => {
       ) : (
         <p
           style={{
+            marginLeft:"0.5em",
             fontSize: "13px",
-            color: "#555",
+            color: "black",
             wordWrap: "break-word",
             marginTop: "4px",
+             whiteSpace: "pre-wrap", 
           }}
         >
           {threadData.value}
@@ -294,79 +308,100 @@ const FeedbackPopup = ({ popupData, onClose }) => {
               <span
                 style={{ fontSize: "13px", color: "#333", fontWeight: "bold" }}
               >
+                
                 {child.username}{" "}
-                <span style={{ fontSize: "12px", color: "#777" }}>
-                  {timeAgo(child.createdAt)}
+                <span style={{ fontSize: "12px", wordBreak: "break-word", color: "#777" }}>
+
+                  {timeAgo(child.updatedAt)}
                 </span>
               </span>
-              {child.userId === user.id && editingId !== child._id && (
+              {child.userId === user.id && editingId !== child._id ? (
                 <button
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "16px",
-                    color: "#777",
-                  }}
+                title="edit comment"
                   onClick={() => handleEditClick(child)}
+                  className="commonButton"
                 >
-                  &#8230;
+                  <img src="/icons/edit.svg" alt="Reset votes" width="10" height="10" />
                 </button>
-              )}
+              ) : 
+         <button
+            onClick={() => onResolve(child._id)}
+            style={{
+              fontSize: "12px",
+              padding: "4px 8px",
+              borderRadius: "6px",
+              color: "#222",
+              cursor: "pointer",
+              paddingTop: "0.6em"
+            }}
+            title="delete comment"
+            className="commonButton"
+          >
+            <img src="/icons/trash.svg" alt="Reset votes" width="14" height="14" />
+          </button>}
             </div>
 
             {editingId === child._id ? (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  marginTop: "4px",
-                  width: "90%",
-                }}
-              >
-                <textarea
-                  value={editText}
-                  onChange={(e) => setEditText(e.target.value)}
-                  style={{
-                    fontSize: "13px",
-                    padding: "6px",
-                    width: "100%",
-                    minHeight: "60px",
-                    resize: "vertical",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                  }}
-                />
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    marginTop: "4px",
-                  }}
-                >
-                  <button
-                    onClick={handleSave}
-                    style={{
-                      fontSize: "10px",
-                      padding: "6px 10px",
-                      background: "#007bff",
-                      color: "#fff",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    Done
-                  </button>
-                </div>
-              </div>
+             <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            marginTop: "4px",
+            width: "99%",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+            marginBottom: "0.5em"
+          }}
+        >
+          <textarea
+          ref={(el) => {
+              if (el) textAreaRefs.current[child._id] = el;
+            }}
+             value={editText}
+            onChange={(e) => setEditText(e.target.value)}
+            autofocus
+            style={{
+              fontSize: "13px",
+              padding: "6px",
+              width: "95%",
+              border: "none",
+              outline: "none",
+              minHeight: "20px",
+              resize: "none",
+              borderRadius: "4px",
+              borderBottom: "1px solid #ccc",
+            }}
+          />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              marginBlock: "0.3em",
+              alignItems: "center"
+            }}
+          >
+            <button
+            className="editButton"
+              onClick={() => setEditingId(null)}
+            >
+              Cancel
+            </button>
+            <button
+            className="editButton doneButton"
+              onClick={handleSave}
+            >
+              Done
+            </button>
+          </div>
+        </div>
             ) : (
               <p
                 style={{
                   fontSize: "13px",
-                  color: "#555",
+                  color: "black",
                   wordWrap: "break-word",
                   marginTop: "4px",
+                  whiteSpace: "pre-wrap", 
                 }}
               >
                 {child.value}
@@ -395,29 +430,18 @@ const FeedbackPopup = ({ popupData, onClose }) => {
             fontSize: "14px",
             border: "1px solid rgba(0, 0, 0, 0.2)",
             padding: "8px",
-            backgroundColor: "#FAFAFA",
+            backgroundColor: "white",
             outline: "none",
             borderRadius: "6px",
             flex: 1,
           }}
         />
         <button
+        title="send"
           onClick={() => handleReply()}
-          style={{
-            width: "1.85em",
-            height: "1.85em",
-            borderRadius: "50%",
-            border: "none",
-            backgroundColor: "#555",
-            color: "white",
-            fontSize: "14px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+         className="sendButton"
         >
-          ↑
+        <img src="/icons/send.svg" alt="Reset votes" width="17" height="17" />
         </button>
       </div>
     </div>

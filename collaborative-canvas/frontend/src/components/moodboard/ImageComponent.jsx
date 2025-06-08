@@ -36,17 +36,17 @@ const ImageComponent = ({
   const handleClick = (e) => {
     if (isAddingComments) handleElementClick(e, { imageId: imgData._id });
     else {
-      handleImageClick(e, imgData)
+      handleImageClick(e, imgData._id)
       dispatch(setSelectedImage(imgData._id));
       dispatch(setSelectedKeyword(null));
     }
   };
 
-  const handleImageClick = useCallback((event, imageData) => {
+  const handleImageClick = useCallback((event, _id) => {
     event.cancelBubble = true;
     const rect = event.target.getClientRect();
     const position = { x: rect.x + rect.width + 20, y: rect.y };
-    setKeywordSelectionData({ position, imageData });
+    setKeywordSelectionData({ position, _id });
   }, [setKeywordSelectionData]);
 
   useEffect(() => {

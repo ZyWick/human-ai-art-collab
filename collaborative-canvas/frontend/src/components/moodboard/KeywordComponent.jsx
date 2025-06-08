@@ -302,6 +302,8 @@ export const KeywordLabel = ({
           lineHeight={1}
           padding={8}
           fill={isSelected ? "white" : colorMapping[type]}
+          // width={Math.min(textWidth, 100)}        // set your desired max width in pixels
+          wrap="char"
         />
       </Label>
       {keywordThreads &&

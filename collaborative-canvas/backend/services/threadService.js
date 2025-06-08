@@ -85,14 +85,17 @@ const deleteThreadAndChildren = async (parentId) => {
   }
 };
 
-const updateThreadWithChanges = async (update) => {
+const updateThreadWithChanges = async (update, updateDate) => {
     const updatedThread = await Thread.findByIdAndUpdate(
       update.id, // MongoDB `_id`
-      { $set: update.changes }, // Fields to update
+      { $set: update.changes,
+        updatedAt: updateDate
+       }, // Fields to update
       { new: true } // Return the updated document
     );
     return updatedThread;
 };
+
 
 module.exports = {
   updateThreadWithChanges,

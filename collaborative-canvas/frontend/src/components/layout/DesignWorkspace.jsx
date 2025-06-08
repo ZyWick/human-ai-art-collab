@@ -141,17 +141,13 @@ width: "220px",
       zIndex: 99,
     }}
   >
-     {!isDesignDetailsEmpty ? (
         <UploadButton
           stageRef={stageRef}
           isUploadingImg={isUploadingImg}
           setIsUploadingImg={setIsUploadingImg}
+          isDesignDetailsEmpty={isDesignDetailsEmpty}
         />
-      ) : (
-        <p style={{ fontSize: "0.65em", marginBlock: "0", textAlign: "center", color: "#888" }}>
-          complete the design brief to add images.
-        </p>
-      )}
+      
       <div
           style={{
             height: "0.1px",

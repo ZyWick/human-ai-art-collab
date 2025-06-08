@@ -7,20 +7,39 @@ import { calculateNewKeywordPosition } from "../../util/keywordMovement";
 import "../../assets/styles/keywordSelection.css";
 import { selectKeywordsByImage, updateKeyword } from "../../redux/keywordsSlice";
 import { removeSelectedKeyword } from "../../redux/selectionSlice";
-
+import { selectImageById } from "../../redux/imagesSlice";
 
 const KeywordSelection = ({keywordSelectionData, onClose}) => {
-  const selectedImage = keywordSelectionData.imageData
+  const selectedImage = useSelector((state) => selectImageById(state, keywordSelectionData._id));
   const [position, setPosition] = useState(keywordSelectionData.position)
+  const [dragging, setDragging] = useState(false);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
 
   const keywordRefs = useRef({});
   const kwSelectionRef = useRef();
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
-  const [likedElementTypes, setLikedElementTypes] = useState({});
-  // const [groupedKeywords, setGroupedKeywords] = useState({});
   const imageKeywords = useSelector((state) => selectKeywordsByImage(state, selectedImage));
   
+
+const [likedElementTypes, setLikedElementTypes] = useState({});
+
+useEffect(() => {
+  if (!imageKeywords) return;
+
+  // Create a new object to hold updates
+  const updatedLikes = {};
+
+  imageKeywords.forEach((keyword) => {
+    if (keyword.offsetX !== undefined && keyword.offsetY !== undefined) {
+      updatedLikes[keyword.type] = true;
+    }
+  });
+
+  setLikedElementTypes(updatedLikes);
+}, [imageKeywords]);
+
+
   const groupedKeywords = useMemo(() => {
     const requiredTypes = ["Action & pose", "Subject matter", "Theme & mood"];
     const grouped = (imageKeywords || []).reduce((acc, keyword) => {
@@ -36,6 +55,32 @@ const KeywordSelection = ({keywordSelectionData, onClose}) => {
     return grouped;
   }, [imageKeywords]);
 
+      const handleKeywordRemoval = useCallback((keyword) => {
+      dispatch(removeSelectedKeyword, keyword._id);
+      dispatch(updateKeyword, {
+        id: keyword._id,
+        changes: {
+          offsetX: undefined,
+          offsetY: undefined,
+          isSelected: false,
+        },
+      });
+      socket.emit("removeKeywordFromBoard", keyword._id);
+    }, [dispatch, socket]);
+
+    useEffect(() => {
+      for (const key in likedElementTypes) {
+        if (likedElementTypes[key] === false) {
+          groupedKeywords[key].forEach(kw => {
+            if (kw.offsetX !== undefined && kw.offsetY !== undefined) {
+              handleKeywordRemoval(kw);
+            }
+          });
+        }
+      }
+    }, [likedElementTypes, groupedKeywords, handleKeywordRemoval]);
+
+
 useEffect(() => {
   if (kwSelectionRef.current) {
     const { width, height } = kwSelectionRef.current.getBoundingClientRect();
@@ -46,6 +91,8 @@ useEffect(() => {
     setPosition(newPosition);
   }
 }, [keywordSelectionData.position]);
+
+
 
 useEffect(() => {
   const element = kwSelectionRef.current;
@@ -90,12 +137,6 @@ useEffect(() => {
   };
 }, [kwSelectionRef]);
 
-
-
-
-  const [dragging, setDragging] = useState(false);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-
   const handleMouseDown = (e) => {
     setDragging(true);
     setOffset({ x: e.clientX - position.x, y: e.clientY - position.y });
@@ -129,20 +170,6 @@ useEffect(() => {
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [dragging, handleMouseMove]);
-  
-
-  useEffect(() => {
-    if (!imageKeywords) return;
-    setLikedElementTypes((prev) => {
-      const updatedLikes = { ...prev };
-      imageKeywords.forEach((keyword) => {
-        if (keyword.offsetX !== undefined && keyword.offsetY !== undefined) {
-          updatedLikes[keyword.type] = true;
-        }
-      });
-      return updatedLikes;
-    });
-  }, [imageKeywords]);
 
   const toggleLikedElementType = type => {
     setLikedElementTypes(prev => ({ ...prev, [type]: !prev[type] }));
@@ -156,16 +183,7 @@ useEffect(() => {
 
   const toggleOnBoard = (keyword) => {
     if (keyword.offsetX !== undefined && keyword.offsetY !== undefined) {
-      dispatch(removeSelectedKeyword, keyword._id); 
-      dispatch(updateKeyword, {
-        id: keyword._id,
-        changes: {
-          offsetX: undefined,
-          offsetY: undefined,
-          isSelected: false,
-        },
-      });
-      socket.emit("removeKeywordFromBoard", keyword._id);
+      handleKeywordRemoval(keyword)
       return;
     }
 
@@ -196,7 +214,7 @@ useEffect(() => {
   };
 
 
-  return (
+  return selectedImage && (
     <div 
     ref={kwSelectionRef}
     style={{
@@ -205,7 +223,7 @@ useEffect(() => {
       left: position.x,
       zIndex: 150,
       width: "240px",
-      maxHeight: "50vh",
+      minHeight: "fit-content",
       backgroundColor: "white",
       flex: "1",
         display: "flex",
@@ -228,7 +246,7 @@ useEffect(() => {
         }}
         onMouseDown={handleMouseDown}
       >
-        <span style={{ fontSize: "0.8em", color: "#222" }}>{selectedImage.filename}</span>
+        <span style={{wordBreak: "break-word", fontSize: "0.8em", color: "#222" }}>{selectedImage.filename}</span>
         <div style={{ display: "flex", gap: "8px" }}>
           <button
             onClick={onClose}
@@ -257,21 +275,21 @@ useEffect(() => {
         <p className="keyword-subtitle">Choose keywords that you like.</p>
       </div>
       
-      <div className="image-container scrollable-container">
+      <div className="image-container">
       {Object.entries(groupedKeywords)
     .filter(([type]) => type !== "Arrangement") // Exclude "Arrangement" here
     .map(([type, keywords]) => (
       <div key={type} className="keyword-group">
         <KeywordButton
           className="keyword-button"
-          style={{fontSize:"0.86782em"}}
+          fontSize="0.8607em"
           text={`I like the ${type} of this image`}
           type={type}
-          isSelected={likedElementTypes[type]}
+          isSelected={!!likedElementTypes[type]}
           onClick={() => toggleLikedElementType(type)}
         />
         {likedElementTypes[type] && (
-          <div className="keyword-list scrollable-container" style={{maxHeight:"6.4em"}}>
+          <div className="keyword-list scrollable-container" style={{maxHeight:"5.5em"}}>
             {keywords.map((keyword) => (
               <KeywordButton
                 key={keyword._id}
@@ -302,7 +320,7 @@ useEffect(() => {
                 className="keyword-button"
                 text={`I like the Arrangement of this image`}
                 type={"Arrangement"}
-                style={{fontSize:"0.86782em"}}
+                fontSize="0.8607em"
                 isSelected={(groupedKeywords["Arrangement"][0].offsetX !== undefined && groupedKeywords["Arrangement"][0].offsetY !== undefined)}
                 onClick={(e) => {e.stopPropagation();
                   toggleLikedElementType("Arrangement")

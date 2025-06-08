@@ -41,7 +41,7 @@ const populateChildren = (parentThread, allThreads) => {
     return {
       ...parentThread,
       children: allThreads
-        .filter((child) => child.parentId === parentThread._id) // Find children dynamically
+        .filter((child) => child.isResolved === false && child.parentId === parentThread._id) // Find children dynamically
         .map((child) => allThreadsById[child._id]), // Ensure full child objects
     };
   };

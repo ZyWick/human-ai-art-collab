@@ -6,6 +6,7 @@ import { selectBoardById } from "../../redux/boardsSlice";
 import { useSocket } from "../../context/SocketContext";
 import { setRoomName } from "../../redux/roomSlice";
 import { updateBoard } from "../../redux/boardsSlice";
+import { selectAllBoards } from "../../redux/boardsSlice";
 import "../../assets/styles/UserAvatars.css";
 
 const RoomDetails = () => {
@@ -20,6 +21,8 @@ const RoomDetails = () => {
   const currBoard = useSelector((state) =>
     selectBoardById(state, currentBoardId)
   );
+  const boardData = useSelector(selectAllBoards);
+  const [selectedType, setSelectedType] = useState(boardData[0]);
 
   const [editing, setEditing] = useState({ room: false, board: false });
   const [tempName, setTempName] = useState({
@@ -69,49 +72,21 @@ const RoomDetails = () => {
     <div
       style={{
         position: "absolute",
-        maxWidth: "33vh",
-        width: "240px",
-        minWidth: "fit-content",
+        maxWidth: "30vw",
+        minWidth: "240px",
         height: "2.812em",
         left: "2.5%",
         top: "2%",
         backgroundColor: "white",
         borderRadius: "8px",
         boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",
-        paddingInline: "13px",
         alignItems: "center",
         display: "flex",
         zIndex: "100",
       }}
     >
-      {/* <button
-    onClick={handleBack}
-    style={{
-      padding: "0.85em 0.75em 0.5em 0.25em",
-      backgroundColor: "transparent",
-      border: "none",
-      cursor: "pointer",
-    }}
-  >
-    <img
-      src="/icons/home-svgrepo-com.svg"
-      alt="Home"
-      style={{ width: "24px", height: "24px" }}
-    />
-  </button> */}
-  
-
-      <div
-        style={{
-          height: "100%",
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-evenly",
-          gap: "0.75em",
-        }}
-      >
-        <HoverableWrapper isEditing={editing.room}>
+      <div style={{ marginLeft: "0.3em", display: "flex",
+        justifyContent: "space-around",alignItems: "center", width: `calc(-1.5em + 100%)`}}>
           <EditableAutoWidthInput
             value={tempName?.room}
             onChange={(val) => setTempName({ ...tempName, room: val })}
@@ -123,7 +98,6 @@ const RoomDetails = () => {
             text={roomName}
             tag={"h4"}
           />
-        </HoverableWrapper>
 
         <div
           style={{
@@ -184,7 +158,7 @@ const RoomDetails = () => {
           }}
         />
 
-        <HoverableWrapper isEditing={editing.board}>
+        {/* <HoverableWrapper isEditing={editing.board}> */}
           <EditableAutoWidthInput
             value={tempName?.board}
             onChange={(val) => setTempName({ ...tempName, board: val })}
@@ -196,9 +170,56 @@ const RoomDetails = () => {
             text={currBoard?.name}
             tag={"h4"}
           />
-        </HoverableWrapper>
+          
+</div>
+        {/* </HoverableWrapper> */}
+        <div style={{ position: "relative", display: "flex", paddingInline: "0.3em"  }}>
+  <select
+    value={selectedType}
+    onChange={(e) => setSelectedType(e.target.value)}
+    style={{
+      position: "relative",
+      opacity: 0, // Hide the native select
+      width: "1em", // Keep only enough width for the arrow
+      height: "1em",
+      zIndex: 2,
+      cursor: "pointer",
+    }}
+  >
+    {boardData.map((option) => (
+      <option key={option._id} value={option._id}>
+        {option.name}
+      </option>
+    ))}
+    <option value={"newBoard"}>
+        New Board
+      </option>
+    <option value={"newBoard"}>
+        Duplicate Current Board
+      </option>
+  </select>
+  {/* Fake dropdown button */}
+  <div
+    style={{
+      position: "absolute",
+      top: 0,
+      left: "0.3em",
+      width: "1em",
+      height: "1em",
+      backgroundColor: "white",
+      borderRadius: "4px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      pointerEvents: "none", // Let clicks go through to the select
+      fontSize: "0.75em",
+    }}
+  >
+    ▼
+  </div>
+</div>
+
       </div>
-    </div>
   );
 };
 
@@ -209,22 +230,21 @@ function EditableAutoWidthInput({
   onKeyDown,
   onClick,
   editing,
-  maxLength = 30,
+  maxLength = 32,
   placeholder = "Edit...",
-  fontSize = "0.95em",
-  fontWeight = "bold",
   text,
   tag: Tag = "h4", // Use "h3", "h4", "span" etc. for display
 }) {
   const sizerRef = useRef(null);
   const inputRef = useRef(null);
-  const [inputWidth, setInputWidth] = useState("60px");
+  const [inputWidth, setInputWidth] = useState("fit-content");
+  const [hover, setHover] = useState(false)
 
   // Update width as value changes
   useEffect(() => {
     const resize = () => {
       if (sizerRef.current) {
-        const width = sizerRef.current.offsetWidth + 10; // Add padding
+        const width = sizerRef.current.offsetWidth; // Add padding
         setInputWidth(`${width}px`);
       }
     };
@@ -237,30 +257,34 @@ function EditableAutoWidthInput({
 
   return (
     <div
+    
       style={{
         display: "flex",
-        width: "fit-content",
         alignItems: "center",
-        maxWidth: "100%",
+        maxWidth: "10vw",
       }}
     >
-      {editing ? (
-        <>
-          <span
-            ref={sizerRef}
-            style={{
-              position: "absolute",
-              visibility: "hidden",
-              whiteSpace: "pre",
-              fontSize,
-              fontWeight,
-              padding: "0.35em",
-            }}
-          >
-            {value || placeholder}
-          </span>
+      <div 
+    ref={sizerRef}
+    style={{ position: "absolute", 
+    visibility: "hidden", height: 0, 
+    overflow: "hidden", whiteSpace: "nowrap",
+    maxWidth: "10vw"}}>
+  <span
+    className="roomDetails-text-matching-style"
+    style={{
+      paddingInline: "0.6em",
+    }}
+  >
+    {value || placeholder}
+  </span>
+</div>
 
+      {editing  ? (
+        <> 
           <input
+          className="roomDetails-text-matching-style"
+        onMouseLeave={() => setHover(false)}
             ref={inputRef}
             value={value}
             onChange={(e) => onChange(e.target.value)}
@@ -269,62 +293,41 @@ function EditableAutoWidthInput({
             autoFocus
             maxLength={maxLength}
             style={{
-              marginTop: "0.2em",
-              marginLeft: "-0.1em",
-              paddingBlock: "0.35em",
-              fontSize,
-              fontWeight,
               boxShadow: "0 0 0 0.5px blue",
-              borderRadius: "6px",
               border: "none",
               outline: "none",
-              width: inputWidth,
-              minWidth: "50px",
-              maxWidth: "100%",
+            padding: "0.3em 0.6em",
+            width: "fit-content",
+              maxWidth: `calc(${inputWidth} - 1.2em)`
             }}
           />
         </>
-      ) : (
+      ) : (<>
+        
         <Tag
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
+        className="roomDetails-text-matching-style"
           style={{
-            cursor: "pointer",
             margin: "0",
-            whiteSpace: "nowrap",
+            cursor: "text",
+              border: "none",
+              outline: "none",
             overflow: "hidden",
             textOverflow: "ellipsis",
-            maxWidth: "100%",
+            padding: "0.3em 0.6em",
+            boxShadow: hover ? "0 0 0 0.5px darkgrey" : "none",
+            width: "fit-content",
+            maxWidth: "10vw",
           }}
+
           onClick={onClick}
         >
           {text}
-        </Tag>
+        </Tag></>
       )}
     </div>
   );
 }
-
-const HoverableWrapper = ({ isEditing, children }) => {
-  const [hover, setHover] = useState(false);
-
-  return (
-    <div
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{
-        padding: "0.3em 0.6em",
-        borderRadius: "4px",
-        transition: "background-color 0.2s",
-        cursor: "pointer",
-        backgroundColor: isEditing
-          ? "white"
-          : hover
-          ? "#f0f0f0"
-          : "transparent",
-      }}
-    >
-      {children}
-    </div>
-  );
-};
 
 export default RoomDetails;

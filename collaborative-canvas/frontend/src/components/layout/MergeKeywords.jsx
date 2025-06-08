@@ -170,6 +170,7 @@ const generateImage = () => {
                 key={keyword._id}
                 text={keyword.keyword}
                 type={keyword.type}
+                fontSize="12px"
                 isSelected={true}
                 onClick={() => {
                   toggleSelected(keyword);

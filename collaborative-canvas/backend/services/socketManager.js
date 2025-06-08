@@ -273,8 +273,14 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
       try {
         const user = users[socket.id];
         if (!user) return;
-        socketEmitWithUser("updateThread", user, { update });
-        await threadService.updateThreadWithChanges(update);
+        const updateDate = new Date()
+        ioEmitWithUser("updateThread", user, { update: {
+            id: update.id,
+            changes: {
+              ...update.changes, updatedAt: updateDate
+            },
+          } });
+        await threadService.updateThreadWithChanges(update, updateDate);
       } catch (error) {
         console.error("Error editing thread:", error);
         socket.emit("error", { message: "Failed to edit thread" });

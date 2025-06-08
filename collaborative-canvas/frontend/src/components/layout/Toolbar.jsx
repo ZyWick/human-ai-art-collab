@@ -231,7 +231,7 @@ const Toolbar = ({stageRef}) => {
     keywords.map((keyword, i) => (
       <KeywordButton
         key={`${type}-${i}`}
-        style={{ fontSize: "12px" }}
+        fontSize="12px"
         text={keyword}
         type={type}
         isSelected={false}

@@ -20,6 +20,15 @@
     margin-top: 1.35em;
 }
 
+.fade-bottom {
+  position: absolute;
+  top: 0;
+  height: 30px;
+  width: 100%;
+  background: linear-gradient(to bottom, transparent, white);
+  pointer-events: none;
+}
+
 .keyword-container {
     width: 95%;
 }
@@ -41,9 +50,6 @@
     margin-top: 0.5em;
     width: 95%;
     flex: 1;
-    overflow-y: auto;
-    scrollbar-width: none;
-    msOverflowStyle: none;
 }
 
 .image-container::-webkit-scrollbar {

@@ -1,52 +1,29 @@
 import React, { forwardRef, useState } from "react";
 import colorMapping from "../../config/keywordTypes";
+import '../../assets/styles/kwButton.css'
 
 const KeywordButton = forwardRef(
-  ({ text, type, isSelected, isCustom, onClick, onDelete, style = {} }, ref) => {
-    const baseStyle = {
-      display: "flex",
-      alignItems: "center",
-      fontWeight: "normal",
-      backgroundColor: isSelected ? colorMapping[type] : "transparent",
-      color: isSelected ? "white" : colorMapping[type],
-      border: `1px solid ${colorMapping[type]}`,
-      borderRadius: "4px",
-      overflow: "hidden",
-      fontSize: "14px",
-      cursor: "pointer",
-      transition: "background-color 0.3s, color 0.3s",
-      ...style,
-    };
-
-    const buttonStyle = {
-      flex: 1,
-      background: "inherit",
-      color: "inherit",
-      border: "none",
-      padding: "0.5em 1em",
-      textAlign: "center",
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      height: "100%",
-      transition: "background-color 0.3s, color 0.3s",
-      ...style,
-    };
-
+  ({ text, type, isSelected, isCustom, onClick, onDelete,fontSize, style = {} }, ref) => {
     return (
-      <div ref={ref} style={baseStyle}>
+      <div
+        ref={ref}
+        className={`keyword-button ${isSelected ? "selected" : ""}`}
+        style={{
+          "--color": colorMapping[type],
+          borderRadius: "4px",
+          overflow: "hidden",
+          fontSize: "14px",
+          display: "flex",
+          alignItems: "center",
+          fontWeight: "normal",
+          ...style,
+        }}
+      >
         <button
           onClick={onClick}
-          style={buttonStyle}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = colorMapping[type];
-            e.target.style.color = "white";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = isSelected ? colorMapping[type] : "transparent";
-            e.target.style.color = isSelected ? "white" : colorMapping[type];
-          }}
+          className="keyword-button-main"
+          type="button"
+          style={{fontSize}}
         >
           {text}
         </button>
@@ -56,15 +33,8 @@ const KeywordButton = forwardRef(
               e.stopPropagation();
               onDelete();
             }}
-            style={{ ...buttonStyle, borderLeft: `1px solid ${isSelected ? "white" : colorMapping[type]}` }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = colorMapping[type];
-              e.target.style.color = "white";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = isSelected ? colorMapping[type] : "transparent";
-              e.target.style.color = isSelected ? "white" : colorMapping[type];
-            }}
+            className="keyword-button-delete"
+            type="button"
           >
             ✖
           </button>
@@ -130,9 +100,9 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
       flexDirection: "column",
       alignItems: "center",}}>
       <div>
-      <h5 style={{marginBlock: "0px", fontSize: "1em"}}>Add notes</h5>
+      <h5 style={{marginBlock: "0px", fontSize: "1em"}}>Add Keywords</h5>
       <p style={{ color: "rgb(136, 136, 136)", fontSize:"0.8em", margin: "0", marginBottom: "0.65em" }}>
-        Add Keywords that you like
+        Add keywords that you like
       </p>
     <div style={{ display: "inline-flex", width: "fit-content", alignItems: "center", border: "1px solid #ccc", borderRadius: "4px"}}>
       <select
@@ -147,6 +117,7 @@ const NoteKeywordInput = ({ addKeywordSelection }) => {
       <input
         type="text"
         value={inputValue}
+        maxLength={125}
         onChange={(e) => setInputValue(e.target.value)}
         style={{ border: "none", padding: "8px", fontSize: "14px",  borderLeft: "0.5px solid #ccc", outline: "none", maxWidth: "5em", flex: 1 }}
       />

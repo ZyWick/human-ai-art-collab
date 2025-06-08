@@ -80,7 +80,7 @@ const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
         padding: "16px",
         paddingTop: "8px",
         boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.25)",
-        zIndex: 100,
+        zIndex: 1000,
         minWidth: "670px",
         minHeight: "400px",
         width: `${size.width}px`,

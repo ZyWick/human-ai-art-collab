@@ -38,7 +38,7 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
         height: "30px",
         backgroundColor: "transparent",
         borderRadius: "50%",
-        border: "2px solid grey"
+        border: "1.5px solid rgb(56, 49, 49)"
       }}
     ></div>
 
@@ -58,8 +58,8 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
         autoFocus
         placeholder="Add a comment"
         style={{
-          fontSize: "16px",
-          border: "1px solid grey",
+          fontSize: "14px",
+          border: "0.75px solid rgb(56, 49, 49)",
           padding: "6px",
           backgroundColor: "white",
           outline: "none",
@@ -69,22 +69,9 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
       <button
       id="send-button"
         onClick={onSubmit}
-        style={{
-          width: "1.85em",
-          height: "1.85em",
-          borderRadius: "50%",
-          border: "none",
-          backgroundColor: "#555",
-          color: "white",
-          fontSize: "16px",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        //   boxShadow: "0px 2px 5px grey",
-        }}
+       className="sendButton"
       >
-        ↑
+        <img src="/icons/send.svg" alt="Reset votes" width="17" height="17" />
       </button>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useSelector } from "react-redux";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from "../../context/SocketContext";
@@ -22,6 +22,9 @@ const DesignDetails = () => {
   const designDetails = useSelector((state) => state.room.designDetails);
   const [editingField, setEditingField] = useState(null);
   const textAreaRefs = useRef({});
+  const [hover, setHover] = useState(false)
+const [localValues, setLocalValues] = useState({});
+
 
   const handleBlur = (field, value) => {
   const newValue = typeof value === "string" ? value.trim() : "";
@@ -33,18 +36,42 @@ const DesignDetails = () => {
   dispatch(updateDesignDetails, { [field]: newValue });
   dispatch(updateDesignDetailsFull, { [field]: newValue });
   socket.emit("updateDesignDetailsDone", { [field]: newValue });
+
   setEditingField(null);
 };
+
 
   const handleInputChange = (e, key) => {
     dispatch(updateDesignDetails, { [key]: e.target.value });
     socket.emit("updateDesignDetails", { [key]: e.target.value });
   };
 
+const justFocused = useRef(false);
+
+useEffect(() => {
+  if (editingField && textAreaRefs.current[editingField]) {
+    const el = textAreaRefs.current[editingField];
+
+    el.style.height = "auto";
+    el.style.height = `${Math.ceil(el.scrollHeight)}px`;
+
+    if (justFocused.current) {
+      el.setSelectionRange(el.value.length, el.value.length);
+      el.focus();
+      justFocused.current = false;
+    }
+  }
+}, [editingField]);
+
+
+
+  
+
   return (
     <>
       {fields.map(({ key, label, placeholder }) => (
-        <div key={key} style={{ display: "flex", flexDirection: "column", width: "100%" }}>
+        <div 
+        onMouseLeave={() => setHover(false)} key={key} style={{ display: "flex", flexDirection: "column", width: "100%" }}>
           <label
             style={{
               fontSize: "0.9em",
@@ -56,79 +83,63 @@ const DesignDetails = () => {
           >
             {label}
           </label>
-          {editingField === key ? (
-            <textarea
-              ref={(el) => {
-                textAreaRefs.current[key] = el;
-                if (el) {
-                  el.style.height = "auto";
-                  el.style.height = `${el.scrollHeight}px`;
-                }
-              }}
-              value={designDetails[key] || ""}
-              onChange={(e) => handleInputChange(e, key)}
-              onBlur={(e) => handleBlur(key, e.target.value)}
-              autoFocus
-              style={{
-                fontSize: "1.1em",
-                minHeight: "24px",
-                padding: "0.5em 0.65em",
-                boxSizing: "border-box",
-                border: "1px solid #2684FF",
-                borderRadius: "4px",
-                outline: "none",
-                width: "100%",
-                overflow: "hidden",
-              }}
-            />
+          {editingField === key 
+          ? (
+           <textarea
+  className="designbrief-text-matching-style"
+    rows={1}
+  ref={(el) => {
+    textAreaRefs.current[key] = el;
+  }}
+  value={localValues[key] || ""}
+  onChange={(e) =>{
+    setLocalValues((prev) => ({ ...prev, [key]: e.target.value }))
+     handleInputChange(e, key)
+    }}
+  onBlur={(e) => handleBlur(key, localValues[key])}
+  onInput={(e) => {
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  }}
+  placeholder="Briefly describe the project."
+  autoFocus
+  style={{
+    paddingBottom: "0.45em",
+    boxSizing: "border-box",
+    border: "1px solid #2684FF",
+    outline: "none",
+    overflow: "hidden",
+              resize: "none",
+    fontStyle: designDetails[key] ? "normal" : "italic",
+  }}
+/>
+
           ) : (
-            <HoverableWrapper
-              isEditing={editingField === key}
-              className="scrollable-container"
-            >
               <div
-                onClick={() => setEditingField(key)}
+              className="scrollable-container designbrief-text-matching-style" 
+              onMouseEnter={() => setHover(true)}
+              onMouseLeave={() => setHover(false)}
+                onClick={() => {
+  setLocalValues((prev) => ({ ...prev, [key]: designDetails[key] || "" }));
+  setEditingField(key);
+  justFocused.current = true;
+}}
+
+
                 style={{
-                  fontSize: "0.9em",
-                  cursor: "pointer",
-                  wordBreak: "break-word",
-                  color: designDetails[key] ? "black" : "#888",
-                  fontStyle: designDetails[key] ? "normal" : "italic",
+                transition: "color 0.2s",
+                cursor: "text",
+                border: hover ? "1px solid darkgrey" : "1px solid transparent",
+                color: designDetails[key] ? "black" : "#888",
+                fontStyle: designDetails[key] ? "normal" : "italic",
                 }}
               >
                 {designDetails[key] || placeholder}
               </div>
-            </HoverableWrapper>
           )}
         </div>
       ))}
     </>
-  );
-};
-
-const HoverableWrapper = ({ className, style, isEditing, children }) => {
-  const [hover, setHover] = useState(false);
-
-  return (
-    <div
-      className={className}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-      style={{
-        ...style,
-        padding: "0.3em 0.6em",
-        borderRadius: "4px",
-        transition: "background-color 0.2s",
-        cursor: "pointer",
-        backgroundColor: isEditing
-          ? "white"
-          : hover
-          ? "#f0f0f0"
-          : "transparent",
-      }}
-    >
-      {children}
-    </div>
   );
 };
 

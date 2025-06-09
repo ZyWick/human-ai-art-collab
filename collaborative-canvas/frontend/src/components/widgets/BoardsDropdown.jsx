@@ -94,7 +94,7 @@ const BoardsDropdown = () => {
       >
         Delete
       </button>
-      <div style={{ minHeight: "1px", width: "100%", backgroundColor: "#ccc" }} />
+      {sortedBoards && sortedBoards.length > 0 && <div style={{ minHeight: "1px", width: "100%", backgroundColor: "#ccc" }} />}
       {sortedBoards.map(({ _id, name }) => {
         return (
           <button

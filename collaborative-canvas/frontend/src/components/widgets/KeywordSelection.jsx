@@ -65,6 +65,8 @@ useEffect(() => {
           offsetX: undefined,
           offsetY: undefined,
           isSelected: false,
+          votes: [],
+          downvotes: [],
         },
       });
       socket.emit("removeKeywordFromBoard", keyword._id);

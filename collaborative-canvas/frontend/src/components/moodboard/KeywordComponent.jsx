@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
-import { Label, Tag, Text, Group } from "react-konva";
+import { Label, Tag, Text, Group, Circle } from "react-konva";
 import { calculateNewKeywordPosition } from "../../util/keywordMovement";
 import { selectBoardById } from "../../redux/boardsSlice";
 import { addSelectedKeyword, removeSelectedKeyword } from "../../redux/selectionSlice";
@@ -149,8 +149,7 @@ const KeywordComponent = ({
     socket.emit("updateKeywordSelected", update);
 };
 
-  useEffect(() => {
-    const deleteKeywordButton = async () => {
+  const deleteKeyword = () => {
       try {
         if (!data.imageId) {
           socket.emit("deleteKeyword", {
@@ -166,6 +165,8 @@ const KeywordComponent = ({
                 offsetX: undefined,
                 offsetY: undefined,
                 isSelected: false,
+                votes: [],
+                downvotes: [],
               },
             }
           );
@@ -175,20 +176,6 @@ const KeywordComponent = ({
         console.log(e);
       }
     };
-
-
-    const handleKeyDown = (event) => {
-      
-      if ((event.key === "Delete" || event.key === "Backspace") && isClicked) {
-        deleteKeywordButton();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [selectedKeywordId, dispatch, data._id, data, socket, isClicked]);
 
   return data.offsetX !== undefined && data.offsetY !== undefined ? (
     <>
@@ -228,6 +215,7 @@ const KeywordComponent = ({
         handleThreadClick={handleThreadClick}
         setTooltipData={setTooltipData}
         isClicked={isClicked}
+        deleteKeyword={deleteKeyword}
       />
     </>
   ) : null;
@@ -251,12 +239,12 @@ export const KeywordLabel = ({
   votes,
   downvotes,
   isVoting,
-  hovered,
   keywordThreads,
   handleThreadHover,
   handleThreadClick,
   setTooltipData,
-  isClicked
+  isClicked,
+  deleteKeyword
 }) => {
   const textRef = useRef();
   const [textWidth, setTextWidth] = useState(0);
@@ -266,11 +254,28 @@ export const KeywordLabel = ({
       setTextWidth(textRef.current.width()); // Get actual text width
     }
   }, [text]);
-  
+  const [hovered, setHovered] = useState(false);
 
+const hoverTimeoutRef = useRef(null);
+
+const handleMouseEnter = () => {
+  if (hoverTimeoutRef.current) {
+    clearTimeout(hoverTimeoutRef.current);
+    hoverTimeoutRef.current = null;
+  }
+  setHovered(true);
+};
+
+const handleMouseLeave = () => {
+  // Delay hiding by 200ms
+  hoverTimeoutRef.current = setTimeout(() => {
+    setHovered(false);
+  }, 750);
+};
   return (
-    <Group>
+    <Group   >
       <Label
+      name="hover-group"
         id={id}
         x={xpos}
         y={ypos}
@@ -279,8 +284,8 @@ export const KeywordLabel = ({
         draggable={draggable}
         onDragMove={onDragMove}
         onDragEnd={onDragEnd}
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
+        onMouseEnter={(e) => {onMouseEnter(e); handleMouseEnter()}}
+        onMouseLeave={(e) => {onMouseLeave(e); handleMouseLeave()}}
       >
         <Tag
           name="label-tag"
@@ -291,8 +296,8 @@ export const KeywordLabel = ({
           cornerRadius={4}
           ref={keywordRef}
           shadowColor={isClicked ? colorMapping[type] : hovered ? colorMapping[type] : "transparent"}
-          shadowBlur={isClicked ? 5 : hovered ? 3 : 0}
-          shadowOpacity={isClicked ? 2 : hovered ? 1 : 0}
+          shadowBlur={isClicked ? 4 : hovered ? 3 : 0}
+          shadowOpacity={isClicked ? 3 : hovered ? 2 : 0}
         />
         <Text
           ref={textRef}
@@ -306,6 +311,34 @@ export const KeywordLabel = ({
           wrap="char"
         />
       </Label>
+      {hovered &&  
+      <Group  
+     onMouseEnter={e => {
+          const container = e.target.getStage().container();
+          container.style.cursor = "pointer";
+          handleMouseEnter()
+        }}
+        onMouseLeave={e => {
+          const container = e.target.getStage().container();
+          container.style.cursor = "default";
+          handleMouseLeave()
+        }}
+      onClick={deleteKeyword}
+      name="hover-group" x={xpos + textWidth + 10} y={ypos - 20}>
+  <Circle radius={7} fill={colorMapping[type]} />
+  <Text
+    ref={textRef}
+    text={"x"}
+    fontSize={14}
+    fill="#fafafa"
+    offsetX={10.5} // half the estimated width of the text
+    offsetY={14} // half the height of the circle
+    x={7} // center relative to circle
+    y={7}
+  />
+</Group>
+
+          }
       {keywordThreads &&
         keywordThreads.map((thread, i) => (
           <ThreadBubble

@@ -66,20 +66,26 @@ const RoomDetails = () => {
   };
 
   const buttonRef = useRef(null);
-
-  useEffect(() => {
+  const popupRef = useRef(null);
+  
+    useEffect(() => {
     function handleClickOutside(event) {
-      if (buttonRef.current && !buttonRef.current.contains(event.target)) {
+      if (
+        buttonRef.current &&
+        !buttonRef.current.contains(event.target) &&
+        popupRef.current &&
+        !popupRef.current.contains(event.target)
+      ) {
         setBrowsePages(false);
       }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, [browsePages]);
+
   return (
     <>
       <div
@@ -216,6 +222,7 @@ const RoomDetails = () => {
         </button>
         {browsePages && 
         <div 
+        ref={popupRef}
         className="scrollable-container"
           style={{
             display: "flex", flexDirection: "column", gap: "0.2em",
@@ -232,7 +239,7 @@ const RoomDetails = () => {
             zIndex: 99,
           }}
         >
-          <BoardsDropdown />
+          <BoardsDropdown/>
         </div>}
       </div>
     </>

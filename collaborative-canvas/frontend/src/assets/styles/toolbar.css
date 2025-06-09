@@ -1,32 +1,8 @@
-
-.outside-widget {
-    position: absolute; /* or use fixed if needed */
-    bottom: 3%; /* Adjust the position as needed */
-    background-color: white;
-    color: black;
-    padding: 1em;
-    /* padding-block: "15px"; */
-    /* padding: 4px 10px; */
-    border: .5px solid darkgray;
-    border-radius: 5px;
-    z-index: 9;
-    height: 10%;
-    min-width: 294px;
-  }
-
   
 .scrollable-container {
     overflow-y: auto;
     scrollbar-width: none;
     /* msOverflowStyle: none; */
-  }
-
-.boardsDisplay {
-    position: absolute; /* or fixed if you want it always in view */
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%); /* Center both horizontally & vertically */
-    height: 60%;
   }
 
 .toolbar {
@@ -40,7 +16,7 @@
     display: flex;
     gap: 16px; /* Space between groups */
     background: #f8f9fa;
-    padding: 8px;
+    padding: 2px 6px;
     border-radius: 8px;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
     align-items: center;
@@ -54,32 +30,6 @@
     align-items: center;
     /* padding: 0 10px; */
     position: relative;
-  }
-  
-
-  /* Button Styling */
-  .toolbar button {
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background 0.2s ease-in-out;
-    border-radius: 6px;
-  }
-  
-  /* Hover Effects */
-  .toolbar button:hover {
-    background: rgba(0, 0, 0, 0.1);
-  }
-  
-  .toolbar button:active {
-    background: rgba(0, 0, 0, 0.2);
-  }
-  
-.toolbar button.active {
-    background: rgba(0, 0, 0, 0.1);
-    color: white;
-    border-radius: 5px;
   }
 
 .custom-button {

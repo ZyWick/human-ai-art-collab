@@ -67,7 +67,7 @@ const VotingButtons = ({ _id, kwVotes, kwDownvotes, type, xpos, ypos }) => {
         return (
           <Group
             key={action}
-            x={index * 45}
+            x={index * 40}
             onClick={(e) => handleVoteClick(e, action)}
             onMouseEnter={(e) => handleMouseEnter(e, action)}
             onMouseLeave={handleMouseLeave}
@@ -80,8 +80,9 @@ const VotingButtons = ({ _id, kwVotes, kwDownvotes, type, xpos, ypos }) => {
               stroke={colorMapping[type]}
               strokeWidth={0.5}
               shadowColor={hovered === action ? colorMapping[type] : "transparent"}
-              shadowBlur={hovered === action ? 5 : 0}
+              shadowBlur={hovered === action ? 3 : 0}
               shadowOpacity={hovered === action ? 2 : 0}
+
             />
             <Text
               text={text}

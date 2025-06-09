@@ -3,7 +3,7 @@ const keywordService = require("./keywordService");
 const boardService = require("./boardService");
 const roomService = require("./roomService");
 const threadService = require("./threadService");
-const { recommendKeywords, generateTextualDescriptions, generateLayout, matchLayout } = require("../utils/llm");
+const { recommendKeywords, recommendBroadNarrowKeywords, generateTextualDescriptions, generateLayout, matchLayout } = require("../utils/llm");
 const { checkMeaningfulChanges, debounceBoardFunction } = require("../utils/helpers")
 const {generateImage} = require('../utils/imageGeneration')
 const {uploadS3Image} = require("../services/s3service")
@@ -508,16 +508,18 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
         let previousData = boardKWCache[boardId];
         if (!previousData || checkMeaningfulChanges(previousData, data)) {
           debounceBoardFunction(debounceMap, boardId, "board", async () => {
-          const result = await recommendKeywords(JSON.stringify({data}, null, 2))
+          const result = await recommendBroadNarrowKeywords(JSON.stringify({data}, null, 2))
           if (result  && typeof result === 'object')
             io.to(user.roomId).emit("updateBoard", {
               update: {
                 id: boardId,
-                changes: { boardRecommendedKeywords: result },
+                changes: { BroadRecommendedKeywords: result.Broader,
+                  SpecificRecommendedKeywords: result["More Specific"]
+                 },
               },
             });
           boardKWCache[boardId] = data;
-          }, 5000);
+          }, 15000);
         }
 
       } catch (error) {

@@ -106,7 +106,7 @@ const DesignWorkspace = ({ stageRef }) => {
           width: "220px",
           maxHeight: "55vh",
           left: "2.5%",
-          top: "15%",
+          top: "12.5%",
           backgroundColor: "white",
           borderRadius: "8px",
           boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",

@@ -405,26 +405,6 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
         };
       });
        }
-      const generatedImages = await Promise.all(
-          genImageInput.map(async (data, index) => {
-            try {
-             const base64Image = await generateImage(data);
-
-              const file = {
-                originalname: `image_${index}.jpg`,
-                buffer: Buffer.from(base64Image, 'base64'),
-                mimetype: 'image/jpeg'
-              };
-
-              const uploadResult = await uploadS3Image(file);
-              return uploadResult.url;
-            } catch (err) {
-              console.error(`Failed to generate/upload image ${index}:`, err.message);
-              return null;
-            }
-          })
-        );
-
         const keywords = [];
 
         for (const [type, entries] of Object.entries(data)) {
@@ -439,14 +419,54 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
             });
           }
         }
-        const newIteration = { generatedImages, keywords };
-        ioEmitWithUser("updateBoardIterations", user, {
+
+        const newIteration = {
+            prompt: [],
+  generatedImages: [], // empty initially
+  keywords,
+  createdAt: new Date(),
+};
+
+const createdIteration = await boardService.addIteration(boardId, newIteration); // returns the saved iteration with _id
+
+ioEmitWithUser("updateBoardIterations", user, {
           update: {
             id: boardId,
-            iteration: newIteration,
-          },
-        });
-        await boardService.addIteration(boardId, newIteration);
+            iteration: createdIteration,
+      }});
+
+      await Promise.all(genImageInput.map(async (data, index) => {
+  try {
+    const base64Image = await generateImage(data);
+
+    const file = {
+      originalname: `image_${index}.jpg`,
+      buffer: Buffer.from(base64Image, 'base64'),
+      mimetype: 'image/jpeg'
+    };
+
+    const uploadResult = await uploadS3Image(file);
+    const imageUrl = uploadResult.url;
+
+    await boardService.addImageAndPromptToIteration(
+      boardId,
+      createdIteration._id,
+      imageUrl,
+      JSON.stringify(data, null, 2)
+    );
+
+    io.to(user.roomId).emit("iterationImageUpdate", {
+      boardId,
+      iterationId: createdIteration._id,
+      imageUrl,
+      prompt: JSON.stringify(data, null, 2),
+    });
+  } catch (err) {
+    console.error(`Failed to generate/upload image ${index}:`, err.message);
+  }
+}));
+
+
       } catch (error) {
         console.error("Error generating sketches:", error);
         socket.emit("error", { message: "Failed to generate new image" });

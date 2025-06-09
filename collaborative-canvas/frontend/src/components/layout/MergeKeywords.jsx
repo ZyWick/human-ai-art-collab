@@ -15,6 +15,7 @@ const MergeKeywords = ({stageRef}) => {
 const topRef = useRef(null);
 const secondRef = useRef(null);
 const [topBottom, setTopBottom] = useState(0);
+const [hide, setHide] = useState(false)
 
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
@@ -36,13 +37,16 @@ const [topBottom, setTopBottom] = useState(0);
     selectBoardById(state, currentBoardId)
   );
 
-  const itLength = currBoard?.iterations?.length ?? 0; // Ensure it's a number
-  let currGenerated = undefined; // Declare variable outside if-block
+  const itLength = currBoard?.iterations?.length ?? 0;
+  let latestIteration = undefined;
   if (itLength > 0) {
-    const latestIteration = currBoard?.iterations[itLength - 1];
-    currGenerated = latestIteration?.generatedImages; // Assign inside the block
+    latestIteration = currBoard?.iterations[itLength - 1];
   }
 
+  useEffect(() => {
+    setHide(false)
+  },[latestIteration])
+  
 const typeMap = useMemo(() => ({
   "subject matter": "Subject matter",
   "action & pose": "Action & pose",
@@ -141,7 +145,7 @@ const generateImage = () => {
         style={{
           position: "absolute",
           width: "240px",
-          maxHeight: "25vh",
+          maxHeight: "20vh",
           right: "2.5%",
           top: "10%",
           backgroundColor: "white",
@@ -193,43 +197,85 @@ const generateImage = () => {
           Merge Keywords
         </button>
       </div>
-      {topBottom > 0 && currGenerated && currGenerated.length > 0 && (
+     {topBottom > 0 && !hide && latestIteration && latestIteration.generatedImages && (<>
+  <div
+    ref={secondRef}
+    style={{
+      width: "240px",
+      maxHeight: "55vh",
+      position: "absolute",
+      right: "2.5%",
+      top: `${topBottom + 20}px`,
+      backgroundColor: "white",
+      borderRadius: "8px",
+      boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",
+      padding: "13px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 99,
+      gap: "0.5em",
+       borderBottomRightRadius: "0",
+       borderBottomLeftRadius: "0"
+    }}
+  >
+    {[...Array(3)].map((_, index) => {
+      const img = latestIteration.generatedImages[index];
+      return (
         <div
-        ref={secondRef}
+          key={index}
           style={{
-           width: "240px",
-            maxHeight: "52.5vh",
-            position: "absolute",
-            right: "2.5%",
-            top: `${topBottom + 20}px`, // 10px spacing below first box
-            backgroundColor: "white",
-            borderRadius: "8px",
-            boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",
-            padding: "13px",
+            height: "17.5vh",
+            width: "17.5vh",
+            position: "relative",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "center" /* centers vertically */,
+            justifyContent: "center",
             alignItems: "center",
-            zIndex: 99,
-            gap: "0.5em",
+            backgroundColor: "#fafafa"
           }}
         >
-          {currGenerated.map((img, index) => (
+          {img ? (
             <img
-              key={index}
+              src={img}
+              className="imageResult"
+              alt={`Generated ${index}`}
               style={{
+                maxHeight: "17.5vh",
                 width: "100%",
                 objectFit: "contain",
-                maxHeight: "17.5vh",
               }}
-              className="image-preview"
-              alt=""
-              src={img}
             />
-          ))}
-      
+          ) : (
+            <div
+              className="spinner"
+              style={{
+                  width: "36px",
+                height: "36px",
+              }}
+            />
+          )}
         </div>
-      )}
+      );
+    })} <button className="hideButton" 
+    onClick={() => setHide(true)}
+    title="hide"
+    style={{width: "266px", position: "absolute", 
+    top: "100%",
+    padding: 0,
+      borderTopRightRadius: "0",
+       borderTopLeftRadius: "0"
+    }}>   <img
+            src="/icons/up.svg"
+            alt="Show iterations"
+            width="20"
+            height="20"
+          /></button>
+  
+  </div>
+ </>
+)}
+
       {/* <div
         style={{
             position: "absolute",

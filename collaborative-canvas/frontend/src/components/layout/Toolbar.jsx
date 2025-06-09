@@ -94,7 +94,6 @@ const Toolbar = ({ stageRef }) => {
   useEffect(() => {
     if (summarizedKeywords.length > 0 && !_.isEqual(prevBoard, summarizedKeywords)) {
       debouncedEmitBoardKw(summarizedKeywords);
-      console.log(summarizedKeywords)
     }
   }, [summarizedKeywords, prevBoard, debouncedEmitBoardKw]);
 

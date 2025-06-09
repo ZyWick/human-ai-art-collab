@@ -22,7 +22,8 @@ import {
 import {
   addBoard,
   updateBoard,
-  // updateBoardIterations,
+  updateBoardIterations,
+  updateIterationPartial,
   removeBoard,
   selectAllBoards,
 } from "../redux/boardsSlice";
@@ -39,6 +40,7 @@ import {
   addThread,
   updateThread
 } from "../redux/threadsSlice"
+import { useUploadProgressTimeout } from './useUploadProgressTimeout'; 
 
 const useBoardSocket = () => {
   const dispatch = useDispatch();
@@ -46,6 +48,7 @@ const useBoardSocket = () => {
   const { roomId, currentBoardId } = useSelector(s => s.room);
   const { user } = useAuth();
   const boards   = useSelector(selectAllBoards);
+  const { resetStallTimeout, clearStallTimeout } = useUploadProgressTimeout();
 
   // A stable wrapper for your “dispatch + meta” pattern
   const dispatchWithMeta = useCallback((actionCreator, payload, userData) => {
@@ -68,16 +71,22 @@ const useBoardSocket = () => {
       socket.emit("leave room", payload);
     };
   }, [socket, user.id, user.username, roomId]);
-  
+
     // 2) all the listeners in one place, only once
     useEffect(() => {
       if (!socket) return;
   
       const handlers = {
-        addUploadProgress:        ({uploadId, fileName}) => {dispatch(addUploadProgress({ uploadId, fileName }));},
+        addUploadProgress:        ({uploadId, fileName}) => {
+          dispatch(addUploadProgress({ uploadId, fileName }));
+           resetStallTimeout(uploadId);
+        },
         updateUploadProgress:     ({uploadId, progress}) => {
                                   dispatch(updateUploadProgress({ uploadId, progress }));
+                                   resetStallTimeout(uploadId);
+                                  
                                   if (progress >= 100) {
+                                    clearStallTimeout(uploadId);
                                     setTimeout(() => {
                                       dispatch(removeUploadProgress({uploadId}));
                                     }, 1000);  // 5s “grace period”
@@ -94,11 +103,6 @@ const useBoardSocket = () => {
                                   },
         newImage:                 ({ image, user }) => {
                                     if (image.boardId === currentBoardIdRef.current) {
-                                      // dispatchWithMeta(addKeywords, image.keywords, user);
-                                      // const processed = {
-                                      //   ...image,
-                                      //   keywords: image.keywords.map(kw => kw._id.toString())
-                                      // };
                                       dispatchWithMeta(addImage, image, user);
                                     }
                                   },
@@ -114,9 +118,17 @@ const useBoardSocket = () => {
                                     ,
         updateBoard:              ({ update, user }) => 
                                     dispatchWithMeta(updateBoard, update, user),
-        updateBoardIterations:    ({ update, user }) => {console.log(update)
-                                    // dispatchWithMeta(updateBoardIterations, update, user)
+        updateBoardIterations:    ({ update, user }) => {
+                                      console.log("helloo")
+                                    dispatchWithMeta(updateBoardIterations, update, user)
                                   },
+        iterationImageUpdate: ({ boardId, iterationId, prompt, imageUrl }) => {console.log("herE");dispatch(updateIterationPartial({
+  boardId,
+  iterationId,
+  prompt,     // string or undefined
+  imageUrl,   // string or undefined
+}))},
+        
         deleteBoard:              ({ boardId: bId, user }) => {
                                     dispatchWithMeta(removeBoard, bId, user);
                                     const remaining = boardsRef.current.filter(b => b._id !== bId);
@@ -195,7 +207,7 @@ const useBoardSocket = () => {
           socket.off(evt);
         });
       };
-    }, [socket, dispatchWithMeta, dispatch]);
+    }, [socket, dispatchWithMeta, dispatch, resetStallTimeout, clearStallTimeout]);
   
   };
   

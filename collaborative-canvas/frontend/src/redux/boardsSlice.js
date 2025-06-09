@@ -23,12 +23,27 @@ const boardsSlice = createSlice({
       if (existingBoard && !existingBoard.iterations.includes(iteration)) {
         existingBoard.iterations.push(iteration);
       }      
-    }
+    },
+    updateIterationPartial: (state, action) => {
+      const { boardId, iterationId, prompt, imageUrl } = action.payload;
+      const board = state.entities[boardId];
+      if (!board || !board.iterations) return;
+
+      const iteration = board.iterations.find(iter => iter._id === iterationId);
+      if (!iteration) return;
+
+      if (prompt !== undefined && !iteration.prompt.includes(prompt)) {
+        iteration.prompt.push(prompt);
+      }
+      if (imageUrl !== undefined && !iteration.generatedImages.includes(imageUrl)) {
+        iteration.generatedImages.push(imageUrl);
+      }
+    },
     
   },
 });
 
-export const { setBoards, addBoard, updateBoard, updateBoardIterations, removeBoard  } = boardsSlice.actions;
+export const { updateIterationPartial, setBoards, addBoard, updateBoard, updateBoardIterations, removeBoard  } = boardsSlice.actions;
 
 // Selectors
 export const {

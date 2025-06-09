@@ -72,12 +72,11 @@ const uploadImage = (users, io) => async (req, res) => {
     const boardId = req.headers["board-id"];
     const socketId = req.headers["socket-id"];
     const user = users[socketId];
-    const uploadId = generateUploadId();
-
     if (!user) {
       return res.status(401).json({ error: "Invalid socket‑id" });
     }
 
+    const uploadId = generateUploadId();
     const progressCounter = createUploadProgressCounter(io, socketId, uploadId, fullImage.originalname);
 
     const uploadResult = await tryUploadToS3(fullImage, res);
@@ -95,7 +94,8 @@ const uploadImage = (users, io) => async (req, res) => {
     if (!imageDoc) return;
 
     progressCounter.add(5);
-    notifyClients(io, user, imageDoc);
+    notifyClients(io, user, imageDoc); 
+    
     segementImage(fullImage, io, imageDoc._id, user.roomId, progressCounter);
     startKeywordGeneration(io, progressCounter, imageDoc._id, user.roomId, req.files);
 

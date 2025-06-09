@@ -157,59 +157,35 @@ const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
       <div style={{ maxHeight: "90%" }} className="the-scrollable-container">
         {showKeywords
           ? iterations.map((iter, iterIndex) => (
-              <div key={iter._id} className="board-row">
-                <div className="image-container-all">
-                  {iter.generatedImages.map((image, index) => (
-                    <img
-                      key={index}
-                      className="the-row-image"
-                      alt=""
-                      src={image}
-                    />
-                  ))}
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    marginLeft: "12px",
-                    marginBottom: "15px",
-                  }}
-                >
-                  <p style={{ color: "grey" }}>
-                    #{currBoard.iterations.length - iterIndex}
-                  </p>
-                  <div
-                    style={{
-                      marginLeft: "10px",
-                      paddingLeft: "10px",
-                      borderLeft: "2px solid rgba(0, 0, 0, 0.15)",
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "0.5em",
-                    }}
-                  >
-                    {iter.keywords &&
-                      iter.keywords.length > 0 &&
-                      iter.keywords.map((keyword) => (
-                        <KeywordButton
-                          key={keyword._id}
-                          text={keyword.keyword}
-                          type={keyword.type}
-                          isSelected={true}
-                        />
-                      ))}
-                  </div>
-                </div>
-              </div>
+            <div key={iter._id} className="board-row">
+  <div className="image-container-all">
+    {iter.generatedImages.map((image, index) => (
+      <img key={index} className="the-row-image" alt="" src={image} />
+    ))}
+  </div>
+
+  <div className="iter-meta">
+    <p className="iter-number">#{currBoard.iterations.length - iterIndex}</p>
+
+    <div className="keyword-container">
+      {iter.keywords?.map((keyword) => (
+        <KeywordButton
+          key={keyword._id}
+          text={keyword.keyword}
+          type={keyword.type}
+          isSelected={true}
+        />
+      ))}
+    </div>
+  </div>
+</div>
             ))
-          : iterations.map((iter, iterIndex) => (
+          : iterations.map((iter, iterIndex) =>  iter.generatedImages.length > 0 && (
               <div key={iter._id} className="board-row">
                 <div
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    marginBottom: "15px",
                   }}
                 >
                   <p style={{ color: "grey" }}>

@@ -26,7 +26,8 @@ const boardSchema = new mongoose.Schema(
     ],
     iterations: [
       {
-        generatedImages: [{ type: String, required: true }], // Array of image URLs
+        prompt: [{type:String}],
+        generatedImages: [{ type: String }], // Array of image URLs
         keywords: [ {
           keyword: { type: String, required: true },
           type: { type: String, required: true },

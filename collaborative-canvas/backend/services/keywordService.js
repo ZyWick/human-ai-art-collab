@@ -25,10 +25,10 @@ const generateKeywords = async (
       }
     })
   );
-  const Caption = captions.filter((c) => c != null);
+  const Caption = captions.filter(Boolean);
 
   // 2b) Extract keywords (tolerate failure)
-  let keywords = [];
+  let keywords =  {};
   if (Caption.length) {
     try {
       keywords = await extractKeywords(JSON.stringify({ Caption }, null, 2));
@@ -41,7 +41,7 @@ const generateKeywords = async (
   progressCounter.add(15);
 
   // 2c) Insert keywords & link to image (tolerate DB failure)
-  let newKeywords = [];
+  let newKeywords = {};
   if (keywords && typeof keywords === "object") {
     try {
       newKeywords = await addKeywordsToImage(imageId, keywords);

@@ -46,12 +46,16 @@ const deleteBoard = async (boardId, roomId) => {
 const getIterations = async (boardId) =>
   await Board.findById(boardId).select("iteration");
 
-const addIteration = async (boardId, newIteration) =>
-  await Board.findByIdAndUpdate(
-    boardId,
-    { $push: { iterations: newIteration } }, // Push new iteration to the array
-    { new: true, runValidators: true } // Returns the updated document
-  );
+const addIteration = async (boardId, newIteration) => {
+  const board = await Board.findById(boardId);
+  board.iterations.push(newIteration);
+  const saved = await board.save();
+
+  const createdIteration = board.iterations[board.iterations.length - 1];
+  return createdIteration;
+}
+
+  
 
 const cloneBoard = async (boardId) => {
   const board = await Board.findById(boardId).lean();
@@ -203,7 +207,22 @@ const updateBoardWithChanges = async (update) => {
   return updatedBoard;
 };
 
+
+async function addImageAndPromptToIteration(boardId, iterationId, imageUrl, prompt) {
+  return await Board.updateOne(
+    { _id: boardId, "iterations._id": iterationId },
+    {
+      $push: {
+        "iterations.$.generatedImages": imageUrl,
+        "iterations.$.prompt": prompt,
+      }
+    }
+  );
+}
+
+
 module.exports = {
+  addImageAndPromptToIteration,
   updateBoardWithChanges,
   getBoard,
   createBoard,

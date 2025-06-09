@@ -27,17 +27,19 @@ const [likedElementTypes, setLikedElementTypes] = useState({});
 useEffect(() => {
   if (!imageKeywords) return;
 
-  // Create a new object to hold updates
-  const updatedLikes = {};
+  const now = Date.now();
 
-  imageKeywords.forEach((keyword) => {
-    if (keyword.offsetX !== undefined && keyword.offsetY !== undefined) {
-      updatedLikes[keyword.type] = true;
-    }
-  });
+  const updatedLikes = imageKeywords.reduce((acc, keyword) => {
+    const hasPosition = keyword.offsetX !== undefined && keyword.offsetY !== undefined;
+    const isRecentCustom = keyword.isCustom && (now - new Date(keyword.createdAt).getTime()) < 3000;
+    if (hasPosition || isRecentCustom) acc[keyword.type] = true;
+
+    return acc;
+  }, {});
 
   setLikedElementTypes(updatedLikes);
 }, [imageKeywords]);
+
 
 
   const groupedKeywords = useMemo(() => {

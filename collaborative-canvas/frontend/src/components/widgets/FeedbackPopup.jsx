@@ -235,6 +235,7 @@ useEffect(() => {
             value={editText}
             onChange={(e) => setEditText(e.target.value)}
             autofocus
+            className="scrollable-container"
             style={{
               fontSize: "13px",
               padding: "6px",
@@ -242,6 +243,7 @@ useEffect(() => {
               border: "none",
               outline: "none",
               minHeight: "20px",
+              maxHeight: "13.5vh",
               resize: "none",
               borderRadius: "4px",
               borderBottom: "1px solid #ccc",
@@ -271,7 +273,9 @@ useEffect(() => {
         </div>
       ) : (
         <p
+        className="scrollable-container"
           style={{
+            maxHeight: "13.5vh",
             marginLeft:"0.5em",
             fontSize: "13px",
             color: "black",
@@ -286,7 +290,7 @@ useEffect(() => {
 
       <div
         ref={repliesContainerRef}
-        style={{ maxHeight: "214px", overflowY: "auto" }}
+        style={{ maxHeight: "25vh", overflowY: "auto" }}
       >
         {/* Replies */}
         {threadData.children?.map((child) => (

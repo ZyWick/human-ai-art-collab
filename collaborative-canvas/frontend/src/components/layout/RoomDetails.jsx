@@ -6,24 +6,21 @@ import { selectBoardById } from "../../redux/boardsSlice";
 import { useSocket } from "../../context/SocketContext";
 import { setRoomName } from "../../redux/roomSlice";
 import { updateBoard } from "../../redux/boardsSlice";
-import { selectAllBoards } from "../../redux/boardsSlice";
 import "../../assets/styles/UserAvatars.css";
+import BoardsDropdown from "../widgets/BoardsDropdown";
 
 const RoomDetails = () => {
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
   const { joinCode } = useParams();
-  const {
-    roomName,
-    roomId,
-    currentBoardId,
-  } = useSelector((state) => state.room);
+  const { roomName, roomId, currentBoardId } = useSelector(
+    (state) => state.room
+  );
   const currBoard = useSelector((state) =>
     selectBoardById(state, currentBoardId)
   );
-  const boardData = useSelector(selectAllBoards);
-  const [selectedType, setSelectedType] = useState(boardData[0]);
 
+  const [browsePages, setBrowsePages] = useState(false);
   const [editing, setEditing] = useState({ room: false, board: false });
   const [tempName, setTempName] = useState({
     room: roomName,
@@ -68,25 +65,48 @@ const RoomDetails = () => {
     setTimeout(() => setCopied(false), 1500); // Hide after 1.5s
   };
 
+  const buttonRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (buttonRef.current && !buttonRef.current.contains(event.target)) {
+        setBrowsePages(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
   return (
-    <div
-      style={{
-        position: "absolute",
-        maxWidth: "30vw",
-        minWidth: "240px",
-        height: "2.812em",
-        left: "2.5%",
-        top: "2%",
-        backgroundColor: "white",
-        borderRadius: "8px",
-        boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",
-        alignItems: "center",
-        display: "flex",
-        zIndex: "100",
-      }}
-    >
-      <div style={{ marginLeft: "0.3em", display: "flex",
-        justifyContent: "space-around",alignItems: "center", width: `calc(-1.5em + 100%)`}}>
+    <>
+      <div
+        style={{
+          position: "absolute",
+          maxWidth: "35vw",
+          minWidth: "240px",
+          height: "2.812em",
+          left: "2.5%",
+          top: "2%",
+          backgroundColor: "white",
+          borderRadius: "8px",
+          boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",
+          alignItems: "center",
+          display: "flex",
+          zIndex: "100",
+          paddingLeft: "0.3em",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "space-around",
+            alignItems: "center",
+          }}
+        >
           <EditableAutoWidthInput
             value={tempName?.room}
             onChange={(val) => setTempName({ ...tempName, room: val })}
@@ -99,66 +119,66 @@ const RoomDetails = () => {
             tag={"h4"}
           />
 
-        <div
-          style={{
-            height: "1.5em",
-            width: "1px",
-            backgroundColor: "#ccc",
-          }}
-        />
-        <div
-          style={{
-            padding: "0.3em 0.6em",
-            borderRadius: "4px",
-            transition: "background-color 0.2s",
-            cursor: "pointer",
-          }}
-          onMouseEnter={(e) =>
-            (e.currentTarget.style.backgroundColor = "#f0f0f0")
-          }
-          onMouseLeave={(e) =>
-            (e.currentTarget.style.backgroundColor = "transparent")
-          }
-        >
-          <h4
-            onClick={handleCopy}
+          <div
             style={{
-              margin: "0",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
+              height: "1.5em",
+              minWidth: "1px",
+              backgroundColor: "#ccc",
             }}
+          />
+          <div
+            style={{
+              padding: "0.3em 0.6em",
+              borderRadius: "4px",
+              transition: "background-color 0.2s",
+              cursor: "pointer",
+            }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.backgroundColor = "#f0f0f0")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.backgroundColor = "transparent")
+            }
           >
-            {joinCode}
-          </h4>
-          {copied && (
-            <div
+            <h4
+              onClick={handleCopy}
+              className="commonButton"
               style={{
-                position: "absolute",
-                left: "100%", // Positions it to the right of h3
-                top: "50%",
-                transform: "translateY(-50%)", // Aligns vertically
-                background: "black",
-                color: "white",
-                padding: "5px 10px",
-                borderRadius: "5px",
-                fontSize: "12px",
-                whiteSpace: "nowrap",
-                marginLeft: "8px", // Adds spacing
+                color: "black",
+                margin: "0",
+                cursor: "pointer",
               }}
             >
-              Copied!
-            </div>
-          )}
-        </div>
-        <div
-          style={{
-            height: "1.5em",
-            width: "1px",
-            backgroundColor: "#ccc",
-          }}
-        />
+              {joinCode}
+            </h4>
+            {copied && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: "100%", // Positions it to the right of h3
+                  top: "50%",
+                  transform: "translateY(-50%)", // Aligns vertically
+                  background: "black",
+                  color: "white",
+                  padding: "5px 10px",
+                  borderRadius: "5px",
+                  fontSize: "12px",
+                  whiteSpace: "nowrap",
+                  marginLeft: "8px", // Adds spacing
+                }}
+              >
+                Copied!
+              </div>
+            )}
+          </div>
+          <div
+            style={{
+              height: "1.5em",
+              minWidth: "1px",
+              backgroundColor: "#ccc",
+            }}
+          />
 
-        {/* <HoverableWrapper isEditing={editing.board}> */}
           <EditableAutoWidthInput
             value={tempName?.board}
             onChange={(val) => setTempName({ ...tempName, board: val })}
@@ -170,56 +190,52 @@ const RoomDetails = () => {
             text={currBoard?.name}
             tag={"h4"}
           />
-          
-</div>
-        {/* </HoverableWrapper> */}
-        <div style={{ position: "relative", display: "flex", paddingInline: "0.3em"  }}>
-  <select
-    value={selectedType}
-    onChange={(e) => setSelectedType(e.target.value)}
-    style={{
-      position: "relative",
-      opacity: 0, // Hide the native select
-      width: "1em", // Keep only enough width for the arrow
-      height: "1em",
-      zIndex: 2,
-      cursor: "pointer",
-    }}
-  >
-    {boardData.map((option) => (
-      <option key={option._id} value={option._id}>
-        {option.name}
-      </option>
-    ))}
-    <option value={"newBoard"}>
-        New Board
-      </option>
-    <option value={"newBoard"}>
-        Duplicate Current Board
-      </option>
-  </select>
-  {/* Fake dropdown button */}
-  <div
-    style={{
-      position: "absolute",
-      top: 0,
-      left: "0.3em",
-      width: "1em",
-      height: "1em",
-      backgroundColor: "white",
-      borderRadius: "4px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      pointerEvents: "none", // Let clicks go through to the select
-      fontSize: "0.75em",
-    }}
-  >
-    ▼
-  </div>
-</div>
-
+        </div>
+        <button
+        ref={buttonRef}
+           className={browsePages ? "active commonButton" : "commonButton" }
+          style={{
+            marginRight: "0.5em",
+            width: "fit-content",
+            paddingInline: "0.5em",
+            height: "80%",
+            borderRadius: "4px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "0.75em",
+          }}
+          onClick={() => setBrowsePages(!browsePages)}
+        >
+          <img
+            src="/icons/verticalDots.svg"
+            alt="Show iterations"
+            width="20"
+            height="20"
+          />
+        </button>
+        {browsePages && 
+        <div 
+        className="scrollable-container"
+          style={{
+            display: "flex", flexDirection: "column", gap: "0.2em",
+            position: "absolute",
+            top: "2%",
+            left: `102.5%`,
+            maxHeight: "17.5vh",
+            width:"100%",
+            maxWidth: "260px",
+            backgroundColor: "white",
+            borderRadius: "8px",
+            boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",
+            padding: "0.5em",
+            zIndex: 99,
+          }}
+        >
+          <BoardsDropdown />
+        </div>}
       </div>
+    </>
   );
 };
 
@@ -235,12 +251,12 @@ function EditableAutoWidthInput({
   text,
   tag: Tag = "h4", // Use "h3", "h4", "span" etc. for display
 }) {
+  const maxWidth = "10vw";
   const sizerRef = useRef(null);
   const inputRef = useRef(null);
   const [inputWidth, setInputWidth] = useState("fit-content");
-  const [hover, setHover] = useState(false)
+  const [hover, setHover] = useState(false);
 
-  // Update width as value changes
   useEffect(() => {
     const resize = () => {
       if (sizerRef.current) {
@@ -257,34 +273,38 @@ function EditableAutoWidthInput({
 
   return (
     <div
-    
       style={{
         display: "flex",
         alignItems: "center",
-        maxWidth: "10vw",
+        maxWidth,
       }}
     >
-      <div 
-    ref={sizerRef}
-    style={{ position: "absolute", 
-    visibility: "hidden", height: 0, 
-    overflow: "hidden", whiteSpace: "nowrap",
-    maxWidth: "10vw"}}>
-  <span
-    className="roomDetails-text-matching-style"
-    style={{
-      paddingInline: "0.6em",
-    }}
-  >
-    {value || placeholder}
-  </span>
-</div>
-
-      {editing  ? (
-        <> 
-          <input
+      <div
+        ref={sizerRef}
+        style={{
+          position: "absolute",
+          // visibility: "hidden",
+          height: 1,
+          overflow: "hidden",
+          whiteSpace: "nowrap",
+          maxWidth,
+        }}
+      >
+        <span
           className="roomDetails-text-matching-style"
-        onMouseLeave={() => setHover(false)}
+          style={{
+            marginInline: "0.6em",
+          }}
+        >
+          {value || placeholder}
+        </span>
+      </div>
+
+      {editing ? (
+        <>
+          <input
+            className="roomDetails-text-matching-style"
+            onMouseLeave={() => setHover(false)}
             ref={inputRef}
             value={value}
             onChange={(e) => onChange(e.target.value)}
@@ -296,35 +316,35 @@ function EditableAutoWidthInput({
               boxShadow: "0 0 0 0.5px blue",
               border: "none",
               outline: "none",
-            padding: "0.3em 0.6em",
-            width: "fit-content",
-              maxWidth: `calc(${inputWidth} - 1.2em)`
+              padding: "0.3em 0.6em",
+              width: "fit-content",
+              maxWidth: `calc(${inputWidth} - 1.2em)`,
             }}
           />
         </>
-      ) : (<>
-        
-        <Tag
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
-        className="roomDetails-text-matching-style"
-          style={{
-            margin: "0",
-            cursor: "text",
+      ) : (
+        <>
+          <Tag
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
+            className="roomDetails-text-matching-style"
+            style={{
+              margin: "0",
+              cursor: "text",
               border: "none",
               outline: "none",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            padding: "0.3em 0.6em",
-            boxShadow: hover ? "0 0 0 0.5px darkgrey" : "none",
-            width: "fit-content",
-            maxWidth: "10vw",
-          }}
-
-          onClick={onClick}
-        >
-          {text}
-        </Tag></>
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              padding: "0.3em 0.6em",
+              boxShadow: hover ? "0 0 0 0.5px darkgrey" : "none",
+              width: "fit-content",
+              maxWidth,
+            }}
+            onClick={onClick}
+          >
+            {text}
+          </Tag>
+        </>
       )}
     </div>
   );

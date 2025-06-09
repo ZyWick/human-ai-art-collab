@@ -71,7 +71,7 @@ button {
     color: rgb(119, 119, 119);
 }
 
-.commonButton:hover {
+.commonButton:hover, .commonButton.active {
   background-color: #f0f0f0; /* light grey */
 }
 

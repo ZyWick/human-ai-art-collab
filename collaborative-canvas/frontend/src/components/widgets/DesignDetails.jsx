@@ -86,7 +86,7 @@ useEffect(() => {
           {editingField === key 
           ? (
            <textarea
-  className="designbrief-text-matching-style"
+  className="designbrief-text-matching-style scrollable-container"
     rows={1}
   ref={(el) => {
     textAreaRefs.current[key] = el;
@@ -108,7 +108,6 @@ useEffect(() => {
     boxSizing: "border-box",
     border: "1px solid #2684FF",
     outline: "none",
-    overflow: "hidden",
               resize: "none",
     fontStyle: designDetails[key] ? "normal" : "italic",
   }}

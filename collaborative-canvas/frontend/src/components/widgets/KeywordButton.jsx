@@ -60,7 +60,7 @@ const KeywordInput = ({ type, addKeywordSelection }) => {
         type="text"
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
-        style={{ border: "none", padding: "8px", fontSize: "14px",  outline: "none", maxWidth: "5em", flex: 1 }}
+        style={{ border: "none", padding: "8px", fontSize: "14px",  color: `${colorMapping[type]}`,outline: "none", maxWidth: "5em", flex: 1 }}
       />
       <button
         onClick={handleAdd}

@@ -245,6 +245,7 @@ const generateImage = () => {
                 width: "100%",
                 objectFit: "contain",
               }}
+              title={latestIteration.prompt[index]}
             />
           ) : (
             <div

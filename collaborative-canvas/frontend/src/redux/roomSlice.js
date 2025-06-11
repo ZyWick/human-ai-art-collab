@@ -28,6 +28,9 @@ const roomReducer = createSlice({
     setUsers: (state, action) => {
       state.users = action.payload;
     },
+    setUploadProgress: (state, action) => {
+      state.uploadProgressEs = action.payload;
+    },
     // 1) create a new slot with both values
     addUploadProgress: (state, action) => {
       const { uploadId, fileName } = action.payload;
@@ -71,6 +74,7 @@ export const {
   updateDesignDetails,
   updateDesignDetailsFull,
   setIsAddingComments,
+  setUploadProgress,
   addUploadProgress,
   updateUploadProgress,
   removeUploadProgress,

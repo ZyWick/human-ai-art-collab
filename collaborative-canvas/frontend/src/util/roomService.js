@@ -6,6 +6,8 @@ import {
   setCurrentBoardId,
   setDesignDetails,
   setDesignDetailsFull,
+  setIsAddingComments,
+  setUploadProgress
 } from "../redux/roomSlice";
 import { setBoards } from "../redux/boardsSlice";
 
@@ -15,6 +17,9 @@ const initiateRoom = (roomData, dispatch, navigate) => {
     const { _id, name, boards,  designDetails } = roomData;
     dispatch(setRoomId(_id));
     dispatch(setRoomName(name));
+    dispatch(setIsAddingComments(false));
+    dispatch(setUploadProgress([]));
+
     dispatch(setBoards(boards));
     dispatch(setCurrentBoardId(boards?.[boards.length - 1]?._id));
     dispatch(setDesignDetails(designDetails));

@@ -158,16 +158,38 @@ const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
         {showKeywords
           ? iterations.map((iter, iterIndex) => (
             <div key={iter._id} className="board-row">
+              <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  <p style={{ color: "grey", visibility: "hidden"}}>
+                    #{currBoard.iterations.length - iterIndex}
+                  </p>
+                   <div
+                    style={{
+                      marginLeft: "10px",
+                      paddingLeft: "10px",
+                      borderLeft: "2px solid transparent",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "0.5em",
+                    }}
+                  >
   <div className="image-container-all">
     {iter.generatedImages.map((image, index) => (
-      <img key={index} className="the-row-image" alt="" src={image} />
-    ))}
+      <img key={index} className="the-row-image" alt="" src={image}
+      
+              title={iter.prompt[index]}
+      />
+    ))}</div></div>
   </div>
 
   <div className="iter-meta">
     <p className="iter-number">#{currBoard.iterations.length - iterIndex}</p>
 
-    <div className="keyword-container">
+    <div className="keyword-container-history">
       {iter.keywords?.map((keyword) => (
         <KeywordButton
           key={keyword._id}
@@ -209,6 +231,7 @@ const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
                           // style={{ maxWidth: "18.35%" }}
                           alt=""
                           src={image}
+                          title={iter.prompt[index]}
                         />
                       ))}
                     </div>

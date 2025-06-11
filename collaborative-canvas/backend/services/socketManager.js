@@ -447,19 +447,19 @@ ioEmitWithUser("updateBoardIterations", user, {
 
     const uploadResult = await uploadS3Image(file);
     const imageUrl = uploadResult.url;
-
+    
     await boardService.addImageAndPromptToIteration(
       boardId,
       createdIteration._id,
       imageUrl,
-      JSON.stringify(data, null, 2)
+      data
     );
 
     io.to(user.roomId).emit("iterationImageUpdate", {
       boardId,
       iterationId: createdIteration._id,
       imageUrl,
-      prompt: JSON.stringify(data, null, 2),
+      prompt: data.prompt,
     });
   } catch (err) {
     console.error(`Failed to generate/upload image ${index}:`, err.message);

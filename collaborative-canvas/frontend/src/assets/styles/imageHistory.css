@@ -70,7 +70,7 @@
   font-size: 14px;
 }
 
-.keyword-container {
+.keyword-container-history {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5em;

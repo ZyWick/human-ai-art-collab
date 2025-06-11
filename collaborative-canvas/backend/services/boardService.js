@@ -214,7 +214,8 @@ async function addImageAndPromptToIteration(boardId, iterationId, imageUrl, prom
     {
       $push: {
         "iterations.$.generatedImages": imageUrl,
-        "iterations.$.prompt": prompt,
+        "iterations.$.prompt": prompt.prompt,
+        "iterations.$.promptWhole": prompt
       }
     }
   );

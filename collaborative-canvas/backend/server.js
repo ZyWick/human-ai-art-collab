@@ -16,7 +16,8 @@ const authRoutes = require('./routes/auth.routes'); // Import auth routes
 const allowedOrigins = [
   process.env.CLIENT_URL,
   "https://d3kigqhpgswrju.cloudfront.net",
-  "https://aicollabdesign.space"
+  "https://aicollabdesign.space",
+  "https://baseline.aicollabdesign.space",
 ];
 
 const upload = multer({

@@ -9,7 +9,7 @@ const {generateImage} = require('../utils/imageGeneration')
 const {uploadS3Image} = require("../services/s3service")
 const {getTopFusedBoxes} = require('../utils/getBoundingBoxes')
 
-module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) => {
+module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap, isImgGenRunning) => {
   io.on("connection", (socket) => {
     console.log(`User connected: ${socket.id}`);
 
@@ -299,32 +299,76 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
       }
     });
 
-    const imageUrls = [
-      "https://www.cnet.com/a/img/resize/8d159fb0c99a75843d3585dd2ae8cc9e6fa12773/hub/2017/08/03/75c3b0ae-5a2d-4d75-b72b-055247b4378f/marvelinfinitywar-captainamerica.jpg?auto=webp&fit=crop&height=1200&width=1200",
-      "https://static.wikia.nocookie.net/marvel-rivals/images/d/de/Jeff_the_Land_Shark_Hero_Portrait.png/revision/latest?cb=20240819162642",
-      "https://static.wikia.nocookie.net/marveldatabase/images/5/5d/Jeffrey_%28Land_Shark%29_%28Earth-616%29_from_It%27s_Jeff_Infinity_Comic_Vol_1_3_001.jpg/revision/latest?cb=20210910103413",
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSIM-V3IWZ3ApUOIbNdJweDaZqUsEuBck2o2Q&s",
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQwz5qS8aIDsdasa44YrfqFMethUesT2Rurjg&s",
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT0xVNiPNF2WCAlkW9uMl-wIRFosEMWzjUf5A&s",
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTCEft7JF8CZjUYkqMjQwqBJSp6XiVQHmV0wAp4uJglNnjBcv2csbKoDYG1y3KcFnVDKGk&usqp=CAU",
-      "https://i.pinimg.com/736x/dc/ed/b3/dcedb3767aadd312965da861d7ee71a9.jpg",
-      "https://statik.tempo.co/data/2024/07/14/id_1318659/1318659_720.jpg",
-      "https://i0.wp.com/www.thewrap.com/wp-content/uploads/2023/05/rocket-raccoon-guardians-early.jpg?fit=1200%2C675&ssl=1",
-    ];
-    const getRandomImages = (count = 5) => {
-      return imageUrls.toSorted(() => Math.random() - 0.5).slice(0, count);
-    };
-
     socket.on("generateNewImage", async ({ boardId, data, arrangement }) => {
+      if (isImgGenRunning[boardId]) {
+          console.log("Function is already running. Skipping this call.");
+          return;
+      }
+
+      isImgGenRunning[boardId] = true
       try {
         const user = users[socket.id];
         if (!user) return;
-        // normalizedGenerateData = normalizeKeywordVotesByType(generateData);
+
+         const keywords = [];
+
+        for (const [type, entries] of Object.entries(data)) {
+          // Skip non-object entries like "Brief"
+          if (typeof entries !== 'object') continue;
+
+          for (const [keyword, vote] of Object.entries(entries)) {
+            keywords.push({
+              keyword,
+              type,
+              vote
+            });
+          }
+        }
+
+         for (const [type, entries] of Object.entries(data)) {
+          // Skip non-object entries like "Brief"
+          if (typeof entries !== 'object') continue;
+
+          for (const [keyword, vote] of Object.entries(entries)) {
+            keywords.push({
+              keyword,
+              type,
+              vote
+            });
+          }
+        }
+        arrangement.forEach(item => {
+          keywords.push({
+            keyword: "Arrangement",
+            type: "Arrangement",
+            vote: item.votes
+          });
+        });
+        
+
+        const newIteration = {
+            prompt: [],
+            generatedImages: [], // empty initially
+            keywords,
+            createdAt: new Date(),
+          };
+
+const createdIteration = await boardService.addIteration(boardId, newIteration); // returns the saved iteration with _id
+
+        const progressCounter = createImgGenProgressCounter(user.roomId, boardId)
+        ioEmitWithUser("updateBoardIterations", user, {
+                  update: {
+                    id: boardId,
+                    iteration: createdIteration,
+              }});
+
+
         let textDescriptions = await generateTextualDescriptions(JSON.stringify({data}, null, 2))
         let generatedLayouts = arrangement
         let genImageInput = {}
 
-        if(!generatedLayouts) {
+        progressCounter.add(10)
+        if(!generatedLayouts?.length) {
           genLayoutInput = textDescriptions.output.map(entry => {
           const objects = entry.Objects.flatMap(obj => Object.keys(obj));
           return {
@@ -363,7 +407,7 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
           phrases
         };
       });
-
+progressCounter.add(15)
         } else {
 
         const matchLayoutInput = textDescriptions.output.map((item) => {
@@ -404,37 +448,9 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap) =>
           phrases
         };
       });
+      progressCounter.add(15)
        }
-        const keywords = [];
-
-        for (const [type, entries] of Object.entries(data)) {
-          // Skip non-object entries like "Brief"
-          if (typeof entries !== 'object') continue;
-
-          for (const [keyword, vote] of Object.entries(entries)) {
-            keywords.push({
-              keyword,
-              type,
-              vote
-            });
-          }
-        }
-
-        const newIteration = {
-            prompt: [],
-  generatedImages: [], // empty initially
-  keywords,
-  createdAt: new Date(),
-};
-
-const createdIteration = await boardService.addIteration(boardId, newIteration); // returns the saved iteration with _id
-
-ioEmitWithUser("updateBoardIterations", user, {
-          update: {
-            id: boardId,
-            iteration: createdIteration,
-      }});
-
+       
       await Promise.all(genImageInput.map(async (data, index) => {
   try {
     const base64Image = await generateImage(data);
@@ -463,15 +479,37 @@ ioEmitWithUser("updateBoardIterations", user, {
     });
   } catch (err) {
     console.error(`Failed to generate/upload image ${index}:`, err.message);
-  }
+   } finally {
+       progressCounter.add(25)
+   }
 }));
 
 
       } catch (error) {
         console.error("Error generating sketches:", error);
         socket.emit("error", { message: "Failed to generate new image" });
-      }
+      } finally {
+    isImgGenRunning[boardId] = false;
+  }
     });
+
+  function createImgGenProgressCounter(roomId, boardId) {
+      let count = 0;
+
+      // Emit initial progress start event
+      io.to(roomId).emit("addImgGenProgress", {boardId});
+
+    return {
+      add: (up = 1) => {
+        count += up;
+        io.to(roomId).emit("updateImgGenProgress", {
+          boardId,
+          progress: count,
+        });
+      }
+    };
+  }
+
 
     socket.on("cloneBoard", async (boardId) => {
       try {

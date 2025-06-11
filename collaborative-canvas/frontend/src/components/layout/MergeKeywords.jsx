@@ -5,6 +5,7 @@ import { useSocket } from "../../context/SocketContext";
 import { KeywordButton } from "../widgets/KeywordButton";
 import { selectBoardById } from "../../redux/boardsSlice";
 import { updateKeyword, selectAllKeywords } from "../../redux/keywordsSlice";
+import { selectImgGenProgressByBoardId } from "../../redux/roomSlice";
 import {
   addSelectedKeyword,
   removeSelectedKeyword,
@@ -156,6 +157,8 @@ const generateImage = () => {
           flexDirection: "column",
           gap: "0.5em",
           zIndex: "100",
+           borderBottomRightRadius: `${hide ? "0" : "8px" }`,
+           borderBottomLeftRadius: `${hide ? "0" : "8px" }`
         }}
       >
         <div
@@ -196,6 +199,24 @@ const generateImage = () => {
         <button className="wideButton" onClick={generateImage}>
           Merge Keywords
         </button>
+        <ProgressBar currentBoardId={currentBoardId}/>
+        {hide && latestIteration &&
+        <button className="hideButton" 
+    onClick={() => setHide(false)}
+    title="hide"
+    style={{width: "266px", position: "absolute", 
+    top: "100%",
+    right: "0",
+    padding: 0,
+      borderTopRightRadius: "0",
+       borderTopLeftRadius: "0"
+    }}>   <img
+            src="/icons/up.svg"
+            alt="Show iterations"
+            width="20"
+            height="20"
+            style={{transform: "scaleY(-1)"}}
+          /></button>}
       </div>
      {topBottom > 0 && !hide && latestIteration && latestIteration.generatedImages && (<>
   <div
@@ -244,6 +265,8 @@ const generateImage = () => {
                 maxHeight: "17.5vh",
                 width: "100%",
                 objectFit: "contain",
+                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.25)",
+                borderRadius: "8px"
               }}
               title={latestIteration.prompt[index]}
             />
@@ -276,29 +299,36 @@ const generateImage = () => {
   </div>
  </>
 )}
-
-      {/* <div
-        style={{
-            position: "absolute",
-            right: "2.5%",
-            top: `${topBottom + 20 + (currGenerated?.length > 0 ? secondHeight + 20 : 0)}px`,
-          maxWidth: "240px",
-          minWidth: "240px",
-            backgroundColor: "white",
-            borderRadius: "8px",
-            boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",
-            padding: "13px",
-            zIndex: 100,
-            display:"flex",
-            flexDirection: "column",
-            justifyContent: "space-between"
-  }}
->
- <RecommendedKeywords stageRef={stageRef}/>
-</div> */}
-
     </>
   );
 };
+
+
+function ProgressBar({currentBoardId}) {
+  const progressItem = useSelector(selectImgGenProgressByBoardId(currentBoardId));
+
+  return progressItem && <div style={{position: "absolute", right: "13px", top: "96%", width: `calc(100% - 26px)`}}>
+    <p
+    style= {{
+      color: "rgb(68,68,68)",
+      marginTop: "0",
+      marginBottom: "0",
+      fontSize: "10px",
+      textAlign: "left",
+      whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    }}
+    > </p>
+    <div style={{
+      width: '100%',
+      height: '2px',
+    }}>
+      <div style={{ height: '100%',
+      backgroundColor: '#007bff',
+      transition: 'width 0.3s ease-in-out', width: `${progressItem.progress}%` }} />
+    </div></div>
+  ;
+}
 
 export default MergeKeywords;

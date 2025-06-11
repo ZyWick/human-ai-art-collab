@@ -18,7 +18,7 @@ const createLoggerMiddleware = (entity, trackedFields = []) => (store) => (next)
   const actionMeta = getActionMeta(meta);
 
   if (type.startsWith(`${entity}/`)) {
-    if ([`addKeyword`,`removeKeyword`, 
+    if ([`removeKeyword`, 
       `addThread`,`removeThread`, 
       `addImage`,`removeImage`, 
       `addBoard`,`removeBoard`, 

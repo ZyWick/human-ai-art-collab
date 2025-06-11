@@ -51,7 +51,8 @@ let users = [];
 let rooms = [];
 let boardKWCache = [], boardSKWCache = [];
 let debounceMap = {};
-socketManager(io, users, rooms, boardKWCache, boardSKWCache, debounceMap);
+let isImgGenRunning = [];
+socketManager(io, users, rooms, boardKWCache, boardSKWCache, debounceMap, isImgGenRunning);
 
 // Routes
 app.use('/boards', boardRoutes);

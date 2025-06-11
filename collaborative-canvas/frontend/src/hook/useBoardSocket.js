@@ -18,6 +18,9 @@ import {
   addUploadProgress,
   updateUploadProgress,
   removeUploadProgress,
+    addImgGenProgress,
+  updateImgGenProgress,
+  removeImgGenProgress,
 } from "../redux/roomSlice";
 import {
   addBoard,
@@ -40,7 +43,7 @@ import {
   addThread,
   updateThread
 } from "../redux/threadsSlice"
-import { useUploadProgressTimeout } from './useUploadProgressTimeout'; 
+import { useProgressTimeout } from './useProgressTimeout'; 
 
 const useBoardSocket = () => {
   const dispatch = useDispatch();
@@ -48,7 +51,8 @@ const useBoardSocket = () => {
   const { roomId, currentBoardId } = useSelector(s => s.room);
   const { user } = useAuth();
   const boards   = useSelector(selectAllBoards);
-  const { resetStallTimeout, clearStallTimeout } = useUploadProgressTimeout();
+  const imgUploadProgressHandler = useProgressTimeout(removeUploadProgress);
+  const imgGenProgressHandler = useProgressTimeout(removeImgGenProgress);
 
   // A stable wrapper for your “dispatch + meta” pattern
   const dispatchWithMeta = useCallback((actionCreator, payload, userData) => {
@@ -79,17 +83,33 @@ const useBoardSocket = () => {
       const handlers = {
         addUploadProgress:        ({uploadId, fileName}) => {
           dispatch(addUploadProgress({ uploadId, fileName }));
-           resetStallTimeout(uploadId);
+           imgUploadProgressHandler.resetStallTimeout(uploadId);
         },
         updateUploadProgress:     ({uploadId, progress}) => {
                                   dispatch(updateUploadProgress({ uploadId, progress }));
-                                   resetStallTimeout(uploadId);
+                                   imgUploadProgressHandler.resetStallTimeout(uploadId);
                                   
                                   if (progress >= 100) {
-                                    clearStallTimeout(uploadId);
+                                    imgUploadProgressHandler.clearStallTimeout(uploadId);
                                     setTimeout(() => {
-                                      dispatch(removeUploadProgress({uploadId}));
+                                      dispatch(removeUploadProgress(uploadId));
                                     }, 1000);  // 5s “grace period”
+                                  }
+                                },
+         addImgGenProgress:        ({boardId}) => {
+          dispatch(addImgGenProgress(boardId));
+           imgGenProgressHandler.resetStallTimeout(boardId);
+           console.log("hell2222o")
+        },
+        updateImgGenProgress:     ({boardId, progress}) => {
+                                  dispatch(updateImgGenProgress({ boardId, progress }));
+                                   imgGenProgressHandler.resetStallTimeout(boardId);
+                                  
+                                  if (progress >= 100) {
+                                    imgGenProgressHandler.clearStallTimeout(boardId);
+                                    setTimeout(() => {
+                                      dispatch(removeImgGenProgress(boardId));
+                                    }, 500);  // 5s “grace period”
                                   }
                                 },
         updateRoomUsers:          (usernames) => dispatch(setUsers(usernames)),
@@ -113,16 +133,14 @@ const useBoardSocket = () => {
                                     dispatchWithMeta(removeKeywords, keywords, user);
                                   },
         newBoard:                 ({ board, user }) => {
-                                    console.log(board)
                                     dispatchWithMeta(addBoard, board, user)}
                                     ,
         updateBoard:              ({ update, user }) => 
                                     dispatchWithMeta(updateBoard, update, user),
         updateBoardIterations:    ({ update, user }) => {
-                                      console.log("helloo")
                                     dispatchWithMeta(updateBoardIterations, update, user)
                                   },
-        iterationImageUpdate: ({ boardId, iterationId, prompt, imageUrl }) => {console.log("herE");dispatch(updateIterationPartial({
+        iterationImageUpdate: ({ boardId, iterationId, prompt, imageUrl }) => {dispatch(updateIterationPartial({
   boardId,
   iterationId,
   prompt,     // string or undefined
@@ -207,7 +225,7 @@ const useBoardSocket = () => {
           socket.off(evt);
         });
       };
-    }, [socket, dispatchWithMeta, dispatch, resetStallTimeout, clearStallTimeout]);
+    }, [socket, dispatchWithMeta, dispatch, imgUploadProgressHandler, imgGenProgressHandler,]);
   
   };
   

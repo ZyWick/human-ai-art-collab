@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
-
-const RUN_POD_URL_INSTDIFF = process.env.RUN_POD_URL_INSTDIFF
+import { Client } from "@gradio/client";
+					
 const RUN_POD_API_KEY = process.env.RUN_POD_API_KEY
 
 const RUNPOD_BASE_URL_INSTDIFF = process.env.RUNPOD_BASE_URL_INSTDIFF;
@@ -69,9 +69,40 @@ export async function generateImage(data) {
       throw new Error("No image_base64 returned after polling.");
     }
 
-    return base64Image;
+    const client = await Client.connect("awacke1/Image-to-Line-Drawings");
+    const sketchResult = await client.predict("/predict", { 
+            input_img: base64ToBlob(base64Image), 		
+    });
+    if (!sketchResult) {
+      throw new Error("No sketchResult returned after polling.");
+    }
+
+    return await fetchImageAsBase64(sketchResult.data[0].url);
   } catch (error) {
     console.error("RunPod image generation failed:", error);
     throw error;
   }
+}
+
+function base64ToBlob(base64, contentType = 'image/jpeg') {
+  const byteCharacters = atob(base64);
+  const byteArrays = [];
+
+  for (let i = 0; i < byteCharacters.length; i += 512) {
+    const slice = byteCharacters.slice(i, i + 512);
+    const byteNumbers = new Array(slice.length);
+    for (let j = 0; j < slice.length; j++) {
+      byteNumbers[j] = slice.charCodeAt(j);
+    }
+    byteArrays.push(new Uint8Array(byteNumbers));
+  }
+
+  return new Blob(byteArrays, { type: contentType });
+}
+
+async function fetchImageAsBase64(imageUrl) {
+  const response = await fetch(imageUrl);
+  const arrayBuffer = await response.arrayBuffer(); // modern replacement for response.buffer()
+  const buffer = Buffer.from(arrayBuffer)
+  return buffer.toString("base64");
 }

@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { createSelector } from '@reduxjs/toolkit';
 
 const roomReducer = createSlice({
   name: "socket",
@@ -11,6 +12,7 @@ const roomReducer = createSlice({
     designDetailsFull: {},
     isAddingComments: false,
     uploadProgressEs: [],
+    imgGenProgressEs: [],
   },
   reducers: {
     setRoomId: (state, action) => {
@@ -46,8 +48,26 @@ const roomReducer = createSlice({
     },
     // 3) remove an existing upload progress entry
     removeUploadProgress: (state, action) => {
-      const { uploadId } = action.payload;
-      state.uploadProgressEs = state.uploadProgressEs.filter(item => item.uploadId !== uploadId);
+      state.uploadProgressEs = state.uploadProgressEs.filter(item => item.uploadId !==  action.payload);
+    },
+    setImgGenProgress: (state, action) => {
+      state.imgGenProgressEs = action.payload;
+    },
+    // 1) create a new slot with both values
+    addImgGenProgress: (state, action) => {
+      state.imgGenProgressEs.push({ boardId:  action.payload, progress: 0 });
+    },
+    // 2) afterwards only ever update the progress
+    updateImgGenProgress: (state, action) => {
+      const { boardId, progress } = action.payload;
+      const upload = state.imgGenProgressEs.find(item => item.boardId === boardId);
+      if (upload) {
+        upload.progress = progress;
+      }
+    },
+    // 3) remove an existing upload progress entry
+    removeImgGenProgress: (state, action) => {
+      state.imgGenProgressEs = state.imgGenProgressEs.filter(item => item.boardId !==  action.payload);
     },
     setDesignDetails: (state, action) => {
       state.designDetails = action.payload;
@@ -64,6 +84,15 @@ const roomReducer = createSlice({
   },
 });
 
+export const selectImgGenProgressEs = (state) => state.room.imgGenProgressEs;
+
+// Selector to get item by ID
+export const selectImgGenProgressByBoardId = (boardId) =>
+  createSelector(
+    [selectImgGenProgressEs],
+    (items) => items.find((item) => item.boardId === boardId)
+  );
+
 export const {
   setRoomId,
   setRoomName,
@@ -78,5 +107,9 @@ export const {
   addUploadProgress,
   updateUploadProgress,
   removeUploadProgress,
+  setImgGenProgress,
+  addImgGenProgress,
+  updateImgGenProgress,
+  removeImgGenProgress,
 } = roomReducer.actions;
 export default roomReducer.reducer;

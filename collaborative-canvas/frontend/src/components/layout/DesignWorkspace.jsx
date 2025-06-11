@@ -46,7 +46,7 @@ const DesignWorkspace = ({ stageRef }) => {
 
   useEffect(() => {
     const element = topRef.current;
-    if (!element) return; // Ensure it's defined
+    if (!element) return; 
 
     const updatePosition = () => {
       if (topRef.current) {

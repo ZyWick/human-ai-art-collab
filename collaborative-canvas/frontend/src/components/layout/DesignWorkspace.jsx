@@ -3,11 +3,8 @@ import Konva from "konva";
 import DesignDetails from "../widgets/DesignDetails";
 import UploadButton from "../widgets/UploadButton";
 import { useSelector } from "react-redux";
-import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from "../../context/SocketContext";
-import { selectBoardById, updateBoard } from "../../redux/boardsSlice";
-import { clearAllVotes } from "../../redux/keywordsSlice";
-import { setIsAddingComments } from "../../redux/roomSlice";
+import { selectBoardById } from "../../redux/boardsSlice";
 import IterationsPopup from "../widgets/IterationsPopup";
 import "../../assets/styles/toolbar.css";
 import { NoteKeywordInput } from "../widgets/KeywordButton";
@@ -18,19 +15,13 @@ const DesignWorkspace = ({ stageRef }) => {
   const [isUploadingImg, setIsUploadingImg] = useState(false);
   const topRef = useRef(null);
   const secondRef = useRef(null);
-  const designDetails = useSelector((state) => state.room.designDetails);
-  const isDesignDetailsEmpty = Object.entries(designDetails)
-    .filter(([key]) => key !== "others")
-    .some(([, value]) => !value?.trim());
-  const isAddingComments = useSelector((state) => state.room.isAddingComments);
+
   const socket = useSocket();
-  const dispatch = useDispatchWithMeta();
 
   const [showAllIterations, setShowAllIterations] = useState(false);
 
   const boardId = useSelector((state) => state.room.currentBoardId);
   const currBoard = useSelector((state) => selectBoardById(state, boardId));
-  const isVoting = currBoard?.isVoting;
 
   const handleBackToOrigin = () => {
     const stage = stageRef.current;
@@ -79,20 +70,6 @@ const DesignWorkspace = ({ stageRef }) => {
     };
   }, []);
 
-  const handleResetVotes = useCallback(() => {
-    dispatch(clearAllVotes, {});
-    socket.emit("clearKeywordVotes", boardId);
-  }, [dispatch, socket, boardId]);
-
-  const handleToggleVoting = useCallback(() => {
-    dispatch(updateBoard, { id: boardId, changes: { isVoting: !isVoting } });
-    socket.emit("toggleVoting", boardId);
-  }, [dispatch, socket, boardId, isVoting]);
-
-  const handleToggleComments = useCallback(() => {
-    dispatch(setIsAddingComments, !isAddingComments);
-  }, [dispatch, isAddingComments]);
-
   const handleToggleIterations = useCallback(() => {
     setShowAllIterations((prev) => !prev);
   }, []);
@@ -140,7 +117,6 @@ const DesignWorkspace = ({ stageRef }) => {
             stageRef={stageRef}
             isUploadingImg={isUploadingImg}
             setIsUploadingImg={setIsUploadingImg}
-            isDesignDetailsEmpty={isDesignDetailsEmpty}
           />
 
           <div
@@ -156,14 +132,14 @@ const DesignWorkspace = ({ stageRef }) => {
               width: "100%",
               display: "grid",
               marginTop: "0.75em",
-              gridTemplateRows: "1fr 1fr",
+              gridTemplateRows: "1fr",
             }}
           >
             <div
               style={{
                 display: "grid",
                 height: "2em",
-                gridTemplateColumns: "33.33% 33.33% 33.33%",
+                gridTemplateColumns: "33% 33% 33%",
               }}
             >
               <div
@@ -187,29 +163,7 @@ const DesignWorkspace = ({ stageRef }) => {
                   />
                 </button>
               </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <button
-                  onClick={handleToggleComments}
-                  title="Add Comment"
-                  className={
-                    isAddingComments ? "active custom-button" : "custom-button"
-                  }
-                  style={{ height: "100%", width: "100%" }}
-                >
-                  <img
-                    src="/icons/chat.svg"
-                    alt="Add Comment"
-                    width="20"
-                    height="17.5"
-                  />
-                </button>
-              </div>
+             
               <div
                 style={{
                   display: "flex",
@@ -232,58 +186,6 @@ const DesignWorkspace = ({ stageRef }) => {
                     alt="Show iterations"
                     width="20"
                     height="20"
-                  />
-                </button>
-              </div>
-            </div>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "33.33% 33.33% 33.33%",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                {" "}
-                <button
-                  style={{ height: "100%", width: "100%" }}
-                  onClick={handleToggleVoting}
-                  title="Vote"
-                  className={
-                    isVoting ? "active custom-button" : "custom-button"
-                  }
-                >
-                  <img
-                    src="/icons/vote.svg"
-                    alt="Toggle Voting"
-                    width="20"
-                    height="20"
-                  />
-                </button>
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <button
-                  className="custom-button"
-                  style={{ height: "100%", width: "100%" }}
-                  onClick={handleResetVotes}
-                  title="Reset Votes"
-                >
-                  <img
-                    src="/icons/reset.svg"
-                    alt="Reset votes"
-                    width="14"
-                    height="14"
                   />
                 </button>
               </div>

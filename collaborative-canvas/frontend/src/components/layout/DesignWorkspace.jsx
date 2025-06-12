@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Konva from "konva";
 import DesignDetails from "../widgets/DesignDetails";
 import UploadButton from "../widgets/UploadButton";

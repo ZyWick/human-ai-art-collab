@@ -197,7 +197,7 @@ useEffect(() => {
           >
              <img src="/icons/edit.svg" alt="Reset votes" width="10" height="10" />
           </button>
-        ) : 
+        ) : threadData.userId === user.id &&
          <button
             onClick={() => onResolve(threadData._id)}
             style={{

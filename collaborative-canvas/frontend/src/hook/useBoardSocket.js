@@ -194,7 +194,9 @@ const useBoardSocket = () => {
                                     dispatchWithMeta(removeSelectedKeyword, _id, user);
                                     dispatchWithMeta(
                                       updateKeyword,
-                                      { id: _id, changes: { offsetX: undefined, offsetY: undefined, isSelected: false } },
+                                      { id: _id, changes: { offsetX: undefined, offsetY: undefined, isSelected: false, 
+                                    votes: [],
+                                    downvotes: [], } },
                                       user
                                     );
                                   },

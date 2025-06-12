@@ -197,7 +197,7 @@ const removeKeywordFromBoard = async (keywordId) =>
     keywordId,
     {
       $unset: { offsetX: "", offsetY: "" }, // Remove offset values
-      $set: { isSelected: false }, // Set isSelected to false
+      $set: { isSelected: false, votes: [], downvotes: [] }, // Set isSelected to false
     },
     { new: true } // ✅ Return the updated document
   );

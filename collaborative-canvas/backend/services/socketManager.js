@@ -312,19 +312,6 @@ module.exports = (io, users, rooms, boardKWCache, boardSKWCache, debounceMap, is
 
          const keywords = [];
 
-        for (const [type, entries] of Object.entries(data)) {
-          // Skip non-object entries like "Brief"
-          if (typeof entries !== 'object') continue;
-
-          for (const [keyword, vote] of Object.entries(entries)) {
-            keywords.push({
-              keyword,
-              type,
-              vote
-            });
-          }
-        }
-
          for (const [type, entries] of Object.entries(data)) {
           // Skip non-object entries like "Brief"
           if (typeof entries !== 'object') continue;

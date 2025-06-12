@@ -71,7 +71,8 @@ export async function generateImage(data) {
 
     const client = await Client.connect("awacke1/Image-to-Line-Drawings");
     const sketchResult = await client.predict("/predict", { 
-            input_img: base64ToBlob(base64Image), 		
+            input_img: base64ToBlob(base64Image), 	
+            ver: "Complex Lines",	
     });
     if (!sketchResult) {
       throw new Error("No sketchResult returned after polling.");

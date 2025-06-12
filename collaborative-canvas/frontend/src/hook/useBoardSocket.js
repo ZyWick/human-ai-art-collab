@@ -67,14 +67,22 @@ const useBoardSocket = () => {
 
   // 1) join/leave room effect
   useEffect(() => {
-    if (!socket) return;
-    const payload = { username: user.username, userId: user.id, roomId };
+  if (!socket) return;
+  const payload = { username: user.username, userId: user.id, roomId };
 
-    socket.emit("joinRoom", payload);
-    return () => {
-      socket.emit("leave room", payload);
-    };
-  }, [socket, user.id, user.username, roomId]);
+  socket.emit("joinRoom", payload);
+
+  const handleBeforeUnload = () => {
+    socket.emit("leave room", payload);
+  };
+
+  window.addEventListener("beforeunload", handleBeforeUnload);
+
+  return () => {
+    socket.emit("leave room", payload);
+    window.removeEventListener("beforeunload", handleBeforeUnload);
+  };
+}, [socket, user.id, user.username, roomId]);
 
     // 2) all the listeners in one place, only once
     useEffect(() => {

@@ -70,9 +70,6 @@ const DesignWorkspace = ({ stageRef }) => {
     };
   }, []);
 
-  const handleToggleIterations = useCallback(() => {
-    setShowAllIterations((prev) => !prev);
-  }, []);
 
   return (
     <>
@@ -139,7 +136,7 @@ const DesignWorkspace = ({ stageRef }) => {
               style={{
                 display: "grid",
                 height: "2em",
-                gridTemplateColumns: "33% 33% 33%",
+                gridTemplateColumns: "50% 50%",
               }}
             >
               <div
@@ -158,32 +155,6 @@ const DesignWorkspace = ({ stageRef }) => {
                   <img
                     src="/icons/crosshair.svg"
                     alt="Back to Origin"
-                    width="20"
-                    height="20"
-                  />
-                </button>
-              </div>
-             
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <button
-                  onClick={handleToggleIterations}
-                  title={
-                    showAllIterations ? "Hide Iterations" : "Show Iterations"
-                  }
-                  className={
-                    showAllIterations ? "active custom-button" : "custom-button"
-                  }
-                  style={{ height: "100%", width: "100%" }}
-                >
-                  <img
-                    src="/icons/folder.svg"
-                    alt="Show iterations"
                     width="20"
                     height="20"
                   />

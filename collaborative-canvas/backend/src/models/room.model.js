@@ -1,5 +1,13 @@
-const mongoose = require('mongoose');
+// Importing mongoose using ESM `import` syntax
+import mongoose from 'mongoose';
 
+/**
+ * RoomSchema defines the structure of Room documents in MongoDB.
+ * - name: String (required)
+ * - boards: Array of ObjectIds referencing Board
+ * - joinCode: String (required)
+ * - designDetails: Nested objective string (default: "")
+ */
 const RoomSchema = new mongoose.Schema(
   {
     name: {
@@ -18,14 +26,11 @@ const RoomSchema = new mongoose.Schema(
     },
     designDetails: {
       objective: { type: String, default: "" },
-      // targetAudience: { type: String, default: "" },
-      // requirements: { type: String, default: "" },
-      // constraints: { type: String, default: "" },
-      // others: { type: String, default: "" },
     },
   },
   { timestamps: true }
 );
 
+// Create the Room model from the schema
 const Room = mongoose.model('Room', RoomSchema);
-module.exports = Room;
+export default Room;

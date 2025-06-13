@@ -1,4 +1,6 @@
 import OpenAI from "openai";
+import dotenv from "dotenv";
+dotenv.config();
 
 const OPENAIMODEL = "gpt-4.1-2025-04-14"
 const openai = new OpenAI({

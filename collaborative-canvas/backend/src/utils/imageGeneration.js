@@ -1,6 +1,10 @@
 import fetch from 'node-fetch';
 import { Client } from "@gradio/client";
-					
+import {uploadS3ImageGen} from "../services/s3service.js";
+
+import dotenv from "dotenv";
+dotenv.config();
+
 const RUN_POD_API_KEY = process.env.RUN_POD_API_KEY
 
 const RUNPOD_BASE_URL_INSTDIFF = process.env.RUNPOD_BASE_URL_INSTDIFF;
@@ -69,16 +73,37 @@ export async function generateImage(data) {
       throw new Error("No image_base64 returned after polling.");
     }
 
+    const filename = uniqueFilename();
+
+    const file = {
+      originalname: `${filename}_color.jpg`,
+      buffer: Buffer.from(base64Image, 'base64'),
+      mimetype: 'image/jpeg'
+    };
+
     const client = await Client.connect("awacke1/Image-to-Line-Drawings");
-    const sketchResult = await client.predict("/predict", { 
-            input_img: base64ToBlob(base64Image), 	
-            ver: "Complex Lines",	
-    });
+
+    // Run both upload and sketch generation in parallel
+    const [_, sketchResult] = await Promise.all([
+      uploadS3ImageGen(file),
+      client.predict("/predict", {
+        input_img: base64ToBlob(base64Image),
+        ver: "Complex Lines"
+      })
+    ]);
+
     if (!sketchResult) {
       throw new Error("No sketchResult returned after polling.");
     }
 
-    return await fetchImageAsBase64(sketchResult.data[0].url);
+    const sketchfile = {
+      originalname: `${filename}.jpg`,
+      buffer: Buffer.from(await fetchImageAsBase64(sketchResult.data[0].url), 'base64'),
+      mimetype: 'image/jpeg'
+    };
+
+    return await uploadS3ImageGen(sketchfile);
+
   } catch (error) {
     console.error("RunPod image generation failed:", error);
     throw error;
@@ -107,3 +132,9 @@ async function fetchImageAsBase64(imageUrl) {
   const buffer = Buffer.from(arrayBuffer)
   return buffer.toString("base64");
 }
+
+const uniqueFilename = () => {
+  const timestamp = Date.now().toString(36); // base36 is shorter & readable
+  const random = Math.floor(Math.random() * 1e6).toString(36).padStart(4, '0');
+  return `${timestamp}-${random}`;
+};

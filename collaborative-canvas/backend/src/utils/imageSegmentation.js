@@ -1,5 +1,7 @@
 import sharp from 'sharp';
 import fetch from 'node-fetch';
+import dotenv from "dotenv";
+dotenv.config();
 
 const RUN_POD_API_KEY = process.env.RUN_POD_API_KEY;
 

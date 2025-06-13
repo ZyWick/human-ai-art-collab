@@ -1,15 +1,20 @@
-const mongoose = require("mongoose");
+import mongoose from 'mongoose';
 
+/**
+ * Keyword Schema for MongoDB with Mongoose.
+ * Represents a keyword entity linked to a board and optionally an image.
+ * Includes selection state, custom flag, type, keyword string, bounding boxes, votes, and timestamps.
+ */
 const keywordSchema = new mongoose.Schema(
   {
     boardId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Board",
+      ref: 'Board',
       required: true,
     },
     imageId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Image",
+      ref: 'Image',
     },
     offsetX: {
       type: Number,
@@ -40,13 +45,13 @@ const keywordSchema = new mongoose.Schema(
     },
     votes: {
       type: [mongoose.Schema.Types.ObjectId], // Array of user IDs
-      ref: "User",
-      default: [], // Default to an empty array
+      ref: 'User',
+      default: [],
     },
     downvotes: {
       type: [mongoose.Schema.Types.ObjectId], // Array of user IDs
-      ref: "User",
-      default: [], // Default to an empty array
+      ref: 'User',
+      default: [],
     },
   },
   {
@@ -54,9 +59,12 @@ const keywordSchema = new mongoose.Schema(
   }
 );
 
+// Create compound indexes for the Keyword model
 keywordSchema.index({ imageId: 1 });
-keywordSchema.index({ boardId: 1, isSelected: 1 });
 
-const Keyword = mongoose.model("Keyword", keywordSchema);
-
-module.exports = Keyword;
+/**
+ * Keyword model.
+ * @type {import('mongoose').Model}
+ */
+const Keyword = mongoose.model('Keyword', keywordSchema);
+export default Keyword;

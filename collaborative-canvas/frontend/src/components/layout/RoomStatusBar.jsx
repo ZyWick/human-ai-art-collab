@@ -82,7 +82,7 @@ const RoomStatusBar = () => {
   })}
         {hiddenUsers && hiddenUsers.length > 0 && (
           <div className="avatar more" title={hiddenUsers.map(u => u.username).join(", ")}>
-            +{hiddenUsers.length} {console.log(hiddenUsers)}
+            +{hiddenUsers.length}
           </div>
         )}
       </div>

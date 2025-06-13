@@ -1,5 +1,10 @@
-const mongoose = require("mongoose");
+// Import the default export from the 'mongoose' package
+import mongoose from "mongoose";
 
+/**
+ * Thread schema definition for MongoDB using Mongoose.
+ * Represents discussion threads linked to users, boards, images, and keywords.
+ */
 const ThreadSchema = new mongoose.Schema(
   {
     value: {
@@ -23,7 +28,7 @@ const ThreadSchema = new mongoose.Schema(
     },
     keywordId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Keyword",  // Fixed reference
+      ref: "Keyword",
       default: null
     },
     username: { 
@@ -47,12 +52,14 @@ const ThreadSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Indexing for faster queries
+// Define index fields to optimize database queries
 ThreadSchema.index({ boardId: 1 });
 ThreadSchema.index({ imageId: 1 });
 ThreadSchema.index({ keywordId: 1 });
 ThreadSchema.index({ parentId: 1 });
 
+/**
+ * Thread model for interacting with the threads collection.
+ */
 const Thread = mongoose.model("Thread", ThreadSchema);
-
-module.exports = Thread;
+export default Thread;

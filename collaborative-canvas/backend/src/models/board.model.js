@@ -1,11 +1,27 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
+
+// Define the iteration subdocument schema for clarity
+const iterationSchema = new mongoose.Schema(
+  {
+    prompt: [{ type: String }],
+    generatedImages: [{ type: String }], // Array of image URLs
+    keywords: [
+      {
+        keyword: { type: String, required: true },
+        type: { type: String, required: true },
+        vote: { type: Number, default: 0 },
+      },
+    ],
+  },
+  { timestamps: true }
+);
 
 const boardSchema = new mongoose.Schema(
   {
     name: { 
       type: String, 
       required: true,
-      index: true
+      index: true,
     },
     roomId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -24,23 +40,7 @@ const boardSchema = new mongoose.Schema(
         ref: 'Keyword',
       },
     ],
-    iterations: [
-      {
-        prompt: [{type:String}],
-        generatedImages: [{ type: String }], // Array of image URLs
-        keywords: [ {
-          keyword: { type: String, required: true },
-          type: { type: String, required: true },
-          vote: {type: Number, default: 0}
-        },
-      ]
-      },
-      { timestamps: true }
-    ],
-    isStarred: {
-      type: Boolean,
-      default: false,
-    },
+    iterations: [iterationSchema],
     isVoting: {
       type: Boolean,
       default: false,
@@ -51,6 +51,9 @@ const boardSchema = new mongoose.Schema(
 
 boardSchema.index({ roomId: 1 });
 
+/**
+ * Board model
+ * @type {mongoose.Model}
+ */
 const Board = mongoose.model('Board', boardSchema);
-
-module.exports = Board;
+export default Board;

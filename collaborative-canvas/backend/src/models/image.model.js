@@ -1,5 +1,13 @@
-const mongoose = require("mongoose");
+// image.model.js
+/**
+ * @file Image Mongoose model definition (ESM compatible)
+ */
 
+import mongoose from 'mongoose';
+
+/**
+ * Mongoose schema definition for images.
+ */
 const imageSchema = new mongoose.Schema(
   {
     boardId: {
@@ -10,7 +18,7 @@ const imageSchema = new mongoose.Schema(
     filename: {
       type: String,
       required: false, // optional field
-      default: "", // ensures field is omitted if not provided
+      default: "",     // ensures field is omitted if not provided
     },
     url: {
       type: String,
@@ -44,6 +52,10 @@ const imageSchema = new mongoose.Schema(
 
 imageSchema.index({ boardId: 1 });
 
+/**
+ * The Image model based on imageSchema.
+ * @type {mongoose.Model}
+ */
 const Image = mongoose.model("Image", imageSchema);
 
-module.exports = Image;
+export default Image;

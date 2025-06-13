@@ -24,8 +24,10 @@ const [hide, setHide] = useState(false)
     (state) => state.selection.selectedKeywordIds
   );
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
+  const progressItem = useSelector(selectImgGenProgressByBoardId(currentBoardId));
   const designDetails = useSelector((state) => state.room.designDetails);
   const keywords = useSelector(selectAllKeywords);
+  const showColor = true;
 
   const selectedBoardKeywords = keywords
     .filter(
@@ -89,10 +91,8 @@ function filterArrangementData(data) {
     }));
 }
 const generateImage = () => {
-      console.log("hello2")
   if (selectedBoardKeywords?.length > 0) {
     const dataKeywords = processKeywords(selectedBoardKeywords, designDetails.objective);
-
     // Check if at least one keyword exists in any category
     const hasKeywords = ["Subject matter", "Action & pose", "Theme & mood"]
       .some(category => Object.keys(dataKeywords[category]).length > 0);
@@ -199,7 +199,7 @@ const generateImage = () => {
         <button className="wideButton" onClick={generateImage}>
           Merge Keywords
         </button>
-        <ProgressBar currentBoardId={currentBoardId}/>
+        <ProgressBar progressItem={progressItem}/>
         {hide && latestIteration &&
         <button className="hideButton" 
     onClick={() => setHide(false)}
@@ -272,12 +272,14 @@ const generateImage = () => {
             />
           ) : (
             <div
-              className="spinner"
+              className={progressItem ? "spinner" : "error"}
               style={{
-                  width: "36px",
+                width: "36px",
                 height: "36px",
               }}
-            />
+            >
+              {!progressItem && "✕"}
+            </div>
           )}
         </div>
       );
@@ -304,8 +306,7 @@ const generateImage = () => {
 };
 
 
-function ProgressBar({currentBoardId}) {
-  const progressItem = useSelector(selectImgGenProgressByBoardId(currentBoardId));
+function ProgressBar({progressItem}) {
 
   return progressItem && <div style={{position: "absolute", right: "13px", top: "96%", width: `calc(100% - 26px)`}}>
     <p
@@ -330,5 +331,9 @@ function ProgressBar({currentBoardId}) {
     </div></div>
   ;
 }
+
+const insertColorInFilename = (url) => {
+  return url.replace(/(\.[^/.]+)$/, '_color$1');
+};
 
 export default MergeKeywords;

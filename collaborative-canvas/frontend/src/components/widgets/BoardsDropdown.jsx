@@ -48,7 +48,7 @@ const BoardsDropdown = () => {
   //   }, [socket]);
 
   const deleteBoard = useCallback(() => {
-    if (sortedBoards.length === 1) addNewBoard();
+    if (sortedBoards.length === 0) addNewBoard();
     socket.emit("deleteBoard", currentBoardId, currentRoomId);
   }, [socket, sortedBoards.length, currentBoardId, currentRoomId, addNewBoard]);
 

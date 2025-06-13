@@ -27,7 +27,7 @@ const [hide, setHide] = useState(false)
   const progressItem = useSelector(selectImgGenProgressByBoardId(currentBoardId));
   const designDetails = useSelector((state) => state.room.designDetails);
   const keywords = useSelector(selectAllKeywords);
-  const showColor = true;
+  const showColor = false;
 
   const selectedBoardKeywords = keywords
     .filter(
@@ -258,7 +258,7 @@ const generateImage = () => {
         >
           {img ? (
             <img
-              src={img}
+              src={showColor ? insertColorInFilename(img) : img}
               className="imageResult"
               alt={`Generated ${index}`}
               style={{

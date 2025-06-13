@@ -205,7 +205,6 @@ export const cloneBoard = async (boardId) => {
     images: clonedImages.filter(Boolean),
     keywords: clonedBoardKeywords.filter(Boolean),
     name: newBoardName,
-    isStarred: false,
     createdAt: new Date(),
     updatedAt: new Date(),
   });

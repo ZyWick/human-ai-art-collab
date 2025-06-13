@@ -4,7 +4,7 @@ import { GoogleGenAI } from "@google/genai";
 dotenv.config();
 
 const GEMINI_GEN_CAP_API_KEY = process.env.GEMINI_GEN_CAP_API_KEY;
-const GEMINI_GEN_CAP_MODEL = process.env.GEMINI_GEN_CAP_API_KEY;
+const GEMINI_GEN_CAP_MODEL = process.env.GEMINI_GEN_CAP_MODEL;
 const ai = new GoogleGenAI({ apiKey: GEMINI_GEN_CAP_API_KEY });
 
 export async function getCaption(imageBlob) {

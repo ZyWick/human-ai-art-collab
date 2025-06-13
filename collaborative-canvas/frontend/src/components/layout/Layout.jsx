@@ -5,6 +5,7 @@ import "../../assets/styles/Layout.css";
 import Toolbar from './Toolbar'
 import MergeKeywords from './MergeKeywords'
 import DesignWorkspace from './DesignWorkspace'
+import ImageZoom from "../widgets/ImageZoom";
 
 import useBoardSocket from "../../hook/useBoardSocket";
 import { setImages } from "../../redux/imagesSlice";
@@ -50,18 +51,17 @@ const Layout = () => {
   
 
   return (
-    <>
       <div className="layout-container">
-    <RoomDetails />
-    <RoomStatusBar />
-    <DesignWorkspace stageRef={stageRef} />
-    <MergeKeywords stageRef={stageRef}/>
+          <RoomDetails />
+          <RoomStatusBar />
+          <DesignWorkspace stageRef={stageRef}/>
+          <MergeKeywords  />
           <Toolbar stageRef={stageRef}/>
+          <ImageZoom/>
         <div className="moodboard-container">
           <Moodboard stageRef={stageRef}/>
         </div>
       </div>
-    </>
   );
 };
 

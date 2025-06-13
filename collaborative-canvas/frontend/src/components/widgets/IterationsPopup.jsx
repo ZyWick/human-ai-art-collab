@@ -1,8 +1,9 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { KeywordButton } from "./KeywordButton";
+import OutputImage from "./OutputImage";
 import "../../assets/styles/imageHistory.css";
 
-const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
+const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
   const popupRef = useRef(null);
   const [position, setPosition] = useState({ x: -9999, y: -9999 });
   const [size, setSize] = useState({ width: 670, height: window.innerHeight / 2 });
@@ -10,7 +11,7 @@ const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
   const [resizing, setResizing] = useState(false);
   const [showKeywords, setShowKeywords] = useState(true);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-
+  
   useEffect(() => {
     if (popupRef.current) {
       const { offsetWidth } = popupRef.current;
@@ -179,9 +180,10 @@ const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
                   >
   <div className="image-container-all">
     {iter.generatedImages.map((image, index) => (
-      <img key={index} className="the-row-image" alt="" src={image}
-      
-              title={iter.prompt[index]}
+      <OutputImage
+        image={image}
+        index={index}
+        prompt={iter.prompt[index]}
       />
     ))}</div></div>
   </div>
@@ -225,13 +227,10 @@ const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
                   >
                     <div className="image-container-all">
                       {iter.generatedImages.map((image, index) => (
-                        <img
-                          key={index}
-                          className="the-row-image"
-                          // style={{ maxWidth: "18.35%" }}
-                          alt=""
-                          src={image}
-                          title={iter.prompt[index]}
+                              <OutputImage
+                          image={image}
+                          index={index}
+                          prompt={iter.prompt[index]}
                         />
                       ))}
                     </div>

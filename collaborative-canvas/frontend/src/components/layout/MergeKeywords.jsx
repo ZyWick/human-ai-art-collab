@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { useSelector } from "react-redux";
+import {useSelector } from "react-redux";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from "../../context/SocketContext";
 import { KeywordButton } from "../widgets/KeywordButton";
@@ -11,8 +11,9 @@ import {
   removeSelectedKeyword,
 } from "../../redux/selectionSlice";
 import "../../assets/styles/button.css";
+import OutputImage from "../widgets/OutputImage";
 
-const MergeKeywords = ({stageRef}) => {
+const MergeKeywords = () => {
 const topRef = useRef(null);
 const secondRef = useRef(null);
 const [topBottom, setTopBottom] = useState(0);
@@ -27,8 +28,6 @@ const [hide, setHide] = useState(false)
   const progressItem = useSelector(selectImgGenProgressByBoardId(currentBoardId));
   const designDetails = useSelector((state) => state.room.designDetails);
   const keywords = useSelector(selectAllKeywords);
-  const showColor = false;
-
   const selectedBoardKeywords = keywords
     .filter(
       (keyword) =>
@@ -257,18 +256,11 @@ const generateImage = () => {
           }}
         >
           {img ? (
-            <img
-              src={showColor ? insertColorInFilename(img) : img}
+            <OutputImage
+              image={img}
+              index={index}
+              prompt={latestIteration.prompt[index]}
               className="imageResult"
-              alt={`Generated ${index}`}
-              style={{
-                maxHeight: "17.5vh",
-                width: "100%",
-                objectFit: "contain",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.25)",
-                borderRadius: "8px"
-              }}
-              title={latestIteration.prompt[index]}
             />
           ) : (
             <div
@@ -331,9 +323,5 @@ function ProgressBar({progressItem}) {
     </div></div>
   ;
 }
-
-const insertColorInFilename = (url) => {
-  return url.replace(/(\.[^/.]+)$/, '_color$1');
-};
 
 export default MergeKeywords;

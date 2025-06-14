@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback, useMemo } from "react";
-import { useSelector } from "react-redux";
+import {useSelector } from "react-redux";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useSocket } from "../../context/SocketContext";
 import { KeywordButton } from "../widgets/KeywordButton";
@@ -11,8 +11,9 @@ import {
   removeSelectedKeyword,
 } from "../../redux/selectionSlice";
 import "../../assets/styles/button.css";
+import OutputImage from "../widgets/OutputImage";
 
-const MergeKeywords = ({stageRef}) => {
+const MergeKeywords = () => {
 const topRef = useRef(null);
 const secondRef = useRef(null);
 const [topBottom, setTopBottom] = useState(0);
@@ -24,9 +25,9 @@ const [hide, setHide] = useState(false)
     (state) => state.selection.selectedKeywordIds
   );
   const currentBoardId = useSelector((state) => state.room.currentBoardId);
+  const progressItem = useSelector(selectImgGenProgressByBoardId(currentBoardId));
   const designDetails = useSelector((state) => state.room.designDetails);
   const keywords = useSelector(selectAllKeywords);
-
   const selectedBoardKeywords = keywords
     .filter(
       (keyword) =>
@@ -89,10 +90,8 @@ function filterArrangementData(data) {
     }));
 }
 const generateImage = () => {
-      console.log("hello2")
   if (selectedBoardKeywords?.length > 0) {
     const dataKeywords = processKeywords(selectedBoardKeywords, designDetails.objective);
-
     // Check if at least one keyword exists in any category
     const hasKeywords = ["Subject matter", "Action & pose", "Theme & mood"]
       .some(category => Object.keys(dataKeywords[category]).length > 0);
@@ -199,7 +198,7 @@ const generateImage = () => {
         <button className="wideButton" onClick={generateImage}>
           Merge Keywords
         </button>
-        <ProgressBar currentBoardId={currentBoardId}/>
+        <ProgressBar progressItem={progressItem}/>
         {hide && latestIteration &&
         <button className="hideButton" 
     onClick={() => setHide(false)}
@@ -257,27 +256,21 @@ const generateImage = () => {
           }}
         >
           {img ? (
-            <img
-              src={img}
+            <OutputImage
+              image={img}
+              prompt={latestIteration.prompt[index]}
               className="imageResult"
-              alt={`Generated ${index}`}
-              style={{
-                maxHeight: "17.5vh",
-                width: "100%",
-                objectFit: "contain",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.25)",
-                borderRadius: "8px"
-              }}
-              title={latestIteration.prompt[index]}
             />
           ) : (
             <div
-              className="spinner"
+              className={progressItem ? "spinner" : "error"}
               style={{
-                  width: "36px",
+                width: "36px",
                 height: "36px",
               }}
-            />
+            >
+              {!progressItem && "✕"}
+            </div>
           )}
         </div>
       );
@@ -304,8 +297,7 @@ const generateImage = () => {
 };
 
 
-function ProgressBar({currentBoardId}) {
-  const progressItem = useSelector(selectImgGenProgressByBoardId(currentBoardId));
+function ProgressBar({progressItem}) {
 
   return progressItem && <div style={{position: "absolute", right: "13px", top: "96%", width: `calc(100% - 26px)`}}>
     <p

@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useParams } from "react-router-dom"; // Import useNavigate
+import { useParams, useNavigate } from "react-router-dom"; 
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { selectBoardById } from "../../redux/boardsSlice";
 import { useSocket } from "../../context/SocketContext";
@@ -12,6 +12,8 @@ import BoardsDropdown from "../widgets/BoardsDropdown";
 const RoomDetails = () => {
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
+  const navigate = useNavigate();
+
   const { joinCode } = useParams();
   const { roomName, roomId, currentBoardId } = useSelector(
     (state) => state.room
@@ -91,7 +93,7 @@ const RoomDetails = () => {
       <div
         style={{
           position: "absolute",
-          maxWidth: "35vw",
+          maxWidth: "37vw",
           minWidth: "240px",
           height: "2.812em",
           left: "2.5%",
@@ -105,6 +107,22 @@ const RoomDetails = () => {
           paddingLeft: "0.3em",
         }}
       >
+        <button
+    onClick={() =>  navigate("/home")}
+    style={{
+      padding: "0.85em 0em 0.5em 0em",
+      marginRight: "0.35em",
+      backgroundColor: "transparent",
+      border: "none",
+      cursor: "pointer",
+    }}
+  >
+    <img
+      src="/icons/home-svgrepo-com.svg"
+      alt="Home"
+      style={{ width: "24px", height: "24px" }}
+    />
+  </button>
         <div
           style={{
             width: "100%",
@@ -291,7 +309,7 @@ function EditableAutoWidthInput({
         style={{
           position: "absolute",
           // visibility: "hidden",
-          height: 1,
+          height: 0,
           overflow: "hidden",
           whiteSpace: "nowrap",
           maxWidth,

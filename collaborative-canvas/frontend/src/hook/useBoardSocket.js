@@ -33,7 +33,6 @@ import {
 import { addSelectedKeyword, removeSelectedKeyword } from "../redux/selectionSlice";
 import {
   addKeyword,
-  // addKeywords,
   removeKeyword,
   removeKeywords,
   updateKeyword,
@@ -107,7 +106,6 @@ const useBoardSocket = () => {
          addImgGenProgress:        ({boardId}) => {
           dispatch(addImgGenProgress(boardId));
            imgGenProgressHandler.resetStallTimeout(boardId);
-           console.log("hell2222o")
         },
         updateImgGenProgress:     ({boardId, progress}) => {
                                   dispatch(updateImgGenProgress({ boardId, progress }));
@@ -141,6 +139,7 @@ const useBoardSocket = () => {
                                     dispatchWithMeta(removeKeywords, keywords, user);
                                   },
         newBoard:                 ({ board, user }) => {
+                                    dispatch(setCurrentBoardId(board._id));
                                     dispatchWithMeta(addBoard, board, user)}
                                     ,
         updateBoard:              ({ update, user }) => 
@@ -156,18 +155,14 @@ const useBoardSocket = () => {
 }))},
         
         deleteBoard:              ({ boardId: bId, user }) => {
-                                    dispatchWithMeta(removeBoard, bId, user);
                                     const remaining = boardsRef.current.filter(b => b._id !== bId);
-                                    if (
-                                      remaining.length > 0 &&
-                                      bId === currentBoardIdRef.current
-                                    ) {
+                                      dispatchWithMeta(removeBoard, bId, user);
+                                      if (remaining.length > 0){
                                       const latest = remaining.reduce(
                                         (l, b) => l.updatedAt > b.updatedAt ? l : b,
                                         remaining[0]
                                       );
-                                      dispatchWithMeta(setCurrentBoardId, latest._id, user);
-                                    }
+                                      dispatch(setCurrentBoardId(latest._id));}
                                   },
         addThread:                ({ newThread, user }) =>
                                     dispatchWithMeta(addThread, newThread, user),
@@ -202,7 +197,9 @@ const useBoardSocket = () => {
                                     dispatchWithMeta(removeSelectedKeyword, _id, user);
                                     dispatchWithMeta(
                                       updateKeyword,
-                                      { id: _id, changes: { offsetX: undefined, offsetY: undefined, isSelected: false } },
+                                      { id: _id, changes: { offsetX: undefined, offsetY: undefined, isSelected: false, 
+                                    votes: [],
+                                    downvotes: [], } },
                                       user
                                     );
                                   },

@@ -1,4 +1,4 @@
-name: Deploy baseline App to S3
+name: Deploy React App to S3
 
 on:
   push:

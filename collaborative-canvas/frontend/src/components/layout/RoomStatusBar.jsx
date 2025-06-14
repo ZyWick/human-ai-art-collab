@@ -1,16 +1,17 @@
 import React, { useRef, useState, useEffect } from "react";
-import { useSelector} from "react-redux";
+import { useDispatch, useSelector} from "react-redux";
 import "../../assets/styles/UserAvatars.css";
 import { getUserColor, getContrastTextColor } from '../../util/userColor';
-import { useNavigate } from "react-router-dom";
-const RoomStatusBar = () => {
+import { setShowOutputColors } from "../../redux/roomSlice";
 
-  const navigate = useNavigate();
-  const users = useSelector((state) => state.room.users);
+const RoomStatusBar = () => {
+  const dispatch = useDispatch();
+  const {users, showOutputColors} = useSelector((state) => state.room);
   const containerRef = useRef();
   const headerRef = useRef();
   const [visibleUsers, setVisibleUsers] = useState([]);
   const [hiddenUsers, setHiddenUsers] = useState([]);
+  const [toggleSettings, setToggleSettings] = useState(false);
 
   useEffect(() => {
       setVisibleUsers(users.slice(0, 4));
@@ -43,7 +44,16 @@ const RoomStatusBar = () => {
   //   window.addEventListener("resize", resizeHandler);
   //   return () => window.removeEventListener("resize", resizeHandler);
   // }, [users, headerRef, containerRef]);
-
+ const toggleStyle = {
+    padding: '10px 20px',
+    border: 'none',
+    borderRadius: '20px',
+    cursor: 'pointer',
+    backgroundColor: showOutputColors ? '#4caf50' : '#ccc',
+    color: showOutputColors ? 'white' : 'black',
+    fontWeight: 'bold',
+    transition: 'background-color 0.3s ease',
+  };
     return (
      <div 
      ref = {headerRef}
@@ -63,6 +73,7 @@ const RoomStatusBar = () => {
         justifyContent: "space-between",
         zIndex: "99",
         }}>
+    {!toggleSettings ?
     <div className="avatars-container" ref={containerRef}>
         {visibleUsers.length > 0 &&
   visibleUsers.map((user, index) => {
@@ -82,12 +93,14 @@ const RoomStatusBar = () => {
   })}
         {hiddenUsers && hiddenUsers.length > 0 && (
           <div className="avatar more" title={hiddenUsers.map(u => u.username).join(", ")}>
-            +{hiddenUsers.length} {console.log(hiddenUsers)}
+            +{hiddenUsers.length}
           </div>
         )}
-      </div>
+      </div> : <button style={toggleStyle} onClick={() => dispatch(setShowOutputColors(!showOutputColors))}>
+      Allow output colors
+    </button>}
     <button
-    onClick={() =>  navigate("/home")}
+    onClick={() => setToggleSettings(!toggleSettings)}
     style={{
       padding: "0.85em 0em 0.5em 0em",
       backgroundColor: "transparent",
@@ -96,7 +109,7 @@ const RoomStatusBar = () => {
     }}
   >
     <img
-      src="/icons/home-svgrepo-com.svg"
+      src="/icons/settings.svg"
       alt="Home"
       style={{ width: "24px", height: "24px" }}
     />

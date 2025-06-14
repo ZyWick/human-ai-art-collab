@@ -19,14 +19,6 @@
     margin-right: 20px;
   }
   
-  .the-row-image{
-    max-width: 20%;
-    flex-shrink: 0;
-    margin-block: 0;
-    width: 100%;
-    object-fit: contain;
-    max-height: 15vh;
-  }
 
   .row-image:hover {
     transform: scale(1.05);
@@ -51,8 +43,16 @@
   margin-bottom: 12px;
 }
 
+  /* .the-row-image{
+    margin-block: 0;
+    width: 100%;
+    object-fit: contain;
+    min-height: 20vh;
+  } */
+
+
 .the-row-image {
-  width: 120px;
+  width: 150px;
   height: auto;
   border-radius: 8px;
   object-fit: cover;

@@ -13,6 +13,8 @@ const roomReducer = createSlice({
     isAddingComments: false,
     uploadProgressEs: [],
     imgGenProgressEs: [],
+    imageZoom: null,
+    showOutputColors: false,
   },
   reducers: {
     setRoomId: (state, action) => {
@@ -81,6 +83,12 @@ const roomReducer = createSlice({
     updateDesignDetailsFull: (state, action) => {
       state.designDetailsFull = { ...state.designDetails, ...action.payload};
     },
+    setImageZoom: (state, action) => {
+      state.imageZoom = action.payload;
+    },
+    setShowOutputColors: (state, action) => {
+      state.showOutputColors = action.payload;
+    },
   },
 });
 
@@ -111,5 +119,7 @@ export const {
   addImgGenProgress,
   updateImgGenProgress,
   removeImgGenProgress,
+  setImageZoom,
+  setShowOutputColors
 } = roomReducer.actions;
 export default roomReducer.reducer;

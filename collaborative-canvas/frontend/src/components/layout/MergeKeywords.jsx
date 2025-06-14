@@ -258,7 +258,6 @@ const generateImage = () => {
           {img ? (
             <OutputImage
               image={img}
-              index={index}
               prompt={latestIteration.prompt[index]}
               className="imageResult"
             />

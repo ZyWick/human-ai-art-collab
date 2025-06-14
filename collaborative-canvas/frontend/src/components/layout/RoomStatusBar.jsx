@@ -97,7 +97,7 @@ const RoomStatusBar = () => {
           </div>
         )}
       </div> : <button style={toggleStyle} onClick={() => dispatch(setShowOutputColors(!showOutputColors))}>
-      Show Output Colors
+      Allow output colors
     </button>}
     <button
     onClick={() => setToggleSettings(!toggleSettings)}

@@ -120,7 +120,7 @@ const RoomDetails = () => {
     <img
       src="/icons/home-svgrepo-com.svg"
       alt="Home"
-      style={{ width: "1.35vw", height: "1.35vw" }}
+      style={{ width: "24px", height: "24px" }}
     />
   </button>
         <div

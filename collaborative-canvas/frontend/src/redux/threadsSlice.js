@@ -30,7 +30,7 @@ export const {
 const countChildren = (parentThreads, allThreads) => {
     return parentThreads.map((parent) => ({
       ...parent,
-      childrenCount: allThreads.filter((child) => child.parentId === parent._id).length,
+      childrenCount: allThreads.filter((child) => child.parentId === parent._id && child.isResolved === false).length,
     }));
   };
 

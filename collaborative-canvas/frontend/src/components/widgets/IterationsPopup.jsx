@@ -182,7 +182,6 @@ const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
     {iter.generatedImages.map((image, index) => (
       <OutputImage
         image={image}
-        index={index}
         prompt={iter.prompt[index]}
       />
     ))}</div></div>
@@ -229,7 +228,6 @@ const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
                       {iter.generatedImages.map((image, index) => (
                               <OutputImage
                           image={image}
-                          index={index}
                           prompt={iter.prompt[index]}
                         />
                       ))}

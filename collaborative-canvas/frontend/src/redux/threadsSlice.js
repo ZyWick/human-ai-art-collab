@@ -30,25 +30,24 @@ export const {
 const countChildren = (parentThreads, allThreads) => {
     return parentThreads.map((parent) => ({
       ...parent,
-      childrenCount: allThreads.filter((child) => child.parentId === parent._id && child.isResolved === false).length,
+      childrenCount: allThreads?.filter((child) => child.parentId === parent._id && child.isResolved === false).length,
     }));
   };
 
 // Function to populate children using a fast lookup object
 const populateChildren = (parentThread, allThreads) => {
-    const allThreadsById = Object.fromEntries(allThreads.map((t) => [t._id, t]));
+    const allThreadsById = Object.fromEntries(allThreads?.map((t) => [t._id, t]));
   
     return {
       ...parentThread,
-      children: allThreads
-        .filter((child) => child.isResolved === false && child.parentId === parentThread._id) // Find children dynamically
+      children: allThreads?.filter((child) => child.isResolved === false && child.parentId === parentThread._id) // Find children dynamically
         .map((child) => allThreadsById[child._id]), // Ensure full child objects
     };
   };
 
   export const selectPopulatedThreadById = (parentId) =>
     createSelector([selectAllThreads], (allThreads) => {
-      const parentThread = allThreads.find((thread) => thread._id === parentId);
+      const parentThread = allThreads?.find((thread) => thread._id === parentId);
       return populateChildren(parentThread, allThreads);
     });
   
@@ -57,7 +56,7 @@ const populateChildren = (parentThread, allThreads) => {
 export const selectBoardThreads = createSelector(
   [selectAllThreads],
   (allThreads) => {
-    const boardThreads = allThreads.filter(
+    const boardThreads = allThreads?.filter(
       (thread) => !thread.parentId && !thread.imageId && !thread.keywordId && !thread.isResolved
     );
     return countChildren(boardThreads, allThreads);
@@ -66,7 +65,7 @@ export const selectBoardThreads = createSelector(
 
 export const selectParentThreadsByImage = (imageId) =>
     createSelector([selectAllThreads], (allThreads) => {
-      const parentThreads = allThreads.filter(
+      const parentThreads = allThreads?.filter(
         (thread) => thread.imageId === imageId && !thread.parentId && !thread.isResolved
       );
       return countChildren(parentThreads, allThreads);
@@ -75,7 +74,7 @@ export const selectParentThreadsByImage = (imageId) =>
   // ✅ Select parent threads by keywordId and count children
   export const selectParentThreadsByKeyword = (keywordId) =>
     createSelector([selectAllThreads], (allThreads) => {
-      const parentThreads = allThreads.filter(
+      const parentThreads = allThreads?.filter(
         (thread) => thread.keywordId === keywordId && !thread.parentId && !thread.isResolved
       );
       return countChildren(parentThreads, allThreads);

@@ -28,9 +28,9 @@ const keywordsSlice = createSlice({
       const keywordsArray = Array.from(keywordsMap.values());
       keywordsAdapter.addMany(state, keywordsArray);
     },
-    clearAllVotes: (state) => {
+    clearAllVotes: (state, action) => {
       Object.values(state.entities).forEach((keyword) => {
-        if (keyword) {
+        if (keyword.boardId === action.payload) {
           keyword.votes = [];
           keyword.downvotes = []; // Clear downvotes as well
         }

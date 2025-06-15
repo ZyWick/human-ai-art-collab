@@ -80,7 +80,7 @@ const DesignWorkspace = ({ stageRef }) => {
   }, []);
 
   const handleResetVotes = useCallback(() => {
-    dispatch(clearAllVotes, {});
+    dispatch(clearAllVotes, boardId);
     socket.emit("clearKeywordVotes", boardId);
   }, [dispatch, socket, boardId]);
 

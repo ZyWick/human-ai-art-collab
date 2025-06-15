@@ -139,7 +139,6 @@ const useBoardSocket = () => {
                                     dispatchWithMeta(removeKeywords, keywords, user);
                                   },
         newBoard:                 ({ board, user }) => {
-                                    dispatch(setCurrentBoardId(board._id));
                                     dispatchWithMeta(addBoard, board, user)}
                                     ,
         updateBoard:              ({ update, user }) => 
@@ -164,8 +163,9 @@ const useBoardSocket = () => {
                                       );
                                       dispatch(setCurrentBoardId(latest._id));}
                                   },
-        addThread:                ({ newThread, user }) =>
-                                    dispatchWithMeta(addThread, newThread, user),
+        addThread:                ({ newThread, user }) => {
+                              if (newThread.boardId === currentBoardIdRef.current) 
+                                    dispatchWithMeta(addThread, newThread, user)},
         updateThread:             ({ update, user }) =>
                                     dispatchWithMeta(updateThread, update, user),
         newKeyword:               ({ keyword, user }) => {
@@ -212,10 +212,8 @@ const useBoardSocket = () => {
                                       user
                                     );
                                   },
-        clearKeywordVotes:        ({ boardId: bId, user }) => {
-                                    if (bId === currentBoardIdRef.current) {
-                                      dispatchWithMeta(clearAllVotes, {}, user);
-                                    }
+        clearKeywordVotes:        ({ boardId, user }) => {
+                                   dispatchWithMeta(clearAllVotes, boardId, user);
                                   }
       };
   

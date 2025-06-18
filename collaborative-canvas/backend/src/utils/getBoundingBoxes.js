@@ -67,15 +67,30 @@ function validBox(box) {
   );
 }
 
-function jitterBox(box, amount = 0.01) {
-  return box.map(coord => {
-    const noise = (Math.random() - 0.5) * 2 * amount; // range [-amount, amount]
-    let jittered = coord + noise;
-    return Math.min(1, Math.max(0, jittered));
-  });
+function jitterBox(box, relativeAmount = 0.05) {
+  const [x1, y1, x2, y2] = box;
+  const width = x2 - x1;
+  const height = y2 - y1;
+
+  const jittered = [
+    x1 + (Math.random() - 0.5) * 2 * width * relativeAmount,
+    y1 + (Math.random() - 0.5) * 2 * height * relativeAmount,
+    x2 + (Math.random() - 0.5) * 2 * width * relativeAmount,
+    y2 + (Math.random() - 0.5) * 2 * height * relativeAmount
+  ];
+
+  // Ensure box remains within [0, 1] and valid (x1 <= x2, y1 <= y2)
+  const [jx1, jy1, jx2, jy2] = jittered.map(v => Math.min(1, Math.max(0, v)));
+  return [
+    Math.min(jx1, jx2),
+    Math.min(jy1, jy2),
+    Math.max(jx1, jx2),
+    Math.max(jy1, jy2)
+  ];
 }
 
-export function getTopFusedBoxes(data, N, iouThreshold = 0.5) {
+
+export function getTopFusedBoxes(data, N, iouThreshold = 0.3) {
   const weightedBoxes = [];
   const EPSILON = 1e-6;
 

@@ -22,20 +22,9 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   "https://d3kigqhpgswrju.cloudfront.net",
   "https://aicollabdesign.space",
+  "https://drlvl1wvuyq5z.cloudfront.net",
   "https://baseline.aicollabdesign.space",
 ];
-
-// Configure Multer for image uploads
-const upload = multer({
-  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max file size
-  storage: multer.memoryStorage(), // Store file in memory for processing
-  fileFilter: (req, file, cb) => {
-    if (!file.mimetype.startsWith("image/")) {
-      return cb(new Error("Only image files are allowed"), false);
-    }
-    cb(null, true);
-  },
-});
 
 const app = express();
 
@@ -76,6 +65,18 @@ app.use('/boards', boardRoutes);
 app.use('/rooms', roomRoutes);
 app.use('/auth', authRoutes);
 
+// Configure Multer for image uploads
+const upload = multer({
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB max file size
+  storage: multer.memoryStorage(), // Store file in memory for processing
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith("image/")) {
+      return cb(new Error("Only image files are allowed"), false);
+    }
+    cb(null, true);
+  },
+});
+
 // Image upload route
 /**
  * @function
@@ -85,3 +86,19 @@ app.post("/upload", upload.array("images", 10), uploadImage(users, io));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+app.use((err, req, res, next) => {
+  // Add CORS headers to error responses too
+  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
+  res.header("Access-Control-Allow-Credentials", "true");
+
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: "Multer error: " + err.message });
+  }
+  if (err.message.includes("Only image files are allowed")) {
+    return res.status(400).json({ error: err.message });
+  }
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "Internal server error" });
+});
+

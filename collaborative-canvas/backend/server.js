@@ -33,6 +33,7 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn(`Blocked CORS request from origin: ${origin}`);
       callback(new Error("CORS not allowed for this origin: " + origin));
     }
   },
@@ -41,7 +42,19 @@ app.use(cors({
   allowedHeaders: "Origin,X-Requested-With,Content-Type,Accept,Authorization,board-id,socket-id"
 }));
 
-app.options("*", cors());
+app.options('*', (req, res) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Origin,X-Requested-With,Content-Type,Accept,Authorization,board-id,socket-id");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.status(204).end();
+  } else {
+    res.status(403).end();
+  }
+});
+
 app.use(express.json());
 
 // Connect to MongoDB using Mongoose
@@ -82,23 +95,45 @@ const upload = multer({
  * @function
  * @description Handles image uploads via Multer and processes them using imageService logic.
  */
-app.post("/upload", upload.array("images", 10), uploadImage(users, io));
+app.post("/upload", (req, res, next) => {
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
+
+  upload.array("images", 10)(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ error: `Multer error: ${err.message}` });
+    } else if (err) {
+      return res.status(400).json({ error: err.message });
+    }
+    next();
+  });
+}, uploadImage(users, io));
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 app.use((err, req, res, next) => {
-  // Add CORS headers to error responses too
-  res.header("Access-Control-Allow-Origin", req.headers.origin || "*");
-  res.header("Access-Control-Allow-Credentials", "true");
-
-  if (err instanceof multer.MulterError) {
-    return res.status(400).json({ error: "Multer error: " + err.message });
+  // Ensure the origin is reflected in the error response
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
   }
+
+  // Handle multer errors
+  if (err instanceof multer.MulterError) {
+    return res.status(400).json({ error: `Multer error: ${err.message}` });
+  }
+
+  // Handle other errors like bad mimetype
   if (err.message.includes("Only image files are allowed")) {
     return res.status(400).json({ error: err.message });
   }
-  console.error("Unhandled error:", err);
-  res.status(500).json({ error: "Internal server error" });
+
+  console.error("Unexpected server error:", err);
+  return res.status(500).json({ error: "Server error" });
 });
 

@@ -70,8 +70,6 @@ const UploadButton = ({stageRef, isDesignDetailsEmpty}) => {
     formData.append("y", y);
 
     await uploadImageApi(formData, socket.id, boardId);
-    // const result = await uploadImageApi(formData, socket.id, boardId);
-    // dispatch(setSelectedImage(result.image._id))
   };
 
   return (

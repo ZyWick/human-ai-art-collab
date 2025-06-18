@@ -298,7 +298,6 @@ const generateImage = () => {
 
 
 function ProgressBar({progressItem}) {
-
   return progressItem && <div style={{position: "absolute", right: "13px", top: "96%", width: `calc(100% - 26px)`}}>
     <p
     style= {{

@@ -18,32 +18,6 @@ const RoomStatusBar = () => {
       setHiddenUsers(users.slice(4));
   },[users])
 
-  // const avatarAreaRatio = 0.75;
-  //  useEffect(() => {
-  //   const resizeHandler = () => {
-  //     if (!headerRef.current || !containerRef.current) return;
-
-  //     const { width: headerWidth, height: headerHeight } =
-  //       headerRef.current.getBoundingClientRect();
-  //     const totalAvatarWidth =
-  //       headerHeight * 0.7 +
-  //       containerRef.current.getBoundingClientRect().width * 0.03;
-  //     const fitCount = Math.floor(
-  //     (headerWidth * avatarAreaRatio -
-  //       (users?.length * totalAvatarWidth > headerWidth * avatarAreaRatio
-  //         ? totalAvatarWidth
-  //         : 0)) /
-  //       totalAvatarWidth
-  //   );
-    
-  //     setVisibleUsers(users.slice(0, fitCount));
-  //     setHiddenUsers(users.slice(fitCount));
-  //   };
-
-  //   resizeHandler();
-  //   window.addEventListener("resize", resizeHandler);
-  //   return () => window.removeEventListener("resize", resizeHandler);
-  // }, [users, headerRef, containerRef]);
  const toggleStyle = {
     padding: '10px 20px',
     border: 'none',
@@ -119,3 +93,31 @@ const RoomStatusBar = () => {
 }
 
 export default RoomStatusBar;
+
+
+  // const avatarAreaRatio = 0.75;
+  //  useEffect(() => {
+  //   const resizeHandler = () => {
+  //     if (!headerRef.current || !containerRef.current) return;
+
+  //     const { width: headerWidth, height: headerHeight } =
+  //       headerRef.current.getBoundingClientRect();
+  //     const totalAvatarWidth =
+  //       headerHeight * 0.7 +
+  //       containerRef.current.getBoundingClientRect().width * 0.03;
+  //     const fitCount = Math.floor(
+  //     (headerWidth * avatarAreaRatio -
+  //       (users?.length * totalAvatarWidth > headerWidth * avatarAreaRatio
+  //         ? totalAvatarWidth
+  //         : 0)) /
+  //       totalAvatarWidth
+  //   );
+    
+  //     setVisibleUsers(users.slice(0, fitCount));
+  //     setHiddenUsers(users.slice(fitCount));
+  //   };
+
+  //   resizeHandler();
+  //   window.addEventListener("resize", resizeHandler);
+  //   return () => window.removeEventListener("resize", resizeHandler);
+  // }, [users, headerRef, containerRef]);

@@ -29,7 +29,7 @@ const keywordSchema = new mongoose.Schema(
     isCustom: {
       type: Boolean,
       default: false,
-    },
+    }, 
     type: {
       type: String,
       required: true,
@@ -52,6 +52,9 @@ const keywordSchema = new mongoose.Schema(
       type: [mongoose.Schema.Types.ObjectId], // Array of user IDs
       ref: 'User',
       default: [],
+    },
+    author: {
+      type: String 
     },
   },
   {

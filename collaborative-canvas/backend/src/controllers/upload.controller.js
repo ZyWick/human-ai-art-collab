@@ -112,12 +112,12 @@ export const uploadImage = (users, io) => async (req, res) => {
     if (!uploadResult) return; // error sent in safeS3Upload
 
     progressCounter.add(12.5);
-
     const imageDoc = await safeCreateImage({
       boardId,
       url: uploadResult.url,
       filename: fullImage.originalname,
       dimensions: spatialFields,
+      author: user.username,
       res
     });
     if (!imageDoc) return;
@@ -216,10 +216,10 @@ export async function safeS3Upload(file, res) {
  * @param {import('express').Response} opts.res
  * @returns {Promise<object|null>}
  */
-export async function safeCreateImage({ boardId, url, filename, dimensions, res }) {
+export async function safeCreateImage({ boardId, url, filename, dimensions, author, res }) {
   try {
     const { x, y, width, height } = dimensions;
-    return await createImage({ boardId, url, filename, x, y, width, height });
+    return await createImage({ boardId, url, filename, x, y, width, height, author });
   } catch (error) {
     logError('safeCreateImage', error);
     errorResponse(res, 500, 'Saving image failed');

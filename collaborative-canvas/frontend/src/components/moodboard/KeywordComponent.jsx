@@ -4,7 +4,10 @@ import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { Label, Tag, Text, Group, Circle } from "react-konva";
 import { calculateNewKeywordPosition } from "../../util/keywordMovement";
 import { selectBoardById } from "../../redux/boardsSlice";
-import { addSelectedKeyword, removeSelectedKeyword } from "../../redux/selectionSlice";
+import {
+  addSelectedKeyword,
+  removeSelectedKeyword,
+} from "../../redux/selectionSlice";
 import { useSocket } from "../../context/SocketContext";
 import { updateKeyword } from "../../redux/keywordsSlice";
 import { selectImageById } from "../../redux/imagesSlice";
@@ -29,16 +32,16 @@ const KeywordComponent = ({
 
   const isAddingComments = useSelector((state) => state.room.isAddingComments);
   const [hovered, setHovered] = useState(false);
-    const keywordThreads = useSelector(selectParentThreadsByKeyword(data._id));
-  
+  const keywordThreads = useSelector(selectParentThreadsByKeyword(data._id));
+
   const selectedKeywordId = useSelector(
     (state) => state.selection.selectedKeywordId
   );
-  const isClicked = selectedKeywordId? selectedKeywordId === data._id : false;
+  const isClicked = selectedKeywordId ? selectedKeywordId === data._id : false;
 
   const kwBoard = useSelector((state) => selectBoardById(state, data.boardId));
   const isVoting = kwBoard?.isVoting;
-  
+
   const image = useSelector((state) => selectImageById(state, data.imageId));
 
   const imageX = image?.x ?? 0;
@@ -49,7 +52,7 @@ const KeywordComponent = ({
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (stageRef.current && e.target === stageRef.current) {
-        dispatch(setSelectedKeyword,null);
+        dispatch(setSelectedKeyword, null);
       }
     };
 
@@ -142,40 +145,42 @@ const KeywordComponent = ({
 
   const toggleSelected = (e) => {
     e.cancelBubble = true;
-    const newIsSelected = !data.isSelected 
+    const newIsSelected = !data.isSelected;
     const update = { id: data._id, changes: { isSelected: newIsSelected } };
     dispatch(updateKeyword, update);
-    dispatch(newIsSelected ? addSelectedKeyword : removeSelectedKeyword, data._id);
+    dispatch(
+      newIsSelected ? addSelectedKeyword : removeSelectedKeyword,
+      data._id
+    );
     socket.emit("updateKeywordSelected", update);
-};
+  };
 
   const deleteKeyword = () => {
-      try {
-        if (!data.imageId) {
-          socket.emit("deleteKeyword", {
-            imageId: data.imageId,
-            keywordId: data._id,
-          });
-        } else {
-          dispatch(removeSelectedKeyword,data._id); 
-          dispatch(
-            updateKeyword,{
-              id: data._id,
-              changes: {
-                offsetX: undefined,
-                offsetY: undefined,
-                isSelected: false,
-                votes: [],
-                downvotes: [],
-              },
-            }
-          );
-          socket.emit("removeKeywordFromBoard", data._id);
-        }
-      } catch (e) {
-        console.log(e);
+    try {
+      if (!data.imageId) {
+        socket.emit("deleteKeyword", {
+          imageId: data.imageId,
+          keywordId: data._id,
+        });
+      } else {
+        dispatch(removeSelectedKeyword, data._id);
+        dispatch(updateKeyword, {
+          id: data._id,
+          changes: {
+            offsetX: undefined,
+            offsetY: undefined,
+            isSelected: false,
+            votes: [],
+            downvotes: [],
+            author: "",
+          },
+        });
+        socket.emit("removeKeywordFromBoard", data._id);
       }
-    };
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   return data.offsetX !== undefined && data.offsetY !== undefined ? (
     <>
@@ -216,6 +221,7 @@ const KeywordComponent = ({
         setTooltipData={setTooltipData}
         isClicked={isClicked}
         deleteKeyword={deleteKeyword}
+        author={data.author}
       />
     </>
   ) : null;
@@ -244,7 +250,8 @@ export const KeywordLabel = ({
   handleThreadClick,
   setTooltipData,
   isClicked,
-  deleteKeyword
+  deleteKeyword,
+  author,
 }) => {
   const textRef = useRef();
   const [textWidth, setTextWidth] = useState(0);
@@ -256,26 +263,26 @@ export const KeywordLabel = ({
   }, [text]);
   const [hovered, setHovered] = useState(false);
 
-const hoverTimeoutRef = useRef(null);
+  const hoverTimeoutRef = useRef(null);
 
-const handleMouseEnter = () => {
-  if (hoverTimeoutRef.current) {
-    clearTimeout(hoverTimeoutRef.current);
-    hoverTimeoutRef.current = null;
-  }
-  setHovered(true);
-};
+  const handleMouseEnter = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+    setHovered(true);
+  };
 
-const handleMouseLeave = () => {
-  // Delay hiding by 200ms
-  hoverTimeoutRef.current = setTimeout(() => {
-    setHovered(false);
-  }, 750);
-};
+  const handleMouseLeave = () => {
+    // Delay hiding by 200ms
+    hoverTimeoutRef.current = setTimeout(() => {
+      setHovered(false);
+    }, 750);
+  };
   return (
-    <Group   >
+    <Group>
       <Label
-      name="hover-group"
+        name="hover-group"
         id={id}
         x={xpos}
         y={ypos}
@@ -284,8 +291,14 @@ const handleMouseLeave = () => {
         draggable={draggable}
         onDragMove={onDragMove}
         onDragEnd={onDragEnd}
-        onMouseEnter={(e) => {onMouseEnter(e); handleMouseEnter()}}
-        onMouseLeave={(e) => {onMouseLeave(e); handleMouseLeave()}}
+        onMouseEnter={(e) => {
+          onMouseEnter(e);
+          handleMouseEnter();
+        }}
+        onMouseLeave={(e) => {
+          onMouseLeave(e);
+          handleMouseLeave();
+        }}
       >
         <Tag
           name="label-tag"
@@ -295,7 +308,13 @@ const handleMouseLeave = () => {
           stroke={colorMapping[type]}
           cornerRadius={4}
           ref={keywordRef}
-          shadowColor={isClicked ? colorMapping[type] : hovered ? colorMapping[type] : "transparent"}
+          shadowColor={
+            isClicked
+              ? colorMapping[type]
+              : hovered
+              ? colorMapping[type]
+              : "transparent"
+          }
           shadowBlur={isClicked ? 4 : hovered ? 3 : 0}
           shadowOpacity={isClicked ? 3 : hovered ? 2 : 0}
         />
@@ -311,34 +330,51 @@ const handleMouseLeave = () => {
           wrap="char"
         />
       </Label>
-      {hovered &&  
-      <Group  
-     onMouseEnter={e => {
-          const container = e.target.getStage().container();
-          container.style.cursor = "pointer";
-          handleMouseEnter()
-        }}
-        onMouseLeave={e => {
-          const container = e.target.getStage().container();
-          container.style.cursor = "default";
-          handleMouseLeave()
-        }}
-      onClick={deleteKeyword}
-      name="hover-group" x={xpos + textWidth + 10} y={ypos - 20}>
-  <Circle radius={7} fill={colorMapping[type]} />
-  <Text
-    ref={textRef}
-    text={"x"}
-    fontSize={14}
-    fill="#fafafa"
-    offsetX={10.5} // half the estimated width of the text
-    offsetY={14} // half the height of the circle
-    x={7} // center relative to circle
-    y={7}
-  />
-</Group>
-
-          }
+      {hovered && (
+        <>
+          <Group
+            onMouseEnter={(e) => {
+              const container = e.target.getStage().container();
+              container.style.cursor = "pointer";
+              handleMouseEnter();
+            }}
+            onMouseLeave={(e) => {
+              const container = e.target.getStage().container();
+              container.style.cursor = "default";
+              handleMouseLeave();
+            }}
+            onClick={deleteKeyword}
+            name="hover-group"
+            x={xpos + textWidth + 10}
+            y={ypos - 20}
+          >
+            <Circle radius={7} fill={colorMapping[type]} />
+            <Text
+              ref={textRef}
+              text={"x"}
+              fontSize={14}
+              fill="#fafafa"
+              offsetX={10.5} // half the estimated width of the text
+              offsetY={14} // half the height of the circle
+              x={7} // center relative to circle
+              y={7}
+            />
+          </Group>
+          {author && (
+            <Text
+              x={xpos}
+              y={ypos + 15}
+              text={`by ${author}`}
+              name="label-text"
+              fontSize={12}
+              lineHeight={1}
+              padding={8}
+              fill={"#999"}
+              wrap="char"
+            />
+          )}
+        </>
+      )}
       {keywordThreads &&
         keywordThreads.map((thread, i) => (
           <ThreadBubble

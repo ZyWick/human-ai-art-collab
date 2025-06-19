@@ -1,6 +1,6 @@
 // utils/userColor.js
 export function getUserColor(userId) {
-  if (!userId) return 'hsl(0, 0%, 0%)';
+  if (!userId) return "hsl(0, 0%, 0%)";
   let hash = 0;
   for (let i = 0; i < userId.length; i++) {
     hash = userId.charCodeAt(i) + ((hash << 5) - hash);
@@ -13,9 +13,9 @@ export function getContrastTextColor(bgColor) {
   const hslToRgb = (h, s, l) => {
     s /= 100;
     l /= 100;
-    const k = n => (n + h / 30) % 12;
+    const k = (n) => (n + h / 30) % 12;
     const a = s * Math.min(l, 1 - l);
-    const f = n => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+    const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
     return [f(0) * 255, f(8) * 255, f(4) * 255];
   };
 

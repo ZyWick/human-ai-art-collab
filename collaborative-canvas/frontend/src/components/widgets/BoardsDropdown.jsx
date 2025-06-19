@@ -67,7 +67,9 @@ const BoardsDropdown = () => {
       >
         New board
       </button>
-      <div style={{ minHeight: "1px", width: "100%", backgroundColor: "#ccc" }} />
+      <div
+        style={{ minHeight: "1px", width: "100%", backgroundColor: "#ccc" }}
+      />
       <button
         onClick={saveCopy}
         className="commonButton"
@@ -94,7 +96,11 @@ const BoardsDropdown = () => {
       >
         Delete
       </button>
-      {sortedBoards && sortedBoards.length > 0 && <div style={{ minHeight: "1px", width: "100%", backgroundColor: "#ccc" }} />}
+      {sortedBoards && sortedBoards.length > 0 && (
+        <div
+          style={{ minHeight: "1px", width: "100%", backgroundColor: "#ccc" }}
+        />
+      )}
       {sortedBoards.map(({ _id, name }) => {
         return (
           <button

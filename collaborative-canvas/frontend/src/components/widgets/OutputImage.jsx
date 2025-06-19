@@ -1,25 +1,24 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import { setImageZoom } from '../../redux/roomSlice';
+import React, { useState, useMemo, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { setImageZoom } from "../../redux/roomSlice";
 
 const OutputImage = ({
   image,
   prompt,
-  className = 'the-row-image',
+  className = "the-row-image",
   style = {},
 }) => {
   const showOutputColors = useSelector((state) => state.room.showOutputColors);
   const dispatch = useDispatch();
 
-  const insertColorInFilename = (url) =>
-    url.replace(/(\.[^/.]+)$/, '_color$1');
+  const insertColorInFilename = (url) => url.replace(/(\.[^/.]+)$/, "_color$1");
 
-  const [hovered, setHovered] = useState(false)
+  const [hovered, setHovered] = useState(false);
   const [toggleColor, setToggleColor] = useState(false);
 
   useEffect(() => {
-    setToggleColor(false)
-  }, [showOutputColors])
+    setToggleColor(false);
+  }, [showOutputColors]);
 
   // Cache both versions of the image
   const originalSrc = image;
@@ -29,42 +28,43 @@ const OutputImage = ({
   const finalSrc = shouldInsertColor ? colorSrc : originalSrc;
 
   const defaultStyle = {
-    maxHeight: '17.5vh',
-    width: '100%',
-    objectFit: 'contain',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.25)',
-    borderRadius: '8px',
+    maxHeight: "17.5vh",
+    width: "100%",
+    objectFit: "contain",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.25)",
+    borderRadius: "8px",
     ...style,
   };
 
   const wrapperStyle = {
-    position: 'relative',
-    display: 'inline-block',
-    width: 'fit-content',
-    height: "fit-content"
+    position: "relative",
+    display: "inline-block",
+    width: "fit-content",
+    height: "fit-content",
   };
 
   const buttonStyle = {
-    position: 'absolute',
-    top: '8px',
-    right: '8px',
-    width: '1.5em',
-    height: '1.5em',
-    borderRadius: '50%',
-    border: 'none',
-    color: '#fff',
-    fontSize: '14px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: "absolute",
+    top: "8px",
+    right: "8px",
+    width: "1.5em",
+    height: "1.5em",
+    borderRadius: "50%",
+    border: "none",
+    color: "#fff",
+    fontSize: "14px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
     opacity: 0.7,
   };
 
   return (
-    <div style={wrapperStyle}
-    onMouseEnter={() => setHovered(true)}
-    onMouseLeave={() => setHovered(false)}
+    <div
+      style={wrapperStyle}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
     >
       <img
         src={finalSrc}
@@ -72,26 +72,32 @@ const OutputImage = ({
         className={className}
         alt={prompt}
         title={prompt}
-        style={className === 'imageResult' ? defaultStyle : undefined}
-      />{hovered && showOutputColors &&
-        
-      <button
-        style={{
+        style={className === "imageResult" ? defaultStyle : undefined}
+      />
+      {hovered && showOutputColors && (
+        <button
+          style={{
             ...buttonStyle,
-            background:  "transparent",
-        }}
-        title="Toggle Color"
-        onClick={(e) => {
-          e.stopPropagation();
-          setToggleColor((prev) => !prev);
-        }}
-      >
-        <img
-      src={shouldInsertColor ? "/icons/bwWheel.svg" : "/icons/colorWheel.svg"}
-      alt="Home"
-      style={{ width: shouldInsertColor?  "16px" : "24px", height: shouldInsertColor?  "16px" :"24px" }}
-    />
-      </button>}
+            background: "transparent",
+          }}
+          title="Toggle Color"
+          onClick={(e) => {
+            e.stopPropagation();
+            setToggleColor((prev) => !prev);
+          }}
+        >
+          <img
+            src={
+              shouldInsertColor ? "/icons/bwWheel.svg" : "/icons/colorWheel.svg"
+            }
+            alt="Home"
+            style={{
+              width: shouldInsertColor ? "16px" : "24px",
+              height: shouldInsertColor ? "16px" : "24px",
+            }}
+          />
+        </button>
+      )}
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { createSelector } from '@reduxjs/toolkit';
+import { createSelector } from "@reduxjs/toolkit";
 
 const roomReducer = createSlice({
   name: "socket",
@@ -43,33 +43,41 @@ const roomReducer = createSlice({
     // 2) afterwards only ever update the progress
     updateUploadProgress: (state, action) => {
       const { uploadId, progress } = action.payload;
-      const upload = state.uploadProgressEs.find(item => item.uploadId === uploadId);
+      const upload = state.uploadProgressEs.find(
+        (item) => item.uploadId === uploadId
+      );
       if (upload) {
         upload.progress = progress;
       }
     },
     // 3) remove an existing upload progress entry
     removeUploadProgress: (state, action) => {
-      state.uploadProgressEs = state.uploadProgressEs.filter(item => item.uploadId !==  action.payload);
+      state.uploadProgressEs = state.uploadProgressEs.filter(
+        (item) => item.uploadId !== action.payload
+      );
     },
     setImgGenProgress: (state, action) => {
       state.imgGenProgressEs = action.payload;
     },
     // 1) create a new slot with both values
     addImgGenProgress: (state, action) => {
-      state.imgGenProgressEs.push({ boardId:  action.payload, progress: 0 });
+      state.imgGenProgressEs.push({ boardId: action.payload, progress: 0 });
     },
     // 2) afterwards only ever update the progress
     updateImgGenProgress: (state, action) => {
       const { boardId, progress } = action.payload;
-      const upload = state.imgGenProgressEs.find(item => item.boardId === boardId);
+      const upload = state.imgGenProgressEs.find(
+        (item) => item.boardId === boardId
+      );
       if (upload) {
         upload.progress = progress;
       }
     },
     // 3) remove an existing upload progress entry
     removeImgGenProgress: (state, action) => {
-      state.imgGenProgressEs = state.imgGenProgressEs.filter(item => item.boardId !==  action.payload);
+      state.imgGenProgressEs = state.imgGenProgressEs.filter(
+        (item) => item.boardId !== action.payload
+      );
     },
     setDesignDetails: (state, action) => {
       state.designDetails = action.payload;
@@ -78,10 +86,10 @@ const roomReducer = createSlice({
       state.designDetailsFull = action.payload;
     },
     updateDesignDetails: (state, action) => {
-      state.designDetails = { ...state.designDetails, ...action.payload};
+      state.designDetails = { ...state.designDetails, ...action.payload };
     },
     updateDesignDetailsFull: (state, action) => {
-      state.designDetailsFull = { ...state.designDetails, ...action.payload};
+      state.designDetailsFull = { ...state.designDetails, ...action.payload };
     },
     setImageZoom: (state, action) => {
       state.imageZoom = action.payload;
@@ -96,9 +104,8 @@ export const selectImgGenProgressEs = (state) => state.room.imgGenProgressEs;
 
 // Selector to get item by ID
 export const selectImgGenProgressByBoardId = (boardId) =>
-  createSelector(
-    [selectImgGenProgressEs],
-    (items) => items.find((item) => item.boardId === boardId)
+  createSelector([selectImgGenProgressEs], (items) =>
+    items.find((item) => item.boardId === boardId)
   );
 
 export const {
@@ -120,6 +127,6 @@ export const {
   updateImgGenProgress,
   removeImgGenProgress,
   setImageZoom,
-  setShowOutputColors
+  setShowOutputColors,
 } = roomReducer.actions;
 export default roomReducer.reducer;

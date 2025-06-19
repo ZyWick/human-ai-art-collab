@@ -40,6 +40,9 @@ const imageSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    author: {
+      type: String 
+    },
     keywords: [
       {
         type: mongoose.Schema.Types.ObjectId,

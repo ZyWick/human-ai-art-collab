@@ -106,7 +106,7 @@ export function extractKeywords(data, arrangement = []) {
         keywords.push({ keyword, type, vote });
       });
     } else {
-      if (type !== "Brief")
+      if (type !== "brief")
       console.warn(`extractKeywords: Skipped type '${type}' with invalid entries.`, entries);
     }
   });
@@ -131,7 +131,7 @@ export function extractKeywords(data, arrangement = []) {
   return keywords;
 }
 
-export function createNewIteration(keywords) {
+export function createNewIteration(keywords, brief) {
   if (!Array.isArray(keywords)) {
     console.warn("createNewIteration: 'keywords' should be an array.", keywords);
     keywords = [];
@@ -140,6 +140,7 @@ export function createNewIteration(keywords) {
     prompt: [],
     generatedImages: [],
     keywords,
+    brief,
     createdAt: new Date()
   };
 }

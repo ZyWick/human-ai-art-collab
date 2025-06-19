@@ -6,7 +6,8 @@ export const calculateNewKeywordPosition = (
   imageBoundsWidth,
   imageBoundsHeight
 ) => {
-  if (!imageBoundsWidth || !imageBoundsHeight) return {offsetX: newX, offsetY: newY };
+  if (!imageBoundsWidth || !imageBoundsHeight)
+    return { offsetX: newX, offsetY: newY };
 
   let maxRadius = Math.max(imageBoundsWidth, imageBoundsHeight) * 1.5;
   let imageCenter = { x: imageBoundsWidth / 2, y: imageBoundsHeight / 2 };
@@ -41,42 +42,5 @@ export const calculateNewKeywordPosition = (
     newY = imageCenter.y + Math.sin(angle) * maxRadius * -1 - targetHeight / 2;
   }
 
-  return {offsetX: newX, offsetY: newY };
+  return { offsetX: newX, offsetY: newY };
 };
-
-// export const handleKeywordPositionUpdate = (
-//   keywordId,
-//   newOffsetX,
-//   newOffsetY,
-//   targetWidth,
-//   targetHeight,
-//   target2Width,
-//   target2Height,
-//   updateKeywordPosition
-// ) => {
-//   const adjustedOffset = calculateNewKeywordPosition(
-//     newOffsetX,
-//     newOffsetY,
-//     targetWidth,
-//     targetHeight,
-//     target2Width,
-//     target2Height
-//   );
-
-//   updateKeywordPosition({
-//     _id: keywordId,
-//     offsetX: adjustedOffset.newX,
-//     offsetY: adjustedOffset.newY,
-//   });
-
-//   return  {
-//     newX: adjustedOffset.newX,
-//     newY: adjustedOffset.newY,
-//   };
-
-//   // socket.emit("updateKeywordPosition", {
-//   //   ...data,
-//   //   offsetX: adjustedOffset.newX,
-//   //   offsetY: adjustedOffset.newY,
-//   // });
-// };

@@ -1,12 +1,18 @@
 import React from "react";
 import { Circle, Text, Group } from "react-konva";
-import { getUserColor, getContrastTextColor } from '../../util/userColor';
+import { getUserColor, getContrastTextColor } from "../../util/userColor";
 
-const ThreadBubble = ({ thread, position, forwardRef, onMouseEnter, onMouseLeave, onClick }) => {
-  
+const ThreadBubble = ({
+  thread,
+  position,
+  forwardRef,
+  onMouseEnter,
+  onMouseLeave,
+  onClick,
+}) => {
   // Memoized function to get user color
-    const bgColor = getUserColor(thread.userId);
-    const textColor = getContrastTextColor(bgColor);
+  const bgColor = getUserColor(thread.userId);
+  const textColor = getContrastTextColor(bgColor);
 
   return (
     <Group

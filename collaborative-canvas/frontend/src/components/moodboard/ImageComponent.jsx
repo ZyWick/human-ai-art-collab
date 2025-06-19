@@ -1,9 +1,12 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
-import { Image, Transformer, Group, Rect} from "react-konva";
+import { Image, Transformer, Group, Rect } from "react-konva";
 import { useDispatch, useSelector } from "react-redux";
 import useImageSelection from "../../hook/useImageSelection";
 import { updateImage } from "../../redux/imagesSlice";
-import { setSelectedImage, setSelectedKeyword } from "../../redux/selectionSlice";
+import {
+  setSelectedImage,
+  setSelectedKeyword,
+} from "../../redux/selectionSlice";
 import { selectParentThreadsByImage } from "../../redux/threadsSlice";
 import { useSocket } from "../../context/SocketContext";
 import ThreadBubble from "./ThreadBubble";
@@ -30,24 +33,32 @@ const ImageComponent = ({
 
   const [isHovered, setIsHovered] = useState(false);
   const isSelected = selectedImageId ? selectedImageId === imgData._id : false;
-  
-  useImageSelection(stageRef, imgData._id, imgData.keywords, setKeywordSelectionData);
+
+  useImageSelection(
+    stageRef,
+    imgData._id,
+    imgData.keywords,
+    setKeywordSelectionData
+  );
 
   const handleClick = (e) => {
     if (isAddingComments) handleElementClick(e, { imageId: imgData._id });
     else {
-      handleImageClick(e, imgData._id)
+      handleImageClick(e, imgData._id);
       dispatch(setSelectedImage(imgData._id));
       dispatch(setSelectedKeyword(null));
     }
   };
 
-  const handleImageClick = useCallback((event, _id) => {
-    event.cancelBubble = true;
-    const rect = event.target.getClientRect();
-    const position = { x: rect.x + rect.width + 20, y: rect.y };
-    setKeywordSelectionData({ position, _id });
-  }, [setKeywordSelectionData]);
+  const handleImageClick = useCallback(
+    (event, _id) => {
+      event.cancelBubble = true;
+      const rect = event.target.getClientRect();
+      const position = { x: rect.x + rect.width + 20, y: rect.y };
+      setKeywordSelectionData({ position, _id });
+    },
+    [setKeywordSelectionData]
+  );
 
   useEffect(() => {
     if (!imgData || !imgData.url) return;
@@ -57,11 +68,10 @@ const ImageComponent = ({
     img.onerror = () => console.error("Failed to load image:", imgData.url);
   }, [imgData.url, imgData]);
 
-
   const handleDrag = (e, action) => {
     const update = {
       id: imgData._id,
-      changes: {x: e.target.x(), y: e.target.y()},
+      changes: { x: e.target.x(), y: e.target.y() },
     };
     dispatch(updateImage(update));
     socket.emit(action, update);
@@ -78,11 +88,12 @@ const ImageComponent = ({
 
     const update = {
       id: imgData._id,
-      changes: {      
+      changes: {
         width: newWidth,
         height: newHeight,
         x: node.x(),
-        y: node.y()},
+        y: node.y(),
+      },
     };
 
     dispatch(updateImage(update));
@@ -90,31 +101,29 @@ const ImageComponent = ({
   };
 
   useEffect(() => {
-  if (transformerRef.current && imageRef.current) {
-    const transformer = transformerRef.current;
-    transformer.nodes([imageRef.current]);
-    transformer.moveToTop();
-    transformer.getLayer().batchDraw();
-  }
-}, [imageRef]);
-
+    if (transformerRef.current && imageRef.current) {
+      const transformer = transformerRef.current;
+      transformer.nodes([imageRef.current]);
+      transformer.moveToTop();
+      transformer.getLayer().batchDraw();
+    }
+  }, [imageRef]);
 
   return image ? (
     <>
-    
       <Group
-        onMouseEnter={e => {
+        onMouseEnter={(e) => {
           const container = e.target.getStage().container();
           container.style.cursor = "pointer";
-          setIsHovered(true)
+          setIsHovered(true);
         }}
-        onMouseLeave={e => {
+        onMouseLeave={(e) => {
           const container = e.target.getStage().container();
           container.style.cursor = "default";
-          setIsHovered(false)
+          setIsHovered(false);
         }}
-          onClick={(e) => handleClick(e)}
-          onTap={(e) => handleClick(e)}
+        onClick={(e) => handleClick(e)}
+        onTap={(e) => handleClick(e)}
       >
         <Image
           ref={imageRef}
@@ -166,12 +175,9 @@ const ImageComponent = ({
             }}
             onMouseEnter={(event) => handleThreadHover(event, thread)}
             onMouseLeave={() => setTooltipData(null)}
-            onClick={(event) =>
-              handleThreadClick(event, thread._id)
-            }
+            onClick={(event) => handleThreadClick(event, thread._id)}
           />
         ))}
-        
     </>
   ) : null;
 };

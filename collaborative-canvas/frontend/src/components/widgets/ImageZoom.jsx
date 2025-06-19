@@ -15,14 +15,19 @@ export default function ImageZoom() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [dispatch]);
 
-  return (zoomSrc &&
-    <div className="image-zoom-overlay" onClick={() => dispatch(setImageZoom(null))}>
-      <img
-        src={zoomSrc}
-        alt="Zoomed"
-        className="image-zoom-img"
-        onClick={(e) => e.stopPropagation()}
-      />
-    </div>
+  return (
+    zoomSrc && (
+      <div
+        className="image-zoom-overlay"
+        onClick={() => dispatch(setImageZoom(null))}
+      >
+        <img
+          src={zoomSrc}
+          alt="Zoomed"
+          className="image-zoom-img"
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+    )
   );
 }

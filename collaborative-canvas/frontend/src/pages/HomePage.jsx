@@ -13,7 +13,6 @@ const HomePage = () => {
   const [newRoomCode, setNewRoomCode] = useState("");
   const [joinCode, setJoinCode] = useState("");
 
-  
   const handleCreateRoom = () => {
     if (!newRoomCode) return;
     createRoomService(newRoomCode, dispatch, navigate);
@@ -63,7 +62,9 @@ const HomePage = () => {
               {user.rooms.map((room, index) => (
                 <li key={index}>
                   {room}{" "}
-                  <button onClick={() => joinRoomService(room, dispatch, navigate)}>
+                  <button
+                    onClick={() => joinRoomService(room, dispatch, navigate)}
+                  >
                     Rejoin
                   </button>
                 </li>

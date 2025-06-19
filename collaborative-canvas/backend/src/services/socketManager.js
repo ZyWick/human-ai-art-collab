@@ -330,7 +330,7 @@ const registerSocketHandlers = (
         if (!user) return;
 
         const keywords = extractKeywords(data, arrangement);
-        const newIteration = createNewIteration(keywords);
+        const newIteration = createNewIteration(keywords, data.brief);
         const createdIteration = await updateNewIteration(boardId, newIteration);
         const progressCounter = createImgGenProgressCounter(io, user.roomId, boardId, createdIteration);
         ioEmitWithUser('updateBoardIterations', user, {

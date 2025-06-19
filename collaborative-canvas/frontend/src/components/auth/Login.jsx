@@ -45,12 +45,14 @@ const Login = () => {
           </button>
         </form>
         <p className={styles["login-text"]}>
-          Don't have an account? <a href="/register" className={styles["login-link"]}>Signup</a>
+          Don't have an account?{" "}
+          <a href="/register" className={styles["login-link"]}>
+            Signup
+          </a>
         </p>
       </div>
     </div>
   );
 };
-
 
 export default Login;

@@ -1,23 +1,27 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from "react";
 import { KeywordButton } from "./KeywordButton";
 import OutputImage from "./OutputImage";
+import colorMapping from "../../config/keywordTypes";
 import "../../assets/styles/imageHistory.css";
 
-const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
+const IterationsPopup = ({ currBoard, setShowAllIterations }) => {
   const popupRef = useRef(null);
   const [position, setPosition] = useState({ x: -9999, y: -9999 });
-  const [size, setSize] = useState({ width: 670, height: window.innerHeight / 2 });
+  const [size, setSize] = useState({
+    width: 670,
+    height: window.innerHeight / 2,
+  });
   const [dragging, setDragging] = useState(false);
   const [resizing, setResizing] = useState(false);
   const [showKeywords, setShowKeywords] = useState(true);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  
+
   useEffect(() => {
     if (popupRef.current) {
       const { offsetWidth } = popupRef.current;
       setPosition({
         x: window.innerWidth / 2 - offsetWidth / 2,
-        y: window.innerHeight * .15,
+        y: window.innerHeight * 0.15,
       });
     }
   }, []);
@@ -33,8 +37,14 @@ const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
       if (dragging) {
         const { offsetWidth, offsetHeight } = popupRef.current || {};
         setPosition({
-          x: Math.max(0, Math.min(e.clientX - offset.x, window.innerWidth - offsetWidth)),
-          y: Math.max(0, Math.min(e.clientY - offset.y, window.innerHeight - offsetHeight)),
+          x: Math.max(
+            0,
+            Math.min(e.clientX - offset.x, window.innerWidth - offsetWidth)
+          ),
+          y: Math.max(
+            0,
+            Math.min(e.clientY - offset.y, window.innerHeight - offsetHeight)
+          ),
         });
       } else if (resizing) {
         setSize({
@@ -66,7 +76,7 @@ const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
     () => currBoard?.iterations?.slice().reverse() || [],
     [currBoard]
   );
-  
+
   return (
     <div
       ref={popupRef}
@@ -128,7 +138,7 @@ const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
             onMouseLeave={(e) => (e.target.style.background = "none")}
           >
             <div style={{ color: "grey" }}>
-              {showKeywords ? "| Hide keywords" : "| Show keywords"}
+              {showKeywords ? "| Hide input" : "| Show input"}
             </div>
           </button>
         </div>
@@ -158,17 +168,17 @@ const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
       <div style={{ maxHeight: "90%" }} className="the-scrollable-container">
         {showKeywords
           ? iterations.map((iter, iterIndex) => (
-            <div key={iter._id} className="board-row">
-              <div
+              <div key={iter._id} className="board-row">
+                <div
                   style={{
                     display: "flex",
                     alignItems: "center",
                   }}
                 >
-                  <p style={{ color: "grey", visibility: "hidden"}}>
+                  <p style={{ color: "grey", visibility: "hidden" }}>
                     #{currBoard.iterations.length - iterIndex}
                   </p>
-                   <div
+                  <div
                     style={{
                       marginLeft: "10px",
                       paddingLeft: "10px",
@@ -178,55 +188,9 @@ const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
                       gap: "0.5em",
                     }}
                   >
-  <div className="image-container-all">
-    {iter.generatedImages.map((image, index) => (
-      <OutputImage
-        image={image}
-        prompt={iter.prompt[index]}
-      />
-    ))}</div></div>
-  </div>
-
-  <div className="iter-meta">
-    <p className="iter-number">#{currBoard.iterations.length - iterIndex}</p>
-
-    <div className="keyword-container-history">
-      {iter.keywords?.map((keyword) => (
-        <KeywordButton
-          key={keyword._id}
-          text={keyword.keyword}
-          type={keyword.type}
-          isSelected={true}
-        />
-      ))}
-    </div>
-  </div>
-</div>
-            ))
-          : iterations.map((iter, iterIndex) =>  iter.generatedImages.length > 0 && (
-              <div key={iter._id} className="board-row">
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                  }}
-                >
-                  <p style={{ color: "grey" }}>
-                    #{currBoard.iterations.length - iterIndex}
-                  </p>
-                  <div
-                    style={{
-                      marginLeft: "10px",
-                      paddingLeft: "10px",
-                      borderLeft: "2px solid rgba(0, 0, 0, 0.15)",
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "0.5em",
-                    }}
-                  >
                     <div className="image-container-all">
                       {iter.generatedImages.map((image, index) => (
-                              <OutputImage
+                        <OutputImage
                           image={image}
                           prompt={iter.prompt[index]}
                         />
@@ -234,11 +198,84 @@ const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
                     </div>
                   </div>
                 </div>
+
+                <div className="iter-meta">
+                  <p className="iter-number">
+                    #{currBoard.iterations.length - iterIndex}
+                  </p>
+
+                  <div className="keyword-container-history">
+                    {iter.keywords?.map((keyword) => (
+                      <div style={{display:"flex"}}>
+                      <KeywordButton
+                        key={keyword._id}
+                        text={keyword.keyword}
+                        type={keyword.type}
+                        isSelected={true}
+                        style={{borderTopRightRadius: '0', borderBottomRightRadius: '0'}}
+                      />
+                      <div
+                        style={{
+                          backgroundColor: colorMapping[keyword.type],
+                          color: "white",
+                          border: "none",
+                          borderTopRightRadius: "4px",
+                          borderBottomRightRadius: "4px",
+                          borderLeft: `1px solid white`,
+                          padding: "8px 12px",
+                          fontSize: "14px",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                      >
+                        {keyword.vote}
+                      </div></div>
+                    ))}
+                  </div>
+                </div>
+                  <DesignBrief text={iter.brief}></DesignBrief>
               </div>
-            ))}
+            ))
+          : iterations.map(
+              (iter, iterIndex) =>
+                iter.generatedImages.length > 0 && (
+                  <div key={iter._id} className="board-row">
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    >
+                      <p style={{ color: "grey" }}>
+                        #{currBoard.iterations.length - iterIndex}
+                      </p>
+                      <div
+                        style={{
+                          marginLeft: "10px",
+                          paddingLeft: "10px",
+                          borderLeft: "2px solid rgba(0, 0, 0, 0.15)",
+                          display: "flex",
+                          flexWrap: "wrap",
+                          gap: "0.5em",
+                        }}
+                      >
+                        <div className="image-container-all">
+                          {iter.generatedImages.map((image, index) => (
+                            <OutputImage
+                              image={image}
+                              prompt={iter.prompt[index]}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+            )}
       </div>
-            {/* Resize Handle */}
-            <div
+      {/* Resize Handle */}
+      <div
         style={{
           position: "absolute",
           bottom: "5px",
@@ -256,6 +293,65 @@ const IterationsPopup = ({ currBoard, setShowAllIterations}) => {
       />
     </div>
   );
+};
+
+const DesignBrief = ({ text }) => {
+const [expanded, setExpanded] = useState(false);
+  const [isTruncated, setIsTruncated] = useState(false);
+  const contentRef = useRef(null);
+
+  useEffect(() => {
+    if (!contentRef.current) return;
+
+    const computeTruncation = () => {
+      const style = window.getComputedStyle(contentRef.current);
+      const lineHeight = parseFloat(style.lineHeight);
+      const maxHeight = 2 * lineHeight;
+
+      if (contentRef.current.scrollHeight > maxHeight + 1) {
+        setIsTruncated(true);
+      }
+    };
+
+    // Defer to ensure DOM is ready
+    setTimeout(computeTruncation, 0);
+  }, [text]);
+
+  const textStyle = {
+    marginLeft: "30px",
+    maxWidth: "90%",
+    padding: "5px 10px",
+    cursor: isTruncated ? 'pointer' : 'default',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    display: '-webkit-box',
+    WebkitLineClamp: expanded ? 'unset' : 2,
+    WebkitBoxOrient: 'vertical',
+    whiteSpace: expanded ? 'normal' : 'initial',
+    lineHeight: '1.5em',
+    maxHeight: expanded ? 'none' : '3em',
+    transition: 'max-height 0.3s ease',
+    fontStyle: "italic",
+    color: "#555"
+  };
+
+    const handleToggle = () => {
+    if (isTruncated) {
+      setExpanded(prev => !prev);
+    }
+  };
+
+
+  return text &&
+    <div
+      ref={contentRef}
+      className={isTruncated ? "commonButton": ""}
+      style={textStyle}
+            onClick={handleToggle}
+    >
+      {`brief: ${text}`}
+    </div>
+  ;
 };
 
 export default IterationsPopup;

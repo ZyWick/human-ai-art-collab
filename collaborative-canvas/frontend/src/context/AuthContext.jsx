@@ -1,9 +1,8 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
+import { REACT_APP_BACKEND_URL } from "../config";
 import axios from "axios";
 
 const AuthContext = createContext();
-
-const REACT_APP_BACKEND_URL = "https://api.aicollabdesign.space";
 
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -13,7 +12,9 @@ const AuthProvider = ({ children }) => {
     const token = localStorage.getItem("token");
     if (token) {
       axios
-        .get(`${REACT_APP_BACKEND_URL}/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+        .get(`${REACT_APP_BACKEND_URL}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
         .then((response) => setUser(response.data))
         .catch(() => setUser(null));
     }
@@ -22,7 +23,10 @@ const AuthProvider = ({ children }) => {
   // Login function
   const login = async (email, password) => {
     try {
-      const response = await axios.post(`${REACT_APP_BACKEND_URL}/auth/login`, { email, password });
+      const response = await axios.post(`${REACT_APP_BACKEND_URL}/auth/login`, {
+        email,
+        password,
+      });
       localStorage.setItem("token", response.data.token);
       setUser(response.data.user);
     } catch (error) {
@@ -39,7 +43,10 @@ const AuthProvider = ({ children }) => {
   // Register function
   const register = async (username, email, password) => {
     try {
-        const response = await axios.post(`${REACT_APP_BACKEND_URL}/auth/register`, { username, email, password });        
+      const response = await axios.post(
+        `${REACT_APP_BACKEND_URL}/auth/register`,
+        { username, email, password }
+      );
       localStorage.setItem("token", response.data.token);
       setUser(response.data.user);
     } catch (error) {

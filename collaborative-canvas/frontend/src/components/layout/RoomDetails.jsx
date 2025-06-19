@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom"; 
+import { useParams, useNavigate } from "react-router-dom";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { selectBoardById } from "../../redux/boardsSlice";
 import { useSocket } from "../../context/SocketContext";
@@ -69,8 +69,8 @@ const RoomDetails = () => {
 
   const buttonRef = useRef(null);
   const popupRef = useRef(null);
-  
-    useEffect(() => {
+
+  useEffect(() => {
     function handleClickOutside(event) {
       if (
         buttonRef.current &&
@@ -108,21 +108,21 @@ const RoomDetails = () => {
         }}
       >
         <button
-    onClick={() =>  navigate("/home")}
-    style={{
-      padding: "0.85em 0em 0.5em 0em",
-      marginRight: "0.35em",
-      backgroundColor: "transparent",
-      border: "none",
-      cursor: "pointer",
-    }}
-  >
-    <img
-      src="/icons/home-svgrepo-com.svg"
-      alt="Home"
-      style={{ width: "24px", height: "24px" }}
-    />
-  </button>
+          onClick={() => navigate("/home")}
+          style={{
+            padding: "0.85em 0em 0.5em 0em",
+            marginRight: "0.35em",
+            backgroundColor: "transparent",
+            border: "none",
+            cursor: "pointer",
+          }}
+        >
+          <img
+            src="/icons/home-svgrepo-com.svg"
+            alt="Home"
+            style={{ width: "24px", height: "24px" }}
+          />
+        </button>
         <div
           style={{
             width: "100%",
@@ -216,8 +216,8 @@ const RoomDetails = () => {
           />
         </div>
         <button
-        ref={buttonRef}
-           className={browsePages ? "active commonButton" : "commonButton" }
+          ref={buttonRef}
+          className={browsePages ? "active commonButton" : "commonButton"}
           style={{
             marginRight: "0.5em",
             width: "fit-content",
@@ -238,27 +238,30 @@ const RoomDetails = () => {
             height="20"
           />
         </button>
-        {browsePages && 
-        <div 
-        ref={popupRef}
-        className="scrollable-container"
-          style={{
-            display: "flex", flexDirection: "column", gap: "0.2em",
-            position: "absolute",
-            top: "2%",
-            left: `102.5%`,
-            maxHeight: "17.5vh",
-            width:"100%",
-            maxWidth: "260px",
-            backgroundColor: "white",
-            borderRadius: "8px",
-            boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",
-            padding: "0.5em",
-            zIndex: 99,
-          }}
-        >
-          <BoardsDropdown/>
-        </div>}
+        {browsePages && (
+          <div
+            ref={popupRef}
+            className="scrollable-container"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.2em",
+              position: "absolute",
+              top: "2%",
+              left: `102.5%`,
+              maxHeight: "17.5vh",
+              width: "100%",
+              maxWidth: "260px",
+              backgroundColor: "white",
+              borderRadius: "8px",
+              boxShadow: "0px 8px 20px rgba(0, 0, 0, 0.125)",
+              padding: "0.5em",
+              zIndex: 99,
+            }}
+          >
+            <BoardsDropdown />
+          </div>
+        )}
       </div>
     </>
   );

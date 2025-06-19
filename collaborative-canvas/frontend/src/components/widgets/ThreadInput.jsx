@@ -14,11 +14,13 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
     }
   };
 
-  const adjustedPosition = useMemo(() => ({
-    x: Math.max(Math.min(position.x, window.innerWidth - 280), 40),
-    y: Math.max(Math.min(position.y, window.innerHeight - 80 ), 40),
-  }), [position]);
-  
+  const adjustedPosition = useMemo(
+    () => ({
+      x: Math.max(Math.min(position.x, window.innerWidth - 280), 40),
+      y: Math.max(Math.min(position.y, window.innerHeight - 80), 40),
+    }),
+    [position]
+  );
 
   return (
     <div
@@ -33,14 +35,14 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
       onClick={(e) => e.stopPropagation()}
     >
       <div
-      style={{
-        width: "30px",
-        height: "30px",
-        backgroundColor: "transparent",
-        borderRadius: "50%",
-        border: "1.5px solid rgb(56, 49, 49)"
-      }}
-    ></div>
+        style={{
+          width: "30px",
+          height: "30px",
+          backgroundColor: "transparent",
+          borderRadius: "50%",
+          border: "1.5px solid rgb(56, 49, 49)",
+        }}
+      ></div>
 
       <input
         ref={inputRef}
@@ -66,11 +68,7 @@ const ThreadInput = ({ position, value, onChange, onSubmit, onCancel }) => {
           borderRadius: "5px",
         }}
       />
-      <button
-      id="send-button"
-        onClick={onSubmit}
-       className="sendButton"
-      >
+      <button id="send-button" onClick={onSubmit} className="sendButton">
         <img src="/icons/send.svg" alt="Reset votes" width="17" height="17" />
       </button>
     </div>

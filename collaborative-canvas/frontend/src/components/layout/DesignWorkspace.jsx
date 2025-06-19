@@ -7,7 +7,7 @@ import { useSocket } from "../../context/SocketContext";
 import { selectBoardById } from "../../redux/boardsSlice";
 import IterationsPopup from "../widgets/IterationsPopup";
 import "../../assets/styles/toolbar.css";
-import { NoteKeywordInput } from "../widgets/KeywordButton";
+import NoteKeywordInput from "../widgets/NoteKeywordInput";
 
 const DesignWorkspace = ({ stageRef }) => {
   const [isAddingNotes, setIsAddingNotes] = useState(false);
@@ -31,17 +31,6 @@ const DesignWorkspace = ({ stageRef }) => {
       duration: 0.5,
       easing: Konva.Easings.EaseInOut,
     });
-  };
-
-  const addKeywordSelection = (type, newKeywordText) => {
-    const newKeyword = {
-      boardId: boardId,
-      type,
-      keyword: newKeywordText,
-      offsetX: window.innerWidth * (0.5 + Math.random() * 0.5),
-      offsetY: window.innerHeight * (0.5 + Math.random() * 0.5),
-    };
-    socket.emit("newKeyword", newKeyword);
   };
 
   useEffect(() => {
@@ -203,7 +192,7 @@ const DesignWorkspace = ({ stageRef }) => {
             zIndex: 99,
           }}
         >
-          <NoteKeywordInput addKeywordSelection={addKeywordSelection} />
+          <NoteKeywordInput />
         </div>
       )}
       {showAllIterations && (

@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { REACT_APP_BACKEND_URL } from "../config";
 import { io } from "socket.io-client";
-
-const REACT_APP_BACKEND_URL = "https://api.aicollabdesign.space";
 
 // Create context
 const SocketContext = createContext(null);

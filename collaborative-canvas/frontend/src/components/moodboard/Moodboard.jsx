@@ -15,9 +15,9 @@ import KeywordSelection from "../widgets/KeywordSelection";
 import ThreadInput from "../widgets/ThreadInput";
 import FeedbackPopup from "../widgets/FeedbackPopup";
 import useWindowSize from "../../hook/useWindowSize";
-import "../../assets/styles/customCursor.css"
+import "../../assets/styles/customCursor.css";
 
-const Moodboard = ({stageRef}) => {
+const Moodboard = ({ stageRef }) => {
   const tooltipRef = useRef(null);
   const windowSize = useWindowSize();
   const socket = useSocket();
@@ -49,7 +49,7 @@ const Moodboard = ({stageRef}) => {
       setInputData({
         userId: user.id,
         username: user.username,
-        pointerPosition: {x: pointer.x, y: pointer.y},
+        pointerPosition: { x: pointer.x, y: pointer.y },
         position: {
           x: Math.min(pointer.x, maxX),
           y: Math.max(pointer.y, minY),
@@ -70,7 +70,7 @@ const Moodboard = ({stageRef}) => {
 
       const stage = event.target.getStage();
       const pointer = stage.getPointerPosition();
-    
+
       // Convert pointer position to transformed stage coordinates
       const transform = stage.getAbsoluteTransform().copy();
       transform.invert(); // Get the inverse transformation
@@ -79,7 +79,7 @@ const Moodboard = ({stageRef}) => {
       setInputData({
         userId: user.id,
         username: user.username,
-        pointerPosition: {x: pointer.x, y: pointer.y},
+        pointerPosition: { x: pointer.x, y: pointer.y },
         position: { x: position.x, y: position.y },
         boardId: currentBoardId,
         value: "",
@@ -95,32 +95,39 @@ const Moodboard = ({stageRef}) => {
     setInputData(null);
   }, [inputData, socket]);
 
-  const handleWheel = useCallback((e) => {
-    e.evt.preventDefault();
-    const stage = stageRef.current;
-    const scaleBy = 1.05;
-    const oldScale = stage.scaleX();
-    const pointer = stage.getPointerPosition();
-    const mousePointTo = {
-      x: (pointer.x - stage.x()) / oldScale,
-      y: (pointer.y - stage.y()) / oldScale,
-    };
-    const newScale = e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
+  const handleWheel = useCallback(
+    (e) => {
+      e.evt.preventDefault();
+      const stage = stageRef.current;
+      const scaleBy = 1.05;
+      const oldScale = stage.scaleX();
+      const pointer = stage.getPointerPosition();
+      const mousePointTo = {
+        x: (pointer.x - stage.x()) / oldScale,
+        y: (pointer.y - stage.y()) / oldScale,
+      };
+      const newScale =
+        e.evt.deltaY > 0 ? oldScale / scaleBy : oldScale * scaleBy;
 
-    stage.scale({ x: newScale, y: newScale });
-    stage.position({
-      x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
-    });
-    stage.batchDraw();
-  }, [stageRef]);
+      stage.scale({ x: newScale, y: newScale });
+      stage.position({
+        x: pointer.x - mousePointTo.x * newScale,
+        y: pointer.y - mousePointTo.y * newScale,
+      });
+      stage.batchDraw();
+    },
+    [stageRef]
+  );
 
   useEffect(() => {
     if (!tooltipRef.current || !tooltipData) return;
     const { width } = tooltipRef.current.getBoundingClientRect();
     setAdjustedPosition({
       x: Math.min(tooltipData.position.x, window.innerWidth - width - 10),
-      y: Math.max(Math.min(tooltipData.position.y, window.innerHeight - 80), 7.5),
+      y: Math.max(
+        Math.min(tooltipData.position.y, window.innerHeight - 80),
+        7.5
+      ),
     });
   }, [tooltipData]); // Runs after tooltipData updates and ensures tooltipRef is valid
 
@@ -142,14 +149,14 @@ const Moodboard = ({stageRef}) => {
   const handleThreadClick = useCallback((event, threadId) => {
     event.cancelBubble = true;
     const rect = event.target.getClientRect();
-    const position = { x: rect.x + rect.width + 8, y: rect.y  }
+    const position = { x: rect.x + rect.width + 8, y: rect.y };
     setPopupData({ position, threadId });
   }, []);
 
   return (
     <div>
       <Stage
-       className={isAddingComments ? "custom-cursor" : ""}
+        className={isAddingComments ? "custom-cursor" : ""}
         width={windowSize.width}
         height={windowSize.height}
         ref={stageRef}
@@ -252,7 +259,12 @@ const Moodboard = ({stageRef}) => {
           </p>
         </div>
       )}
-      {keywordSelectionData && <KeywordSelection keywordSelectionData={keywordSelectionData} onClose={() => setKeywordSelectionData(null)}/>}
+      {keywordSelectionData && (
+        <KeywordSelection
+          keywordSelectionData={keywordSelectionData}
+          onClose={() => setKeywordSelectionData(null)}
+        />
+      )}
       {popupData && (
         <FeedbackPopup
           popupData={popupData}

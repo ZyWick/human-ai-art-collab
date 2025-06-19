@@ -4,7 +4,10 @@ import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
 import { timeAgo } from "../../util/time";
-import { selectPopulatedThreadById, updateThread } from "../../redux/threadsSlice";
+import {
+  selectPopulatedThreadById,
+  updateThread,
+} from "../../redux/threadsSlice";
 import "../../assets/styles/button.css";
 
 const FeedbackPopup = ({ popupData, onClose }) => {
@@ -35,17 +38,21 @@ const FeedbackPopup = ({ popupData, onClose }) => {
     setEditingId(null);
   };
 
-  const onResolve = useCallback((id) => {
-    const update = { id, changes: { isResolved: true } };
-    dispatch(updateThread, update);
-    socket.emit("updateThread", update);
+  const onResolve = useCallback(
+    (id) => {
+      const update = { id, changes: { isResolved: true } };
+      dispatch(updateThread, update);
+      socket.emit("updateThread", update);
 
-    if (popupData.threadId === id) onClose()
-  }, [dispatch, socket, onClose, popupData.threadId]);
+      if (popupData.threadId === id) onClose();
+    },
+    [dispatch, socket, onClose, popupData.threadId]
+  );
 
   useEffect(() => {
     if (repliesContainerRef.current) {
-      repliesContainerRef.current.scrollTop = repliesContainerRef.current.scrollHeight;
+      repliesContainerRef.current.scrollTop =
+        repliesContainerRef.current.scrollHeight;
     }
   }, [threadData.children]);
 
@@ -54,7 +61,10 @@ const FeedbackPopup = ({ popupData, onClose }) => {
       const { width, height } = popupRef.current.getBoundingClientRect();
       const newPosition = {
         x: Math.min(popupData.position.x, window.innerWidth - width - 10),
-        y:  Math.max(7.5, Math.min(popupData.position.y, window.innerHeight - height - 10)),
+        y: Math.max(
+          7.5,
+          Math.min(popupData.position.y, window.innerHeight - height - 10)
+        ),
       };
       setPosition(newPosition);
     }
@@ -109,18 +119,17 @@ const FeedbackPopup = ({ popupData, onClose }) => {
   };
   const textAreaRefs = useRef({});
   const resizeTextArea = (id) => {
-  const el = textAreaRefs.current[id];
-  if (el) {
-    el.style.height = 'auto';
-    el.style.height = el.scrollHeight + 'px';
-  }
-};
-useEffect(() => {
-  if (editingId) {
-    resizeTextArea(editingId);
-  }
-}, [editText, editingId]);
-
+    const el = textAreaRefs.current[id];
+    if (el) {
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+    }
+  };
+  useEffect(() => {
+    if (editingId) {
+      resizeTextArea(editingId);
+    }
+  }, [editText, editingId]);
 
   return (
     <div
@@ -158,7 +167,6 @@ useEffect(() => {
       >
         <strong style={{ fontSize: "16px", color: "#222" }}>Comment</strong>
         <div style={{ display: "flex", gap: "8px" }}>
-         
           <button
             onClick={onClose}
             style={{
@@ -183,37 +191,58 @@ useEffect(() => {
           alignItems: "center",
         }}
       >
-        <span style={{marginLeft:"0.5em", fontSize: "13px", color: "#333", fontWeight: "bold" }}>
+        <span
+          style={{
+            marginLeft: "0.5em",
+            fontSize: "13px",
+            color: "#333",
+            fontWeight: "bold",
+          }}
+        >
           {threadData.username}{" "}
-          <span style={{ fontSize: "12px", wordBreak: "break-word", color: "#777" }}>
+          <span
+            style={{ fontSize: "12px", wordBreak: "break-word", color: "#777" }}
+          >
             {timeAgo(threadData.updatedAt)}
           </span>
         </span>
         {threadData.userId === user.id && editingId !== threadData._id ? (
           <button
-          title="edit comment"
+            title="edit comment"
             onClick={() => handleEditClick(threadData)}
             className="commonButton"
           >
-             <img src="/icons/edit.svg" alt="Reset votes" width="10" height="10" />
+            <img
+              src="/icons/edit.svg"
+              alt="Reset votes"
+              width="10"
+              height="10"
+            />
           </button>
-        ) : threadData.userId === user.id &&
-         <button
-            onClick={() => onResolve(threadData._id)}
-            style={{
-              fontSize: "12px",
-              padding: "4px 8px",
-              borderRadius: "6px",
-              color: "#222",
-              cursor: "pointer",
-              paddingTop: "0.6em"
-            }}
-            title="delete comment"
-            className="commonButton"
-          >
-            <img src="/icons/trash.svg" alt="Reset votes" width="14" height="14" />
-          </button>
-      }
+        ) : (
+          threadData.userId === user.id && (
+            <button
+              onClick={() => onResolve(threadData._id)}
+              style={{
+                fontSize: "12px",
+                padding: "4px 8px",
+                borderRadius: "6px",
+                color: "#222",
+                cursor: "pointer",
+                paddingTop: "0.6em",
+              }}
+              title="delete comment"
+              className="commonButton"
+            >
+              <img
+                src="/icons/trash.svg"
+                alt="Reset votes"
+                width="14"
+                height="14"
+              />
+            </button>
+          )
+        )}
       </div>
 
       {editingId === threadData._id ? (
@@ -225,11 +254,11 @@ useEffect(() => {
             width: "100%",
             borderRadius: "4px",
             border: "1px solid #ccc",
-            marginBottom: "0.5em"
+            marginBottom: "0.5em",
           }}
         >
           <textarea
-           ref={(el) => {
+            ref={(el) => {
               if (el) textAreaRefs.current[threadData._id] = el;
             }}
             value={editText}
@@ -254,34 +283,28 @@ useEffect(() => {
               display: "flex",
               justifyContent: "flex-end",
               marginBlock: "0.3em",
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
-            <button
-            className="editButton"
-              onClick={() => setEditingId(null)}
-            >
+            <button className="editButton" onClick={() => setEditingId(null)}>
               Cancel
             </button>
-            <button
-            className="editButton doneButton" 
-              onClick={handleSave}
-            >
+            <button className="editButton doneButton" onClick={handleSave}>
               Done
             </button>
           </div>
         </div>
       ) : (
         <p
-        className="scrollable-container"
+          className="scrollable-container"
           style={{
             maxHeight: "13.5vh",
-            marginLeft:"0.5em",
+            marginLeft: "0.5em",
             fontSize: "13px",
             color: "black",
             wordWrap: "break-word",
             marginTop: "4px",
-             whiteSpace: "pre-wrap", 
+            whiteSpace: "pre-wrap",
           }}
         >
           {threadData.value}
@@ -312,92 +335,109 @@ useEffect(() => {
               <span
                 style={{ fontSize: "13px", color: "#333", fontWeight: "bold" }}
               >
-                
                 {child.username}{" "}
-                <span style={{ fontSize: "12px", wordBreak: "break-word", color: "#777" }}>
-
+                <span
+                  style={{
+                    fontSize: "12px",
+                    wordBreak: "break-word",
+                    color: "#777",
+                  }}
+                >
                   {timeAgo(child.updatedAt)}
                 </span>
               </span>
               {child.userId === user.id && editingId !== child._id ? (
                 <button
-                title="edit comment"
+                  title="edit comment"
                   onClick={() => handleEditClick(child)}
                   className="commonButton"
                 >
-                  <img src="/icons/edit.svg" alt="Reset votes" width="10" height="10" />
+                  <img
+                    src="/icons/edit.svg"
+                    alt="Reset votes"
+                    width="10"
+                    height="10"
+                  />
                 </button>
-              ) : child.userId === user.id &&
-         <button
-            onClick={() => onResolve(child._id)}
-            style={{
-              fontSize: "12px",
-              padding: "4px 8px",
-              borderRadius: "6px",
-              color: "#222",
-              cursor: "pointer",
-              paddingTop: "0.6em"
-            }}
-            title="delete comment"
-            className="commonButton"
-          >
-            <img src="/icons/trash.svg" alt="Reset votes" width="14" height="14" />
-          </button>}
+              ) : (
+                child.userId === user.id && (
+                  <button
+                    onClick={() => onResolve(child._id)}
+                    style={{
+                      fontSize: "12px",
+                      padding: "4px 8px",
+                      borderRadius: "6px",
+                      color: "#222",
+                      cursor: "pointer",
+                      paddingTop: "0.6em",
+                    }}
+                    title="delete comment"
+                    className="commonButton"
+                  >
+                    <img
+                      src="/icons/trash.svg"
+                      alt="Reset votes"
+                      width="14"
+                      height="14"
+                    />
+                  </button>
+                )
+              )}
             </div>
 
             {editingId === child._id ? (
-             <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            marginTop: "4px",
-            width: "99%",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-            marginBottom: "0.5em"
-          }}
-        >
-          <textarea
-          ref={(el) => {
-              if (el) textAreaRefs.current[child._id] = el;
-            }}
-             value={editText}
-            onChange={(e) => setEditText(e.target.value)}
-            autofocus
-            style={{
-              fontSize: "13px",
-              padding: "6px",
-              width: "95%",
-              border: "none",
-              outline: "none",
-              minHeight: "20px",
-              resize: "none",
-              borderRadius: "4px",
-              borderBottom: "1px solid #ccc",
-            }}
-          />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              marginBlock: "0.3em",
-              alignItems: "center"
-            }}
-          >
-            <button
-            className="editButton"
-              onClick={() => setEditingId(null)}
-            >
-              Cancel
-            </button>
-            <button
-            className="editButton doneButton"
-              onClick={handleSave}
-            >
-              Done
-            </button>
-          </div>
-        </div>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  marginTop: "4px",
+                  width: "99%",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                  marginBottom: "0.5em",
+                }}
+              >
+                <textarea
+                  ref={(el) => {
+                    if (el) textAreaRefs.current[child._id] = el;
+                  }}
+                  value={editText}
+                  onChange={(e) => setEditText(e.target.value)}
+                  autofocus
+                  style={{
+                    fontSize: "13px",
+                    padding: "6px",
+                    width: "95%",
+                    border: "none",
+                    outline: "none",
+                    minHeight: "20px",
+                    resize: "none",
+                    borderRadius: "4px",
+                    borderBottom: "1px solid #ccc",
+                  }}
+                />
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    marginBlock: "0.3em",
+                    alignItems: "center",
+                  }}
+                >
+                  <button
+                    className="editButton"
+                    onClick={() => setEditingId(null)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="editButton doneButton"
+                    onClick={handleSave}
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
             ) : (
               <p
                 style={{
@@ -405,7 +445,7 @@ useEffect(() => {
                   color: "black",
                   wordWrap: "break-word",
                   marginTop: "4px",
-                  whiteSpace: "pre-wrap", 
+                  whiteSpace: "pre-wrap",
                 }}
               >
                 {child.value}
@@ -441,11 +481,11 @@ useEffect(() => {
           }}
         />
         <button
-        title="send"
+          title="send"
           onClick={() => handleReply()}
-         className="sendButton"
+          className="sendButton"
         >
-        <img src="/icons/send.svg" alt="Reset votes" width="17" height="17" />
+          <img src="/icons/send.svg" alt="Reset votes" width="17" height="17" />
         </button>
       </div>
     </div>

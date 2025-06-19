@@ -25,37 +25,40 @@ const Register = () => {
   return (
     <div className={styles["login-container"]}>
       <div className={styles["login-box"]}>
-      <h1 className={styles["login-title"]}>Signup</h1>
-      {error && <p style={{ color: "red" }}>{error}</p>}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className={styles["login-input"]}
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className={styles["login-input"]}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className={styles["login-input"]}
-        />
-        <button type="submit" className={styles["login-button"]}>
+        <h1 className={styles["login-title"]}>Signup</h1>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className={styles["login-input"]}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={styles["login-input"]}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={styles["login-input"]}
+          />
+          <button type="submit" className={styles["login-button"]}>
             Signup
-        </button>
-      </form>
-      <p className={styles["login-text"]}>
-        Already have an account? <a href="/login" className={styles["login-link"]}>Login</a>
-      </p>
+          </button>
+        </form>
+        <p className={styles["login-text"]}>
+          Already have an account?{" "}
+          <a href="/login" className={styles["login-link"]}>
+            Login
+          </a>
+        </p>
       </div>
     </div>
   );

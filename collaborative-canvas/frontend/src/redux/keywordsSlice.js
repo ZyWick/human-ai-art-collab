@@ -35,7 +35,7 @@ const keywordsSlice = createSlice({
           keyword.downvotes = []; // Clear downvotes as well
         }
       });
-    },    
+    },
   },
 });
 

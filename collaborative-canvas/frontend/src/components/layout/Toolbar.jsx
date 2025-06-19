@@ -92,7 +92,10 @@ const Toolbar = ({ stageRef }) => {
   );
 
   useEffect(() => {
-    if (summarizedKeywords.length > 0 && !_.isEqual(prevBoard, summarizedKeywords)) {
+    if (
+      summarizedKeywords.length > 0 &&
+      !_.isEqual(prevBoard, summarizedKeywords)
+    ) {
       debouncedEmitBoardKw(summarizedKeywords);
     }
   }, [summarizedKeywords, prevBoard, debouncedEmitBoardKw]);
@@ -110,9 +113,6 @@ const Toolbar = ({ stageRef }) => {
   //   }, DEBOUNCE_DELAY),
   //   [socket, boardId, designDetails.objective, processKeywords]
   // );
-
-
-
 
   // Selected keywords effect
   // const selectedSummarized = summarizeKeywords(
@@ -204,7 +204,7 @@ const Toolbar = ({ stageRef }) => {
               Object.entries(BroadRecommendedKeywords).map(([type, keywords]) =>
                 keywords.map((keyword, i) => (
                   <KeywordButton
-                  className="keyword-button"
+                    className="keyword-button"
                     key={`${type}-${i}`}
                     text={keyword}
                     type={type}
@@ -253,10 +253,10 @@ const Toolbar = ({ stageRef }) => {
                   keywords.map((keyword, i) => (
                     <KeywordButton
                       className="keyword-button"
-                    key={`${type}-${i}`}
-                    text={keyword}
-                    type={type}
-                    fontSize="12px"
+                      key={`${type}-${i}`}
+                      text={keyword}
+                      type={type}
+                      fontSize="12px"
                       onClick={() => {
                         handleClickRecomKw("Specific", keyword, type);
                       }}

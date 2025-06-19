@@ -5,6 +5,7 @@ const iterationSchema = new mongoose.Schema(
   {
     prompt: [{ type: String }],
     generatedImages: [{ type: String }], // Array of image URLs
+    brief: {type: String},
     keywords: [
       {
         keyword: { type: String, required: true },

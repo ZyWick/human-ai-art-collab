@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef  } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSocket } from "../context/SocketContext";
 import { setUsers } from "../redux/roomSlice";
@@ -18,7 +18,7 @@ import {
   addUploadProgress,
   updateUploadProgress,
   removeUploadProgress,
-    addImgGenProgress,
+  addImgGenProgress,
   updateImgGenProgress,
   removeImgGenProgress,
 } from "../redux/roomSlice";
@@ -30,7 +30,10 @@ import {
   removeBoard,
   selectAllBoards,
 } from "../redux/boardsSlice";
-import { addSelectedKeyword, removeSelectedKeyword } from "../redux/selectionSlice";
+import {
+  addSelectedKeyword,
+  removeSelectedKeyword,
+} from "../redux/selectionSlice";
 import {
   addKeyword,
   removeKeyword,
@@ -38,198 +41,221 @@ import {
   updateKeyword,
   clearAllVotes,
 } from "../redux/keywordsSlice";
-import {
-  addThread,
-  updateThread
-} from "../redux/threadsSlice"
-import { useProgressTimeout } from './useProgressTimeout'; 
+import { addThread, updateThread } from "../redux/threadsSlice";
+import { useProgressTimeout } from "./useProgressTimeout";
 
 const useBoardSocket = () => {
   const dispatch = useDispatch();
-  const socket   = useSocket();
-  const { roomId, currentBoardId } = useSelector(s => s.room);
+  const socket = useSocket();
+  const { roomId, currentBoardId } = useSelector((s) => s.room);
   const { user } = useAuth();
-  const boards   = useSelector(selectAllBoards);
+  const boards = useSelector(selectAllBoards);
   const imgUploadProgressHandler = useProgressTimeout(removeUploadProgress);
   const imgGenProgressHandler = useProgressTimeout(removeImgGenProgress);
 
   // A stable wrapper for your “dispatch + meta” pattern
-  const dispatchWithMeta = useCallback((actionCreator, payload, userData) => {
-    dispatch({ ...actionCreator(payload), meta: userData });
-  }, [dispatch]);
+  const dispatchWithMeta = useCallback(
+    (actionCreator, payload, userData) => {
+      dispatch({ ...actionCreator(payload), meta: userData });
+    },
+    [dispatch]
+  );
 
   // Refs to hold mutable data so our listener‑effect can stay dependency‑light
-  const boardsRef           = useRef(boards);
-  const currentBoardIdRef   = useRef(currentBoardId);
-  useEffect(() => { boardsRef.current = boards; }, [boards]);
-  useEffect(() => { currentBoardIdRef.current = currentBoardId; }, [currentBoardId]);
+  const boardsRef = useRef(boards);
+  const currentBoardIdRef = useRef(currentBoardId);
+  useEffect(() => {
+    boardsRef.current = boards;
+  }, [boards]);
+  useEffect(() => {
+    currentBoardIdRef.current = currentBoardId;
+  }, [currentBoardId]);
 
   // 1) join/leave room effect
   useEffect(() => {
-  if (!socket) return;
-  const payload = { username: user.username, userId: user.id, roomId };
+    if (!socket) return;
+    const payload = { username: user.username, userId: user.id, roomId };
 
-  socket.emit("joinRoom", payload);
+    socket.emit("joinRoom", payload);
 
-  const handleBeforeUnload = () => {
-    socket.emit("leave room", payload);
-  };
+    const handleBeforeUnload = () => {
+      socket.emit("leave room", payload);
+    };
 
-  window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
 
-  return () => {
-    socket.emit("leave room", payload);
-    window.removeEventListener("beforeunload", handleBeforeUnload);
-  };
-}, [socket, user.id, user.username, roomId]);
+    return () => {
+      socket.emit("leave room", payload);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [socket, user.id, user.username, roomId]);
 
-    // 2) all the listeners in one place, only once
-    useEffect(() => {
-      if (!socket) return;
-  
-      const handlers = {
-        addUploadProgress:        ({uploadId, fileName}) => {
-          dispatch(addUploadProgress({ uploadId, fileName }));
-           imgUploadProgressHandler.resetStallTimeout(uploadId);
-        },
-        updateUploadProgress:     ({uploadId, progress}) => {
-                                  dispatch(updateUploadProgress({ uploadId, progress }));
-                                   imgUploadProgressHandler.resetStallTimeout(uploadId);
-                                  
-                                  if (progress >= 100) {
-                                    imgUploadProgressHandler.clearStallTimeout(uploadId);
-                                    setTimeout(() => {
-                                      dispatch(removeUploadProgress(uploadId));
-                                    }, 1000);  // 5s “grace period”
-                                  }
-                                },
-         addImgGenProgress:        ({boardId}) => {
-          dispatch(addImgGenProgress(boardId));
-           imgGenProgressHandler.resetStallTimeout(boardId);
-        },
-        updateImgGenProgress:     ({boardId, progress}) => {
-                                  dispatch(updateImgGenProgress({ boardId, progress }));
-                                   imgGenProgressHandler.resetStallTimeout(boardId);
-                                  
-                                  if (progress >= 100) {
-                                    imgGenProgressHandler.clearStallTimeout(boardId);
-                                    setTimeout(() => {
-                                      dispatch(removeImgGenProgress(boardId));
-                                    }, 500);  // 5s “grace period”
-                                  }
-                                },
-        updateRoomUsers:          (usernames) => dispatch(setUsers(usernames)),
-        updateRoomName:           ({ newRoomName, user }) =>
-                                    dispatchWithMeta(setRoomName, newRoomName, user),
-        updateDesignDetails:      ({ designDetails, user }) =>
-                                    dispatchWithMeta(updateDesignDetails, designDetails, user),
-        updateDesignDetailsDone:  ({ designDetails, user }) => {
-                                    dispatchWithMeta(updateDesignDetails, designDetails, user);
-                                    dispatchWithMeta(updateDesignDetailsFull, designDetails, user);
-                                  },
-        newImage:                 ({ image, user }) => {
-                                    if (image.boardId === currentBoardIdRef.current) {
-                                      dispatchWithMeta(addImage, image, user);
-                                    }
-                                  },
-        updateImage:              ({ update, user }) => 
-                                    dispatchWithMeta(updateImage, update, user),
-        deleteImage:              ({ _id, keywords, user }) => {
-                                    dispatchWithMeta(removeImage, _id, user);
-                                    dispatchWithMeta(removeKeywords, keywords, user);
-                                  },
-        newBoard:                 ({ board, user }) => {
-                                    dispatchWithMeta(addBoard, board, user)}
-                                    ,
-        updateBoard:              ({ update, user }) => 
-                                    dispatchWithMeta(updateBoard, update, user),
-        updateBoardIterations:    ({ update, user }) => {
-                                    dispatchWithMeta(updateBoardIterations, update, user)
-                                  },
-        iterationImageUpdate: ({ boardId, iterationId, prompt, imageUrl }) => {dispatch(updateIterationPartial({
-  boardId,
-  iterationId,
-  prompt,     // string or undefined
-  imageUrl,   // string or undefined
-}))},
-        
-        deleteBoard:              ({ boardId: bId, user }) => {
-                                    const remaining = boardsRef.current.filter(b => b._id !== bId);
-                                      dispatchWithMeta(removeBoard, bId, user);
-                                      if (remaining.length > 0){
-                                      const latest = remaining.reduce(
-                                        (l, b) => l.updatedAt > b.updatedAt ? l : b,
-                                        remaining[0]
-                                      );
-                                      dispatch(setCurrentBoardId(latest._id));}
-                                  },
-        addThread:                ({ newThread, user }) => {
-                              if (newThread.boardId === currentBoardIdRef.current) 
-                                    dispatchWithMeta(addThread, newThread, user)},
-        updateThread:             ({ update, user }) =>
-                                    dispatchWithMeta(updateThread, update, user),
-        newKeyword:               ({ keyword, user }) => {
-                                    if (keyword.boardId === currentBoardIdRef.current) {
-                                      dispatchWithMeta(addKeyword, keyword, user);
-                                      if (keyword.imageId) {
-                                        dispatchWithMeta(
-                                          addKeywordToImage,
-                                          { imageId: keyword.imageId, keywordId: keyword._id },
-                                          user
-                                        );
-                                      }
-                                    }
-                                  },
-        deleteKeyword:            ({ keywordId, imageId, user }) => {
-                                    if (imageId) {
-                                      dispatchWithMeta(
-                                        removeKeywordFromImage,
-                                        { imageId, keywordId },
-                                        user
-                                      );
-                                    }
-                                    dispatchWithMeta(removeKeyword, keywordId, user);
-                                    dispatchWithMeta(removeSelectedKeyword, keywordId, user);
-                                  },
-        updateKeyword:            ({ update, user }) =>
-                                    dispatchWithMeta(updateKeyword, update, user),
-        removeKeywordOffset:      ({ _id, user }) => {
-                                    dispatchWithMeta(removeSelectedKeyword, _id, user);
-                                    dispatchWithMeta(
-                                      updateKeyword,
-                                      { id: _id, changes: { offsetX: undefined, offsetY: undefined, isSelected: false, 
-                                    votes: [],
-                                    downvotes: [], } },
-                                      user
-                                    );
-                                  },
-        updateKeywordSelected:    ({ update, user }) => {
-                                    const { id, changes } = update;
-                                    dispatchWithMeta(updateKeyword, update, user);
-                                    dispatchWithMeta(
-                                      changes.isSelected ? addSelectedKeyword : removeSelectedKeyword,
-                                      id,
-                                      user
-                                    );
-                                  },
-        clearKeywordVotes:        ({ boardId, user }) => {
-                                   dispatchWithMeta(clearAllVotes, boardId, user);
-                                  }
-      };
-  
-      // register
-      Object.entries(handlers).forEach(([evt, fn]) => {
-        socket.on(evt, fn);
+  // 2) all the listeners in one place, only once
+  useEffect(() => {
+    if (!socket) return;
+
+    const handlers = {
+      addUploadProgress: ({ uploadId, fileName }) => {
+        dispatch(addUploadProgress({ uploadId, fileName }));
+        imgUploadProgressHandler.resetStallTimeout(uploadId);
+      },
+      updateUploadProgress: ({ uploadId, progress }) => {
+        dispatch(updateUploadProgress({ uploadId, progress }));
+        imgUploadProgressHandler.resetStallTimeout(uploadId);
+
+        if (progress >= 100) {
+          imgUploadProgressHandler.clearStallTimeout(uploadId);
+          setTimeout(() => {
+            dispatch(removeUploadProgress(uploadId));
+          }, 1000); // 5s “grace period”
+        }
+      },
+      addImgGenProgress: ({ boardId }) => {
+        dispatch(addImgGenProgress(boardId));
+        imgGenProgressHandler.resetStallTimeout(boardId);
+      },
+      updateImgGenProgress: ({ boardId, progress }) => {
+        dispatch(updateImgGenProgress({ boardId, progress }));
+        imgGenProgressHandler.resetStallTimeout(boardId);
+
+        if (progress >= 100) {
+          imgGenProgressHandler.clearStallTimeout(boardId);
+          setTimeout(() => {
+            dispatch(removeImgGenProgress(boardId));
+          }, 500); // 5s “grace period”
+        }
+      },
+      updateRoomUsers: (usernames) => dispatch(setUsers(usernames)),
+      updateRoomName: ({ newRoomName, user }) =>
+        dispatchWithMeta(setRoomName, newRoomName, user),
+      updateDesignDetails: ({ designDetails, user }) =>
+        dispatchWithMeta(updateDesignDetails, designDetails, user),
+      updateDesignDetailsDone: ({ designDetails, user }) => {
+        dispatchWithMeta(updateDesignDetails, designDetails, user);
+        dispatchWithMeta(updateDesignDetailsFull, designDetails, user);
+      },
+      newImage: ({ image, user }) => {
+        if (image.boardId === currentBoardIdRef.current) {
+          dispatchWithMeta(addImage, image, user);
+        }
+      },
+      updateImage: ({ update, user }) =>
+        dispatchWithMeta(updateImage, update, user),
+      deleteImage: ({ _id, keywords, user }) => {
+        dispatchWithMeta(removeImage, _id, user);
+        dispatchWithMeta(removeKeywords, keywords, user);
+      },
+      newBoard: ({ board, user }) => {
+        dispatchWithMeta(addBoard, board, user);
+      },
+      updateBoard: ({ update, user }) =>
+        dispatchWithMeta(updateBoard, update, user),
+      updateBoardIterations: ({ update, user }) => {
+        dispatchWithMeta(updateBoardIterations, update, user);
+      },
+      iterationImageUpdate: ({ boardId, iterationId, prompt, imageUrl }) => {
+        dispatch(
+          updateIterationPartial({
+            boardId,
+            iterationId,
+            prompt, // string or undefined
+            imageUrl, // string or undefined
+          })
+        );
+      },
+
+      deleteBoard: ({ boardId: bId, user }) => {
+        const remaining = boardsRef.current.filter((b) => b._id !== bId);
+        dispatchWithMeta(removeBoard, bId, user);
+        if (remaining.length > 0) {
+          const latest = remaining.reduce(
+            (l, b) => (l.updatedAt > b.updatedAt ? l : b),
+            remaining[0]
+          );
+          dispatch(setCurrentBoardId(latest._id));
+        }
+      },
+      addThread: ({ newThread, user }) => {
+        if (newThread.boardId === currentBoardIdRef.current)
+          dispatchWithMeta(addThread, newThread, user);
+      },
+      updateThread: ({ update, user }) =>
+        dispatchWithMeta(updateThread, update, user),
+      newKeyword: ({ keyword, user }) => {
+        if (keyword.boardId === currentBoardIdRef.current) {
+          dispatchWithMeta(addKeyword, keyword, user);
+          if (keyword.imageId) {
+            dispatchWithMeta(
+              addKeywordToImage,
+              { imageId: keyword.imageId, keywordId: keyword._id },
+              user
+            );
+          }
+        }
+      },
+      deleteKeyword: ({ keywordId, imageId, user }) => {
+        if (imageId) {
+          dispatchWithMeta(
+            removeKeywordFromImage,
+            { imageId, keywordId },
+            user
+          );
+        }
+        dispatchWithMeta(removeKeyword, keywordId, user);
+        dispatchWithMeta(removeSelectedKeyword, keywordId, user);
+      },
+      updateKeyword: ({ update, user }) =>
+        dispatchWithMeta(updateKeyword, update, user),
+      removeKeywordOffset: ({ _id, user }) => {
+        dispatchWithMeta(removeSelectedKeyword, _id, user);
+        dispatchWithMeta(
+          updateKeyword,
+          {
+            id: _id,
+            changes: {
+              offsetX: undefined,
+              offsetY: undefined,
+              isSelected: false,
+              votes: [],
+              downvotes: [],
+              author: "",
+            },
+          },
+          user
+        );
+      },
+      updateKeywordSelected: ({ update, user }) => {
+        const { id, changes } = update;
+        dispatchWithMeta(updateKeyword, update, user);
+        dispatchWithMeta(
+          changes.isSelected ? addSelectedKeyword : removeSelectedKeyword,
+          id,
+          user
+        );
+      },
+      clearKeywordVotes: ({ boardId, user }) => {
+        dispatchWithMeta(clearAllVotes, boardId, user);
+      },
+    };
+
+    // register
+    Object.entries(handlers).forEach(([evt, fn]) => {
+      socket.on(evt, fn);
+    });
+
+    // cleanup
+    return () => {
+      Object.keys(handlers).forEach((evt) => {
+        socket.off(evt);
       });
-  
-      // cleanup
-      return () => {
-        Object.keys(handlers).forEach(evt => {
-          socket.off(evt);
-        });
-      };
-    }, [socket, dispatchWithMeta, dispatch, imgUploadProgressHandler, imgGenProgressHandler,]);
-  
-  };
-  
-  export default useBoardSocket;
+    };
+  }, [
+    socket,
+    dispatchWithMeta,
+    dispatch,
+    imgUploadProgressHandler,
+    imgGenProgressHandler,
+  ]);
+};
+
+export default useBoardSocket;

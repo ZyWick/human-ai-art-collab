@@ -1,5 +1,4 @@
-// const baseURL = process.env.REACT_APP_BACKEND_URL || "http://localhost:5000";
-const baseURL = "https://api.aicollabdesign.space";
+import { REACT_APP_BACKEND_URL as baseURL} from "../config";
 
 /**
  * Helper function to make API calls using fetch.
@@ -86,7 +85,6 @@ export const uploadImageApi = async (formData, socketId, boardId) => {
     throw error;
   }
 };
-
 
 export const createRoom = async (name) =>
   apiFetch("/rooms/create", { method: "POST", data: { name } });

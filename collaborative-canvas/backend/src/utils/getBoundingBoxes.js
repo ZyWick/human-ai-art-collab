@@ -15,6 +15,34 @@ function computeIoU(boxA, boxB) {
   return union > 0 ? intersection / union : 0;
 }
 
+// Helper to merge overlapping indices using BFS (connected components)
+function findClusters(weightedBoxes, iouThreshold) {
+  const n = weightedBoxes.length;
+  const clusters = [];
+  const visited = new Array(n).fill(false);
+
+  for (let i = 0; i < n; i++) {
+    if (visited[i]) continue;
+    const cluster = [weightedBoxes[i]];
+    visited[i] = true;
+    const queue = [i];
+    while (queue.length) {
+      const idx = queue.shift();
+      for (let j = 0; j < n; j++) {
+        if (visited[j]) continue;
+        // If this box overlaps any box in the cluster
+        if (computeIoU(weightedBoxes[idx].box, weightedBoxes[j].box) >= iouThreshold) {
+          visited[j] = true;
+          cluster.push(weightedBoxes[j]);
+          queue.push(j);
+        }
+      }
+    }
+    clusters.push(cluster);
+  }
+  return clusters;
+}
+
 function averageBoxes(cluster) {
   const totalWeight = cluster.reduce((sum, item) => sum + item.weight, 0);
   const avgBox = [0, 0, 0, 0];
@@ -28,53 +56,61 @@ function averageBoxes(cluster) {
   return avgBox.map(val => val / totalWeight);
 }
 
-function jitterBox(box, amount = 0.01) {
-  return box.map(coord => {
-    const noise = (Math.random() - 0.5) * 2 * amount; // range [-amount, amount]
-    let jittered = coord + noise;
-    // Clamp to [0, 1]
-    return Math.min(1, Math.max(0, jittered));
-  });
+function validBox(box) {
+  return (
+    Array.isArray(box) &&
+    box.length === 4 &&
+    box.every(n => typeof n === 'number' && !isNaN(n)) &&
+    box[0] <= box[2] &&
+    box[1] <= box[3] &&
+    box.every(n => n >= 0 && n <= 1)
+  );
 }
 
-export function getTopFusedBoxes(data, N, iouThreshold = 0.5) {
+function jitterBox(box, relativeAmount = 0.05) {
+  const [x1, y1, x2, y2] = box;
+  const width = x2 - x1;
+  const height = y2 - y1;
+
+  const jittered = [
+    x1 + (Math.random() - 0.5) * 2 * width * relativeAmount,
+    y1 + (Math.random() - 0.5) * 2 * height * relativeAmount,
+    x2 + (Math.random() - 0.5) * 2 * width * relativeAmount,
+    y2 + (Math.random() - 0.5) * 2 * height * relativeAmount
+  ];
+
+  // Ensure box remains within [0, 1] and valid (x1 <= x2, y1 <= y2)
+  const [jx1, jy1, jx2, jy2] = jittered.map(v => Math.min(1, Math.max(0, v)));
+  return [
+    Math.min(jx1, jx2),
+    Math.min(jy1, jy2),
+    Math.max(jx1, jx2),
+    Math.max(jy1, jy2)
+  ];
+}
+
+
+export function getTopFusedBoxes(data, N, iouThreshold = 0.3) {
   const weightedBoxes = [];
-  const EPSILON = 0.1;
+  const EPSILON = 1e-6;
 
-  for (const entry of data) {
-      const netVotes = entry.votes;
-      let weight = netVotes > 0 ? netVotes : EPSILON;
-
+   for (const entry of data) {
+    const netVotes = entry.votes;
+    let weight = netVotes > 0 ? netVotes : EPSILON;
     for (const box of entry.boundingBoxes) {
-      weightedBoxes.push({ box, weight });
+      if (validBox(box))
+        weightedBoxes.push({ box, weight });
     }
   }
+  if (weightedBoxes.length === 0 || N === 0) return [];
 
-  // Cluster boxes by IoU
-  const clusters = [];
-  const used = new Array(weightedBoxes.length).fill(false);
-
-  for (let i = 0; i < weightedBoxes.length; i++) {
-    if (used[i]) continue;
-    const cluster = [weightedBoxes[i]];
-    used[i] = true;
-
-    for (let j = i + 1; j < weightedBoxes.length; j++) {
-      if (used[j]) continue;
-      const iou = computeIoU(weightedBoxes[i].box, weightedBoxes[j].box);
-      if (iou >= iouThreshold) {
-        cluster.push(weightedBoxes[j]);
-        used[j] = true;
-      }
-    }
-
-    clusters.push(cluster);
-  }
+  // Cluster boxes using non-greedy, connected component method
+  const clusters = findClusters(weightedBoxes, iouThreshold);
 
   // Fuse each cluster
   const fusedBoxes = clusters.map(averageBoxes);
 
-  // Sort by total cluster weight (descending)
+   // Sort by total cluster weight (descending)
   const scoredFusedBoxes = clusters.map((cluster, idx) => ({
     box: fusedBoxes[idx],
     score: cluster.reduce((sum, item) => sum + item.weight, 0)
@@ -84,7 +120,7 @@ export function getTopFusedBoxes(data, N, iouThreshold = 0.5) {
   // Get top-N fused boxes
   const finalBoxes = scoredFusedBoxes.slice(0, N).map(item => item.box);
 
-  // Pad with jittered copies if fewer than N
+  // Pad with jittered copies if fewer than N and at least one detection
   while (finalBoxes.length < N && finalBoxes.length > 0) {
     const lastBox = finalBoxes[finalBoxes.length - 1];
     finalBoxes.push(jitterBox(lastBox));

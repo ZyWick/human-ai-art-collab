@@ -18,35 +18,42 @@ const VotingButtons = ({ _id, kwVotes, kwDownvotes, type, xpos, ypos }) => {
   useEffect(() => setVotes(kwVotes || []), [kwVotes]);
   useEffect(() => setDownvotes(kwDownvotes || []), [kwDownvotes]);
 
-  const handleVoteClick = useCallback((e, action) => {
-    e.cancelBubble = true;
+  const handleVoteClick = useCallback(
+    (e, action) => {
+      e.cancelBubble = true;
 
-    const updatedVotes = new Set(votes);
-    const updatedDownvotes = new Set(downvotes);
-    let actualAction = action;
+      const updatedVotes = new Set(votes);
+      const updatedDownvotes = new Set(downvotes);
+      let actualAction = action;
 
-    if (action === "upvote") {
-      if (updatedVotes.has(user.id)) {
-        updatedVotes.delete(user.id);
-        actualAction = "remove";
-      } else {
-        updatedVotes.add(user.id);
-        updatedDownvotes.delete(user.id);
+      if (action === "upvote") {
+        if (updatedVotes.has(user.id)) {
+          updatedVotes.delete(user.id);
+          actualAction = "remove";
+        } else {
+          updatedVotes.add(user.id);
+          updatedDownvotes.delete(user.id);
+        }
+      } else if (action === "downvote") {
+        if (updatedDownvotes.has(user.id)) {
+          updatedDownvotes.delete(user.id);
+          actualAction = "remove";
+        } else {
+          updatedDownvotes.add(user.id);
+          updatedVotes.delete(user.id);
+        }
       }
-    } else if (action === "downvote") {
-      if (updatedDownvotes.has(user.id)) {
-        updatedDownvotes.delete(user.id);
-        actualAction = "remove";
-      } else {
-        updatedDownvotes.add(user.id);
-        updatedVotes.delete(user.id);
-      }
-    }
 
-    setVotes([...updatedVotes]);
-    setDownvotes([...updatedDownvotes]);
-    socket.emit("updateKeywordVotes", { keywordId: _id, userId: user.id, action: actualAction });
-  }, [votes, downvotes, socket, _id, user.id]);
+      setVotes([...updatedVotes]);
+      setDownvotes([...updatedDownvotes]);
+      socket.emit("updateKeywordVotes", {
+        keywordId: _id,
+        userId: user.id,
+        action: actualAction,
+      });
+    },
+    [votes, downvotes, socket, _id, user.id]
+  );
 
   const handleMouseEnter = (e, type) => {
     e.target.getStage().container().style.cursor = "pointer";
@@ -61,7 +68,8 @@ const VotingButtons = ({ _id, kwVotes, kwDownvotes, type, xpos, ypos }) => {
   return (
     <Group x={xpos} y={ypos}>
       {["upvote", "downvote"].map((action, index) => {
-        const isActioned = action === "upvote" ? isVotedByUser : isDownvotedByUser;
+        const isActioned =
+          action === "upvote" ? isVotedByUser : isDownvotedByUser;
         const width = action === "upvote" ? 35 : 20;
         const text = action === "upvote" ? `👍 ${votesNumber}` : "👎";
         return (
@@ -79,10 +87,11 @@ const VotingButtons = ({ _id, kwVotes, kwDownvotes, type, xpos, ypos }) => {
               cornerRadius={5}
               stroke={colorMapping[type]}
               strokeWidth={0.5}
-              shadowColor={hovered === action ? colorMapping[type] : "transparent"}
+              shadowColor={
+                hovered === action ? colorMapping[type] : "transparent"
+              }
               shadowBlur={hovered === action ? 3 : 0}
               shadowOpacity={hovered === action ? 2 : 0}
-
             />
             <Text
               text={text}

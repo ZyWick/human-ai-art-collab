@@ -43,7 +43,7 @@ function ProgressBar({ uploadProgress }) {
   );
 }
 
-const UploadButton = ({ stageRef, isDesignDetailsEmpty }) => {
+const UploadButton = ({ stageRef }) => {
   const socket = useSocket();
   const getRandomCoordinates = useRandomStageCoordinates(stageRef);
   const boardId = useSelector((state) => state.room.currentBoardId);
@@ -89,14 +89,10 @@ const UploadButton = ({ stageRef, isDesignDetailsEmpty }) => {
   return (
     <div className="upload-container" style={{ maxHeight: "10.25%" }}>
       <button
-        onClick={() => {
-          if (isDesignDetailsEmpty) {
-            if (!clickedDisabled) setClickedDisabled(true);
-          } else document.getElementById("fileInput").click();
-        }}
+        onClick={() => {document.getElementById("fileInput").click();}}
         style={{
-          backgroundColor: isDesignDetailsEmpty ? "#ccc" : "white",
-          color: isDesignDetailsEmpty ? "#777" : "black",
+          backgroundColor: "white",
+          color: "black",
         }}
         className="wideButton"
       >
@@ -114,7 +110,7 @@ const UploadButton = ({ stageRef, isDesignDetailsEmpty }) => {
             height="15"
             viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg"
-            fill={isDesignDetailsEmpty ? "#777" : "#000"} // Control icon color based on disabled state
+            fill={"#000"} // Control icon color based on disabled state
           >
             <path
               fillRule="evenodd"
@@ -123,18 +119,6 @@ const UploadButton = ({ stageRef, isDesignDetailsEmpty }) => {
           </svg>
         </div>
       </button>
-      {clickedDisabled && isDesignDetailsEmpty && (
-        <p
-          style={{
-            fontSize: "0.65em",
-            marginBlock: "0",
-            textAlign: "center",
-            color: "#cc0000",
-          }}
-        >
-          complete the design brief to add images.
-        </p>
-      )}
 
       <input
         id="fileInput"

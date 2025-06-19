@@ -3,7 +3,6 @@ import Konva from "konva";
 import DesignDetails from "../widgets/DesignDetails";
 import UploadButton from "../widgets/UploadButton";
 import { useSelector } from "react-redux";
-import { useSocket } from "../../context/SocketContext";
 import { selectBoardById } from "../../redux/boardsSlice";
 import IterationsPopup from "../widgets/IterationsPopup";
 import "../../assets/styles/toolbar.css";
@@ -16,10 +15,7 @@ const DesignWorkspace = ({ stageRef }) => {
   const topRef = useRef(null);
   const secondRef = useRef(null);
 
-  const socket = useSocket();
-
   const [showAllIterations, setShowAllIterations] = useState(false);
-
   const boardId = useSelector((state) => state.room.currentBoardId);
   const currBoard = useSelector((state) => selectBoardById(state, boardId));
 

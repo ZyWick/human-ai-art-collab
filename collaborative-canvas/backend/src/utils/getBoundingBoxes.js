@@ -115,16 +115,46 @@ export function getTopFusedBoxes(data, N, iouThreshold = 0.3) {
     box: fusedBoxes[idx],
     score: cluster.reduce((sum, item) => sum + item.weight, 0)
   }));
-  scoredFusedBoxes.sort((a, b) => b.score - a.score);
 
-  // Get top-N fused boxes
-  const finalBoxes = scoredFusedBoxes.slice(0, N).map(item => item.box);
+  const totalScore = scoredFusedBoxes.reduce((sum, b) => sum + b.score, 0);
+  const probs = scoredFusedBoxes.map(b => b.score / totalScore);
 
-  // Pad with jittered copies if fewer than N and at least one detection
-  while (finalBoxes.length < N && finalBoxes.length > 0) {
-    const lastBox = finalBoxes[finalBoxes.length - 1];
-    finalBoxes.push(jitterBox(lastBox));
+  // Get weighted random indices
+  const selectedIndices = weightedChoice(probs, Math.min(N, scoredFusedBoxes.length));
+
+  // Select boxes based on indices
+  let final = selectedIndices.map(i => scoredFusedBoxes[i].box);
+
+  // Pad with jittered versions if needed
+  while (final.length < N && final.length > 0) {
+    final.push(jitterBox(final[final.length - 1]));
   }
 
-  return finalBoxes;
+  console.log(final)
+
+  return final;
+}
+
+// Helper: Random weighted selection without replacement
+function weightedChoice(probabilities, count) {
+  const indices = [];
+  const taken = new Set();
+
+  while (indices.length < count) {
+    const r = Math.random();
+    let acc = 0;
+
+    for (let i = 0; i < probabilities.length; i++) {
+      if (taken.has(i)) continue;
+
+      acc += probabilities[i];
+      if (r <= acc) {
+        indices.push(i);
+        taken.add(i);
+        break;
+      }
+    }
+  }
+
+  return indices;
 }

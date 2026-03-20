@@ -24,6 +24,7 @@ const allowedOrigins = [
   "https://aicollabdesign.space",
   "https://drlvl1wvuyq5z.cloudfront.net",
   "https://baseline.aicollabdesign.space",
+  "https://human-ai-art-collab-dev.onrender.com",
 ];
 
 const app = express();

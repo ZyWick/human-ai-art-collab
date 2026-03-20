@@ -14,15 +14,13 @@ export const createRoomWithName = async (name) => {
   const joinCode = generateCode(6);
 
   const room = await Room.create({ name, joinCode, boards: [] });
-  const blankBoard = await createBoard({ 
+  await createBoard({ 
     name: 'draft 1', 
     roomId: room._id, 
     images: [],
   });
 
-  await Room.findByIdAndUpdate(room._id, {
-    $push: { boards: blankBoard._id },
-  });
+
   return room;
 };
 

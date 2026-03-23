@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import useDispatchWithMeta from "../../hook/useDispatchWithMeta";
 import useRandomStageCoordinates from "../../hook/useRandomStageCoordinates";
 import { useSocket } from "../../context/SocketContext";
+import { useAuth } from "../../context/AuthContext";
 import { selectBoardById, updateBoard } from "../../redux/boardsSlice";
 import { selectAllKeywords } from "../../redux/keywordsSlice";
 import { KeywordButton } from "../widgets/KeywordButton";
@@ -48,6 +49,7 @@ const usePrevious = (value) => {
 };
 
 const Toolbar = ({ stageRef }) => {
+  const { user } = useAuth();
   const socket = useSocket();
   const dispatch = useDispatchWithMeta();
   const getRandomCoordinates = useRandomStageCoordinates(stageRef);
@@ -55,9 +57,6 @@ const Toolbar = ({ stageRef }) => {
   const boardId = useSelector((state) => state.room.currentBoardId);
   const currBoard = useSelector((state) => selectBoardById(state, boardId));
 
-  // const selectedKeywordIds = useSelector(
-  //   (state) => state.selection.selectedKeywordIds
-  // );
   const designDetails = useSelector((state) => state.room.designDetails);
   const keywords = useSelector(selectAllKeywords);
 
@@ -106,27 +105,6 @@ const Toolbar = ({ stageRef }) => {
     };
   }, [debouncedEmitBoardKw]);
 
-  // const debouncedEmitSelectedKw = useMemo(() =>
-  //   debounce((keywords) => {
-  //     const data = processKeywords(keywords, designDetails.objective);
-  //     socket.emit("recommendFromSelectedKw", { boardId, data });
-  //   }, DEBOUNCE_DELAY),
-  //   [socket, boardId, designDetails.objective, processKeywords]
-  // );
-
-  // Selected keywords effect
-  // const selectedSummarized = summarizeKeywords(
-  //   keywords.filter((kw) => selectedKeywordIds.includes(kw._id))
-  // );
-
-  // const prevSelected = usePrevious(selectedSummarized);
-
-  // useEffect(() => {
-  //   if (!_.isEqual(prevSelected, selectedSummarized)) {
-  //     debouncedEmitSelectedKw(selectedSummarized);
-  //   }
-  // }, [selectedSummarized, prevSelected, debouncedEmitSelectedKw]);
-
   const addKeywordSelection = useCallback(
     (type, newKeywordText) => {
       const { x, y } = getRandomCoordinates();
@@ -136,6 +114,7 @@ const Toolbar = ({ stageRef }) => {
         keyword: newKeywordText,
         offsetX: x,
         offsetY: y,
+        author: user.username,
       });
     },
     [boardId, socket, getRandomCoordinates]

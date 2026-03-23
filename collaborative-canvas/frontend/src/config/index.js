@@ -1,1 +1,1 @@
-export const REACT_APP_BACKEND_URL = "https://api.aicollabdesign.space";
+export const REACT_APP_BACKEND_URL = "https://human-ai-art-collab-dev.onrender.com";

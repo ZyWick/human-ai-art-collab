@@ -26,6 +26,7 @@ const allowedOrigins = [
   "https://drlvl1wvuyq5z.cloudfront.net",
   "https://baseline.aicollabdesign.space",
   "https://human-ai-art-collab-3nhg.vercel.app",
+  "https://ai-collab-design.vercel.app",
 ];
 
 const app = express();
@@ -65,7 +66,19 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.error("MongoDB connection error:", err));
 
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: allowedOrigins } });
+const io = new Server(server, {
+  cors: {
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn(`Socket.IO blocked origin: ${origin}`);
+        callback(new Error("CORS not allowed"));
+      }
+    },
+    credentials: true,
+  }
+});
 
 let users = [];
 let rooms = [];

@@ -10,7 +10,10 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io(REACT_APP_BACKEND_URL);
+    const newSocket = io(REACT_APP_BACKEND_URL, {
+      withCredentials: true,
+      transports: ["websocket", "polling"]
+    });
     setSocket(newSocket);
 
     return () => {

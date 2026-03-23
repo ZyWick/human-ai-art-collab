@@ -69,15 +69,18 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
     origin: (origin, callback) => {
+      console.log("Socket.IO request origin:", origin);
+
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        console.warn(`Socket.IO blocked origin: ${origin}`);
-        callback(new Error("CORS not allowed"));
+        callback(new Error("Not allowed by CORS: " + origin));
       }
     },
-    credentials: true,
-  }
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"],
+    credentials: true
+  },
+  transports: ["websocket", "polling"] // explicitly allow both
 });
 
 let users = [];

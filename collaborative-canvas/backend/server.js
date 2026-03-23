@@ -22,9 +22,10 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   "https://d3kigqhpgswrju.cloudfront.net",
   "https://aicollabdesign.space",
+  "https://www.aicollabdesign.space",
   "https://drlvl1wvuyq5z.cloudfront.net",
   "https://baseline.aicollabdesign.space",
-  "human-ai-art-collab-3nhg.vercel.app",
+  "https://human-ai-art-collab-3nhg.vercel.app",
 ];
 
 const app = express();

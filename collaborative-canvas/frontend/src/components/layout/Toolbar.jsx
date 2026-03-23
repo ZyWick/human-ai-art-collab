@@ -117,7 +117,7 @@ const Toolbar = ({ stageRef }) => {
         author: user.username,
       });
     },
-    [boardId, socket, getRandomCoordinates]
+    [boardId, socket, user.username, getRandomCoordinates]
   );
 
   let { BroadRecommendedKeywords = [], SpecificRecommendedKeywords = [] } =
